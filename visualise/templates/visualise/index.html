@@ -1,0 +1,196 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'visualise/css/main.css' %}" />
+<script type="text/javascript" src="{% static 'visualise/javascript/jquery-2.1.3.min.js' %}" ></script>
+<script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.js' %}"></script>
+<script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.time.js' %}"></script>
+<script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.axislabels.js' %}"></script>
+<script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.pie.js' %}"></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/main.js' %}" ></script>
+
+<script>
+
+var timelineData = [];
+var sourceMACAddresses = [];
+
+var timeOldest = "{{ time_oldest.timestamp__min }}"*1000;
+var timeNewest = "{{ time_newest.timestamp__max }}"*1000;
+//console.log("\n\n\nTimeline");
+//console.log("Time oldest:"+timeOldest);
+//console.log("Time newest:"+timeNewest);
+//console.log(Math.round(timeOldest));
+var date = new Date(Math.round(timeOldest));
+//console.log(date.toString());
+//console.log(Math.round(timeNewest));
+date = new Date(Math.round(timeNewest));
+//console.log(date.toString());
+
+var tcpCount = "{{ tcp_count }}";
+var udpCount = "{{ udp_count }}";
+//console.log("\n\n\nProtocols");
+//console.log("TCP packets:"+tcpCount);
+//console.log("UDP packets:"+udpCount);
+
+var bytesDownloaded = "{{ bytes_downloaded }}";
+var bytesUploaded = "{{ bytes_uploaded }}";
+//console.log("\n\n\nUsage:");
+//console.log("downloaded:"+bytesDownloaded);
+//console.log("uploaded:"+bytesUploaded);
+</script>
+
+
+<div id="container">    
+
+    <div id="title">
+    <h1>Network Flow Visualisation</h1>
+    </div> <!-- Close title -->
+
+    <div id="filter_container">        
+
+        <h2>Filter</h2>
+        <br><br>
+        <form action="" method="post">
+            <span class="bold">Device:</span><br>
+            <select id="select_mac" ></select>
+            <br><br>
+            <span class="bold">Time period:</span><br>
+            Previous:
+            <select id="select_day_from" >
+                <option>1</option>
+                <option>...</option>
+                <option>31</option>
+            </select> 
+            days    
+            <!-- Direction -->
+            <br><br>
+            <span class="bold">Direction:</span><br>
+            Ingress:
+            <input id="check_ingress" type="checkbox" checked="true">  
+            Egress:
+            <input id="check_egress" type="checkbox" checked="true">          
+            <!-- Ports -->
+            <br><br>
+            <span class="bold">Port:</span>
+            <input id="btn_submit" type="text" placeholder="0-65535">
+            <br><br>
+            <input id="btn_submit" type="submit" value="Apply">
+        </form>  
+    </div>    
+
+    <div id="overview">
+        <h1>Overview</h1>
+        <div id="overview_container_legend"></div>
+        <div id="overview_container_chart"></div>
+    </div> <!-- Close overview -->
+
+    <div class="tiles_container">
+
+        <div class="tile">
+            <h2>Protocol</h2><br>
+            <div id="protocol_container_legend"></div>
+            <div id="protocol_container_chart"></div>
+        </div>
+
+        <div class="tile">
+            <h2>Usage</h2><br>
+            <div id="usage_container_legend"></div>
+            <div id="usage_container_chart"></div>
+        </div>
+
+        <div class="tile">
+            <h2>Geolocation</h2><br>
+            Top 10 countries
+            <ol>
+                <li>New Zealand</li>
+                <li>China</li>
+                <li>UK</li>
+                <li>USA</li>
+            </ol>  
+        </div>
+
+    </div>
+
+    <br>
+    
+
+
+    <div id="junk">
+        {{ tcp_count }} tcp packets<br>
+        {{ udp_count }} udp packets<br>
+
+        {% for a in source_macs %}            
+            <script>
+                // Populate MAC address select box
+                sourceMACAddresses.push("{{ a.mac_src }}");
+            </script>                
+        {% endfor %}
+
+        Packets:
+            {% if packets_list %}
+                {% for packet in packets_list %}
+
+                    <script>
+                        //console.log({{ packet.timestamp }});
+                        var t = [{{ packet.timestamp }}, {{ packet.bytes_size }}];
+                        //console.log(t);
+                        timelineData.push(t);
+                    </script>
+                    <ul>                 
+                    <li>{{ packet.timestamp }}</li>
+                    <li>{{ packet.bytes_size }}</li>
+                    <li>{{ packet.mac_src }}</li>
+                    <li>{{ packet.mac_dst }}</li>
+                    <li>{{ packet.ip_src}}:{{ packet.source_port }}</li>        
+                    <li>{{ packet.ip_dst }}:{{ packet.destination_port }}</li>
+                    <li>{{ packet.protocol }}</li>
+                    </ul>
+                    <script>
+                        var p1 = {{ packet.protocol }};
+                        protocols_distribution.push(p1);
+                    </script>
+                {% endfor %}
+            {% else %}
+                <p>No packets are available.</p>
+            {% endif %}
+    </div>
+    
+
+
+    <script>
+        //console.log(sourceMACAddresses);
+
+    </script>
+
+    <!--
+        {% if protocols_list %}
+        {% for protocol in protocols_list %}
+            <li><a href="{% url 'visualise:detail' protocol.id %}">{{ protocol.protocol_type }}</a></li>  
+            <script>
+            var p1 = {{ protocol.protocol_type }};
+            </script>
+        {% endfor %}
+        {% else %}
+            <p>No protocols are available.</p>
+        {% endif %}
+    -->
+    
+
+</div>  <!-- Close container -->
+
+
+
+
+<!--
+
+
+    Things to do:
+
+        Network activity
+        Device history/activity      
+        Filters
+        IP address location
+        Use Libprotoident for application inspection?
+
+
+
+-->
