@@ -13,16 +13,22 @@ var PROTO_UDP = 17;
 
 $(document).ready(function(){
 	console.log("ready");
-
+	/*
     $.ajax({
-    	url: "http://geoplugin.net/json.gp?ip=http://www.geoplugin.net/json.gp?ip=124.248.134.110", 
-    	crossDomain: true,
+    	type: "GET",
+    	crossDomain: true,    	
+    	accept: "text/plain",
+        contentType: "text/plain; charset=utf-8",
+        dataType: "text/plain",    	
+    	url: "http://www.geoplugin.net/json.gp", 
+    	data:"ip=124.248.134.11",
     	success: function(result){
-        chartonsole.log(result);
-        //$("#test").html(result);
-    	}
+	        console.log(result);
+	        console.log("dsgsdfg");
+	        //$("#test").html(result);
+    	},
     });
-
+	*/
 	loadTimeline(timelineData);
 
 	/*
@@ -43,6 +49,8 @@ $(document).ready(function(){
 
 	// Filters
 	populateMACAddresses(sourceMACAddresses);
+
+	populateFlowTable(sourceMACAddresses, sourceMACBytes);
 });
 
 
@@ -51,6 +59,7 @@ $(document).ready(function(){
 
 function populateMACAddresses(macs){
 	var i;
+	$("#select_mac").append($("<option></option>").attr("value", "all_devices").text("(All Devices)")); 
 	for(i = 0; i < macs.length; ++i)
 		$("#select_mac").append($("<option></option>").attr("value", macs[i]).text(macs[i])); 
 }
@@ -58,15 +67,32 @@ function populateMACAddresses(macs){
 
 
 
+function populateFlowTable(macs, bytes){
+	var i;
+	for(i = 0; i < macs.length; ++i){
+		$bar = $('<div></div>').addClass("horizontal_bar");
+		$row = $('<div></div>').addClass("row");
+		$c1 = $('<div></div>').addClass("cell").html(macs[i]);
+		$c2 = $('<div></div>').addClass("cell").html("(to do)");
+		$c3 = $('<div></div>').addClass("cell").html((bytes[i]/1000).toFixed(2)+" MB");
+		$row.append($c1).append($c2).append($c3);
+		$("#flows_table").append($bar).append($row);
+	}
+}
 
-function loadTimeline(dat){
 
+
+
+function loadTimeline(dat, timeInterval){
+	console.log(timeInterval);
 	// Date, data downloaded
 	//var data = [[1427621192, 10], [1427622192, 34], [1427623192, 13], [1427624192, 3], [1427625192, 377], [1427626192, 43]];
 
-	var data = [[1427621192, 10], [1427622192, 34]];
+	//var data = [[1427621192, 10], [1427622192, 34]];
 
-	//data = dat;
+	//console.log(dat);
+
+	data = dat;
 
 	var dataset = [
 	    {
@@ -75,7 +101,6 @@ function loadTimeline(dat){
 	        color: "#FF0000",
 	        points: {
 	        	fillColor: "#FF0000",
-	        	show: true,
 	        },
 	        lines: {
 	        	show: true
@@ -86,7 +111,13 @@ function loadTimeline(dat){
 	var options = {	
 		label: "testing...",
 		series: {			
-		    shadowSize: 5,			      
+		    shadowSize: 5,	
+		    lines:{
+		    	fill: true,	// Area chart
+		    },
+		   	points: {
+		    	show: false,
+		    },        
 		},
 	    xaxis: {			
 		    mode: "time",
@@ -110,10 +141,10 @@ function loadTimeline(dat){
 		    timeformat: "%d/%m",
 		},				
 	    grid: {
-	        hoverable: true,
-	        clickable: true,
+	        //hoverable: true,
+	        //clickable: true,
 	        backgroundColor: "#fff",
-	    },	        
+	    },      
 	};
 
 	// Plot the overview pie chart
@@ -141,8 +172,8 @@ function loadProtocolChart(){
 	        }
 	    },
 	    grid: {
-	        hoverable: true,
-	        clickable: true,
+	        //hoverable: true,
+	        //clickable: true,
 	    },
 	    legend: {	    	
 	        show: true,
@@ -174,8 +205,8 @@ function loadUsageChart(){
 	        }
 	    },
 	    grid: {
-	        hoverable: true,
-	        clickable: true
+	        //hoverable: true,
+	        //clickable: true
 	    },
 	    legend: {
 	        show: true,

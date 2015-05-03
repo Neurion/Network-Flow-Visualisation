@@ -1,25 +1,67 @@
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse
-from django.db.models import Max, Min
+from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
+from django.db.models import Max, Min, Sum
+
 from visualise.models import Flow
+from visualise.forms import TestForm, FilterForm
+
 import json
 
 
 def index(request):
 
-	# Get packets in ascending order
 	packets_all = Flow.objects.all().order_by('timestamp')
 
-	# Timeline
-	time_oldest = packets_all.aggregate(Min('timestamp'))
-	time_newest = packets_all.aggregate(Max('timestamp'))	
+	# Filter options from the POST request
+	f_interval = ""
+	f_ingress = ""
+	f_egress = ""
+	f_source_port = ""
 
-	# Distinct MAC source addresses of outgoing traffic
-	source_macs = packets_all.order_by().values('mac_src').distinct()
+	# If the filter has been applied, query flows according to filter options
+	if request.method == 'POST':
+		f_interval = request.POST.get("time_interval", "")
+		f_ingress = request.POST.get("check_ingress", "")
+		f_egress = request.POST.get("check_egress", "")
+		f_source_port = request.POST.get("text_port", "")
+		# Make the filtered query
+		packets_all = Flow.objects.all().order_by('timestamp').filter(source_port=f_source_port)
+	# Else query all flows
+	else:
+		# Filter all packets by filter values
+		packets_all = Flow.objects.all().order_by('timestamp')	# Get packets in ascending order
+
+	# Get Dictionaries of min and max timestamps
+	time_oldest = packets_all.aggregate(Min('timestamp'))["timestamp__min"]
+	time_newest = packets_all.aggregate(Max('timestamp'))["timestamp__max"]
+
+	bytes_downloaded = packets_all.aggregate(Sum('bytes_size'))
+	bytes_uploaded = packets_all.aggregate(Sum('bytes_size'))
+
+	# Get a List of distinct MAC source addresses of outgoing traffic	
+	source_macs = packets_all.order_by().values_list('mac_src', flat=True).distinct()
+
+	macs_bytes = [] # List of bytes sent for each source MAC
+
+	for mac in source_macs:
+		# Get Dictionary of sent bytes of each source mac address
+		num = packets_all.filter(mac_src=mac).aggregate(Sum('bytes_size'))
+		macs_bytes.append(num["bytes_size__sum"])
 
 	# Protocol counts
 	tcp_count = Flow.objects.extra(where=["protocol=6"]).count		
 	udp_count = Flow.objects.extra(where=["protocol=17"]).count
+
+
+
+
+
+
+
+	#if request.method == 'POST':
+	#	form = TestForm(request.POST)
+	#else:
+	#	form = TestForm()
 
 	context = {'packets_list': packets_all,
 				'time_oldest': time_oldest,
@@ -27,25 +69,36 @@ def index(request):
 				'source_macs': source_macs,
 				'tcp_count': tcp_count,
 				'udp_count': udp_count,
+				'macs_bytes': macs_bytes,
+				'bytes_downloaded': bytes_downloaded,
+				'bytes_uploaded': bytes_uploaded,
+				#'form': form,
+				'f_interval': f_interval,
+				'f_ingress': f_ingress,
+				'f_egress': f_egress,
+				'f_source_port': f_source_port,
 				}
+
+
+
 	return render(request, 'visualise/index.html', context)	
 
 
 
+def filter(request):
+	if request.method == 'POST':
+		form = FilterForm(request.POST)
+		if form.is_valid():
+			# Redirect to the url /visualise/filter/
+			return HttpResponseRedirect('/visualise/')
+	else:
+		form = FilterForm()
 
-def getProtocol(request):
-	response_data = HttpResponse()
-	response_data['a1'] = 'value1'
-	response_data['a2'] = 'value2'
-	p = Flow.objects.get(id=1)
-	context_dict['packet'] = p
-	return render_to_response('visualise/index.html', context_dict, context)
+	# Render the view index.html
+	return render(request, 'visualise/index.html', {'form': form})		
+
+
 
 
 def tt(request):
 	return render(request, 'visualise/tt.html')
-
-
-def detail(request, protocol_id):
-    protocol = get_object_or_404(Protocol, pk=protocol_id)
-    return render(request, 'visualise/detail.html', {'protocol': protocol})

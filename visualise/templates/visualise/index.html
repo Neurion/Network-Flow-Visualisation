@@ -12,9 +12,10 @@
 
 var timelineData = [];
 var sourceMACAddresses = [];
+var sourceMACBytes = [];
 
-var timeOldest = "{{ time_oldest.timestamp__min }}"*1000;
-var timeNewest = "{{ time_newest.timestamp__max }}"*1000;
+var timeOldest = "{{ time_oldest }}"*1000;
+var timeNewest = "{{ time_newest }}"*1000;
 //console.log("\n\n\nTimeline");
 //console.log("Time oldest:"+timeOldest);
 //console.log("Time newest:"+timeNewest);
@@ -33,6 +34,8 @@ var udpCount = "{{ udp_count }}";
 
 var bytesDownloaded = "{{ bytes_downloaded }}";
 var bytesUploaded = "{{ bytes_uploaded }}";
+console.log(bytesDownloaded);
+console.log(bytesUploaded);
 //console.log("\n\n\nUsage:");
 //console.log("downloaded:"+bytesDownloaded);
 //console.log("uploaded:"+bytesUploaded);
@@ -46,34 +49,33 @@ var bytesUploaded = "{{ bytes_uploaded }}";
     </div> <!-- Close title -->
 
     <div id="filter_container">        
-
         <h2>Filter</h2>
         <br><br>
-        <form action="" method="post">
-            <span class="bold">Device:</span><br>
-            <select id="select_mac" ></select>
+        <form action="/visualise/" method="POST">
+
+            {% csrf_token %}
+
+            <span class="bold">Device:(to do)</span><br>
+            <select id="select_mac" ></select>            
             <br><br>
-            <span class="bold">Time period:</span><br>
-            Previous:
-            <select id="select_day_from" >
-                <option>1</option>
-                <option>...</option>
-                <option>31</option>
-            </select> 
-            days    
+            <span class="bold">Time period:(to do)</span><br>
+            <!--{{ filter_form }}-->
+            <input type="radio" name="time_interval" value="daily">Daily</input>
+            <input type="radio" name="time_interval" value="weekly" checked="true">Weekly</input>
+            <input type="radio" name="time_interval" value="monthly">Monthly</input>
             <!-- Direction -->
             <br><br>
-            <span class="bold">Direction:</span><br>
+            <span class="bold">Direction:(to do)</span><br>
             Ingress:
-            <input id="check_ingress" type="checkbox" checked="true">  
+            <input id="check_ingress" name="check_ingress" type="checkbox" checked="true">  
             Egress:
-            <input id="check_egress" type="checkbox" checked="true">          
+            <input id="check_egress" name="check_egress" type="checkbox" checked="true">          
             <!-- Ports -->
             <br><br>
             <span class="bold">Port:</span>
-            <input id="btn_submit" type="text" placeholder="0-65535">
+            <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
             <br><br>
-            <input id="btn_submit" type="submit" value="Apply">
+            <input id="btn_submit" name="btn_submit" type="submit" value="Apply">
         </form>  
     </div>    
 
@@ -86,7 +88,7 @@ var bytesUploaded = "{{ bytes_uploaded }}";
     <div class="tiles_container">
 
         <div class="tile">
-            <h2>Protocol</h2><br>
+            <h2>Common Protocols</h2><br>
             <div id="protocol_container_legend"></div>
             <div id="protocol_container_chart"></div>
         </div>
@@ -98,7 +100,7 @@ var bytesUploaded = "{{ bytes_uploaded }}";
         </div>
 
         <div class="tile">
-            <h2>Geolocation</h2><br>
+            <h2>Geolocation(to do)</h2><br>
             Top 10 countries
             <ol>
                 <li>New Zealand</li>
@@ -110,31 +112,66 @@ var bytesUploaded = "{{ bytes_uploaded }}";
 
     </div>
 
-    <br>
-    
 
+    <div id="flows_table">
+        <!-- Table header -->
+        <div class="row">
+            <div class="cell">Device MAC</div>
+            <div class="cell">Application</div>
+            <div class="cell">Downloaded</div>
+        </div>
+        <!-- Data -->
+    </div>
+
+    <br>
 
     <div id="junk">
         {{ tcp_count }} tcp packets<br>
         {{ udp_count }} udp packets<br>
 
-        {% for a in source_macs %}            
+        {% if f_source_port %}
             <script>
-                // Populate MAC address select box
-                sourceMACAddresses.push("{{ a.mac_src }}");
-            </script>                
-        {% endfor %}
+                console.log("{{ f_source_port }}");
+            </script>        
+        {% endif %}
 
+        {% if macs_bytes %}
+            <script>
+                console.log("{{ macs_bytes }}");
+            </script>        
+            {% for mac in macs_bytes %} 
+                <script>
+                    //console.log("{{ mac }}");
+                    sourceMACBytes.push("{{ mac }}");
+                </script>
+            {% endfor %}
+        {% endif %}
+
+
+        {% if source_macs %}
+            <script>
+                //console.log("{{ source_macs }}");
+            </script>
+            {% for a in source_macs %}            
+                <script>
+                    // Populate MAC address select box
+                    sourceMACAddresses.push("{{ a }}");
+                </script>                
+            {% endfor %}
+        {% endif %}
+        
         Packets:
             {% if packets_list %}
                 {% for packet in packets_list %}
 
                     <script>
                         //console.log({{ packet.timestamp }});
-                        var t = [{{ packet.timestamp }}, {{ packet.bytes_size }}];
+                        var t = [Math.floor({{ packet.timestamp }}), {{ packet.bytes_size }}];
                         //console.log(t);
                         timelineData.push(t);
                     </script>
+
+                    <!--
                     <ul>                 
                     <li>{{ packet.timestamp }}</li>
                     <li>{{ packet.bytes_size }}</li>
@@ -144,14 +181,18 @@ var bytesUploaded = "{{ bytes_uploaded }}";
                     <li>{{ packet.ip_dst }}:{{ packet.destination_port }}</li>
                     <li>{{ packet.protocol }}</li>
                     </ul>
+                    -->
+
                     <script>
                         var p1 = {{ packet.protocol }};
                         protocols_distribution.push(p1);
                     </script>
+
                 {% endfor %}
             {% else %}
                 <p>No packets are available.</p>
             {% endif %}
+            
     </div>
     
 

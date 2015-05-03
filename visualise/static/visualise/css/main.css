@@ -43,6 +43,12 @@ h1, h2, h3{
 	float: left;	
 }
 
+.horizontal_bar{
+	display: block;
+	width: 100%;
+	height: 3px;
+}
+
 #container{
 	display: block;
 	width: 80%;
@@ -62,7 +68,7 @@ h1, h2, h3{
 	#filter_container{
 		display: inline-block;
 		width: 19%;		
-		height: 68%;
+		height: 75%;
 		padding: 1% 0%;		
 		padding-left: 1%;
 		margin-right: 5px;		
@@ -87,12 +93,18 @@ h1, h2, h3{
 
 		#filter_container #select_mac option{
 			height: 20px;
-		}
+		}	
 
 		#filter_container #btn_submit{
 			width: 100px;
 			height: 40px;
 		}
+
+		#filter_container #timeline ul li{
+			display: inline-block;
+			text-decoration: none;
+			float: left;
+		}	
 
 	#overview{
 		display: inline-block;	
@@ -182,7 +194,41 @@ h1, h2, h3{
 			.tile li{
 				text-align: left;
 				width: 150px;	
-			}				
+			}	
+
+	#flows_table{
+		display: block;	
+		width: 77%;
+		height: 50%;
+		padding: 1%;
+		float: right;
+		background-color: #E9E7E7;
+	}	
+
+		#flows_table .row:first-child{
+			font-weight: bold;
+		}
+
+		#flows_table .row:first-child .cell:first-child{
+			/*background-color: yellow;*/
+		}
+
+		#flows_table .row{
+			display: block;	
+			width: 100%;	
+			height: 40px;
+			background-color: white;
+		}		
+
+		#flows_table .cell{
+			display: inline-block;	
+			width: 200px;	
+			height: 100%;			
+			float: left;
+			background-color: white;
+			text-align: center;
+		}	
+
 
 #junk{
 	display: inline-block;
