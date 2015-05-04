@@ -3,7 +3,6 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.db.models import Max, Min, Sum
 
 from visualise.models import Flow
-from visualise.forms import TestForm, FilterForm
 
 import json
 
@@ -18,17 +17,21 @@ def index(request):
 	f_egress = ""
 	f_source_port = ""
 
+	isValid = False;
+
 	# If the filter has been applied, query flows according to filter options
 	if request.method == 'POST':
 		f_interval = request.POST.get("time_interval", "")
 		f_ingress = request.POST.get("check_ingress", "")
 		f_egress = request.POST.get("check_egress", "")
 		f_source_port = request.POST.get("text_port", "")
-		# Make the filtered query
-		packets_all = Flow.objects.all().order_by('timestamp').filter(source_port=f_source_port)
+		if isNum(f_source_port):
+			isValid = True;
+			# Make the filtered query
+			packets_all = Flow.objects.all().order_by('timestamp').filter(source_port=f_source_port)
+
 	# Else query all flows
-	else:
-		# Filter all packets by filter values
+	if isValid is False:
 		packets_all = Flow.objects.all().order_by('timestamp')	# Get packets in ascending order
 
 	# Get Dictionaries of min and max timestamps
@@ -85,20 +88,10 @@ def index(request):
 
 
 
-def filter(request):
-	if request.method == 'POST':
-		form = FilterForm(request.POST)
-		if form.is_valid():
-			# Redirect to the url /visualise/filter/
-			return HttpResponseRedirect('/visualise/')
-	else:
-		form = FilterForm()
 
-	# Render the view index.html
-	return render(request, 'visualise/index.html', {'form': form})		
-
-
-
-
-def tt(request):
-	return render(request, 'visualise/tt.html')
+def isNum(data):
+	try:
+		int(data)
+		return True
+	except ValueError:
+		return False

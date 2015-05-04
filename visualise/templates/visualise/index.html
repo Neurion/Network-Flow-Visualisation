@@ -10,9 +10,7 @@
 
 <script>
 
-var timelineData = [];
-var sourceMACAddresses = [];
-var sourceMACBytes = [];
+
 
 var timeOldest = "{{ time_oldest }}"*1000;
 var timeNewest = "{{ time_newest }}"*1000;
@@ -45,62 +43,106 @@ console.log(bytesUploaded);
 <div id="container">    
 
     <div id="title">
-    <h1>Network Flow Visualisation</h1>
+        <h1>Network Flow Visualisation</h1>
     </div> <!-- Close title -->
 
-    <div id="filter_container">        
-        <h2>Filter</h2>
-        <br><br>
-        <form action="/visualise/" method="POST">
+    <div id="left">
+        <div id="filter_container">        
+            <h2>Filter</h2>
+            <hr>
+            <form action="/" method="POST">
 
-            {% csrf_token %}
+                {% csrf_token %}
 
-            <span class="bold">Device:(to do)</span><br>
-            <select id="select_mac" ></select>            
-            <br><br>
-            <span class="bold">Time period:(to do)</span><br>
-            <!--{{ filter_form }}-->
-            <input type="radio" name="time_interval" value="daily">Daily</input>
-            <input type="radio" name="time_interval" value="weekly" checked="true">Weekly</input>
-            <input type="radio" name="time_interval" value="monthly">Monthly</input>
-            <!-- Direction -->
-            <br><br>
-            <span class="bold">Direction:(to do)</span><br>
-            Ingress:
-            <input id="check_ingress" name="check_ingress" type="checkbox" checked="true">  
-            Egress:
-            <input id="check_egress" name="check_egress" type="checkbox" checked="true">          
-            <!-- Ports -->
-            <br><br>
-            <span class="bold">Port:</span>
-            <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
-            <br><br>
-            <input id="btn_submit" name="btn_submit" type="submit" value="Apply">
-        </form>  
-    </div>    
+                <span class="bold">Device:(to do)</span><br>
+                <select id="select_mac" ></select>            
+                <br><br>
+                <span class="bold">Time period:(to do)</span><br>
+                <!--{{ filter_form }}-->
+                {% if f_interval %}
 
-    <div id="overview">
-        <h1>Overview</h1>
-        <div id="overview_container_legend"></div>
-        <div id="overview_container_chart"></div>
-    </div> <!-- Close overview -->
+                    <script>
+                        f_interval = "{{ f_interval }}";
+                    </script>
+                    
+                    {% if f_interval == "daily" %}
+                        <input type="radio" name="time_interval" value="daily" checked="true">Daily</input>
+                    {% else %}
+                        <input type="radio" name="time_interval" value="daily">Daily</input>     
+                    {% endif %}
 
-    <div class="tiles_container">
 
-        <div class="tile">
-            <h2>Common Protocols</h2><br>
-            <div id="protocol_container_legend"></div>
-            <div id="protocol_container_chart"></div>
-        </div>
+                    {% if f_interval == "weekly" %}
+                        <input type="radio" name="time_interval" value="weekly" checked="true">Weekly</input>
+                    {% else %}
+                        <input type="radio" name="time_interval" value="weekly">Weekly</input>     
+                    {% endif %}
+                    
 
-        <div class="tile">
-            <h2>Usage</h2><br>
-            <div id="usage_container_legend"></div>
+                    {% if f_interval == "monthly" %}
+                        <input type="radio" name="time_interval" value="monthly" checked="true">Monthly</input>
+                    {% else %}
+                        <input type="radio" name="time_interval" value="monthly">Monthly</input>     
+                    {% endif %}
+
+                {% else %}
+
+                    <input type="radio" name="time_interval" value="daily" checked="true">Daily</input>
+                    <input type="radio" name="time_interval" value="weekly">Weekly</input>
+                    <input type="radio" name="time_interval" value="monthly">Monthly</input>
+
+                {% endif %}
+                <!-- Direction -->
+                <br><br>
+                <span class="bold">Direction:(to do)</span><br>
+                Ingress:
+                <input id="check_ingress" name="check_ingress" type="checkbox" checked="true">  
+                Egress:
+                <input id="check_egress" name="check_egress" type="checkbox" checked="true">          
+                <!-- Ports -->
+                <br><br>
+                <span class="bold">Port:</span>
+                <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
+                <br><br>
+                <input id="btn_submit" name="btn_submit" type="submit" value="Apply">
+            </form>  
+        </div><!-- Close filter_container -->
+
+    </div><!-- Close left -->
+
+    <div id="middle">
+
+        <div id="timeline">
+            <div id="timeline_container_chart"></div>
+        </div><!-- Close timeline --> 
+
+        <div id="flows_table">
+            <!-- Table header -->
+            <div class="row">
+                <div class="cell">Device MAC</div>
+                <div class="cell">Application</div>
+                <div class="cell">Downloaded</div>
+                <div class="cell">Uploaded</div>
+            </div>
+            <!-- Data -->
+        </div><!-- Close flows_table -->  
+
+    </div><!-- Close middle -->  
+
+    <div id="right">
+
+        <div id="usage">
+            <div class="header">Usage</div>             
             <div id="usage_container_chart"></div>
         </div>
 
-        <div class="tile">
-            <h2>Geolocation(to do)</h2><br>
+        <div id="protocols">
+            <div class="header">Common Protocols</div>                  
+            <div id="protocol_container_chart"></div>
+        </div>
+
+        <div class="geolocation">
+            <div class="header">Geolocation(to do)</div>
             Top 10 countries
             <ol>
                 <li>New Zealand</li>
@@ -108,26 +150,24 @@ console.log(bytesUploaded);
                 <li>UK</li>
                 <li>USA</li>
             </ol>  
-        </div>
+        </div><!-- Close geolocation -->
 
-    </div>
+    </div><!-- Close right -->
 
 
-    <div id="flows_table">
-        <!-- Table header -->
-        <div class="row">
-            <div class="cell">Device MAC</div>
-            <div class="cell">Application</div>
-            <div class="cell">Downloaded</div>
-        </div>
-        <!-- Data -->
-    </div>
+
+
+
+
+
+
+
+
+
 
     <br>
 
     <div id="junk">
-        {{ tcp_count }} tcp packets<br>
-        {{ udp_count }} udp packets<br>
 
         {% if f_source_port %}
             <script>
@@ -160,7 +200,6 @@ console.log(bytesUploaded);
             {% endfor %}
         {% endif %}
         
-        Packets:
             {% if packets_list %}
                 {% for packet in packets_list %}
 
@@ -195,13 +234,6 @@ console.log(bytesUploaded);
             
     </div>
     
-
-
-    <script>
-        //console.log(sourceMACAddresses);
-
-    </script>
-
     <!--
         {% if protocols_list %}
         {% for protocol in protocols_list %}
@@ -214,24 +246,14 @@ console.log(bytesUploaded);
             <p>No protocols are available.</p>
         {% endif %}
     -->
-    
 
-</div>  <!-- Close container -->
+</div><!-- Close container -->
 
 
 
 
 <!--
-
-
     Things to do:
-
-        Network activity
-        Device history/activity      
-        Filters
         IP address location
         Use Libprotoident for application inspection?
-
-
-
 -->

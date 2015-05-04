@@ -5,11 +5,19 @@ var ar = new Array("a","b"); <==> var ar = ["a","b"];
 
 /* Global data for various graphs */
 var protocols_distribution = [];
+var timelineData = [];
+var sourceMACAddresses = [];
+var sourceMACBytes = [];
+
 
 var PROTO_TCP = 6;
 var PROTO_UDP = 17;
 
-
+// Default filter values
+var f_interval = "daily";
+var INTERVAL = {"daily" : 86400000,
+				"weekly" : 604800000,
+				"monthly" : 2628000000};
 
 $(document).ready(function(){
 	console.log("ready");
@@ -74,7 +82,7 @@ function populateFlowTable(macs, bytes){
 		$row = $('<div></div>').addClass("row");
 		$c1 = $('<div></div>').addClass("cell").html(macs[i]);
 		$c2 = $('<div></div>').addClass("cell").html("(to do)");
-		$c3 = $('<div></div>').addClass("cell").html((bytes[i]/1000).toFixed(2)+" MB");
+		$c3 = $('<div></div>').addClass("cell").html((bytes[i]/1000000).toFixed(2)+" MB");
 		$row.append($c1).append($c2).append($c3);
 		$("#flows_table").append($bar).append($row);
 	}
@@ -83,20 +91,52 @@ function populateFlowTable(macs, bytes){
 
 
 
-function loadTimeline(dat, timeInterval){
-	console.log(timeInterval);
+function loadTimeline(dat){
+
 	// Date, data downloaded
-	//var data = [[1427621192, 10], [1427622192, 34], [1427623192, 13], [1427624192, 3], [1427625192, 377], [1427626192, 43]];
-
-	//var data = [[1427621192, 10], [1427622192, 34]];
-
-	//console.log(dat);
+	var data = [[1427621192, 10], [1427622192, 34], [1427623192, 13], [1427624192, 3], [1427625192, 377], [1427626192, 43]];
 
 	data = dat;
 
+	var availableFrom, availableTo;
+	var date = new Date();
+	var msNow = date.getTime();
+	var buckets;
+	var msStart, msEnd;
+
+
+	var timeLabel = "Day";
+	var tickSize = [1, "hour"]; // tick every hour
+
+	console.log("Interval:"+f_interval);
+
+	var msPerInterval;
+	switch(f_interval){
+		case "daily":
+			msPerInterval = INTERVAL["daily"];
+			break;
+		case "weekly":
+			msPerInterval = INTERVAL["weekly"];
+			tickSize = [1, "day"]; // tick every day
+			break;
+		case "monthly":
+			msPerInterval = INTERVAL["monthly"];
+			tickSize = [1, "day"]; // tick every day
+			break;
+	}
+
+	msStart = msNow - (msNow % msPerInterval);
+	msEnd = msStart + msPerInterval;
+
+	console.log("from:"+msStart);
+	console.log("to:"+msEnd);
+
+	console.log(dat[0]);
+	console.log(dat[dat.length-1]);
+
+
 	var dataset = [
-	    {
-	        //label: "testing...",        
+	    {     
 	        data: data,
 	        color: "#FF0000",
 	        points: {
@@ -109,7 +149,6 @@ function loadTimeline(dat, timeInterval){
 	];
 
 	var options = {	
-		label: "testing...",
 		series: {			
 		    shadowSize: 5,	
 		    lines:{
@@ -121,24 +160,20 @@ function loadTimeline(dat, timeInterval){
 		},
 	    xaxis: {			
 		    mode: "time",
-		    color: "black",
-		    position: "bottom",        
-		    axisLabel: "Day",
-		    axisLabelUseCanvas: true,
-		    axisLabelFontSizePixels: 12,
-		    axisLabelFontFamily: 'Verdana, Arial',
-    		axisLabelPadding: 5	,	    
-		    timeformat: "%d/%m",
+		    color: "black", 	    
+            axisLabel: timeLabel,
+            axisLabelUseCanvas: false,	    
+            mode: "time",
+    		tickSize: tickSize, // tick every hour
+            min: msStart,
+            max: msEnd,
 		},
 	    yaxis: {			
 		    color: "black",
-		    position: "left",        
-		    axisLabel: "Downloaded",
-		    axisLabelUseCanvas: true,
-		    axisLabelFontSizePixels: 12,
-		    axisLabelFontFamily: 'Verdana, Arial',
-    		axisLabelPadding: 5	,	    
-		    timeformat: "%d/%m",
+		    position: "left",            
+            axisLabel: 'Downloaded (MB)',
+            axisLabelUseCanvas: false,
+            min: 0,            	    
 		},				
 	    grid: {
 	        //hoverable: true,
@@ -148,7 +183,7 @@ function loadTimeline(dat, timeInterval){
 	};
 
 	// Plot the overview pie chart
-	var plot = $.plot($("#overview_container_chart"), dataset , options);	
+	var plot = $.plot($("#timeline_container_chart"), dataset , options);	
 }
 
 
@@ -215,7 +250,7 @@ function loadUsageChart(){
 	};
 
 	// Plot the usage pie chart
-	var plot = $.plot($("#usage_container_chart"),data , options);		
+	var plot = $.plot($("#usage_container_chart"), data , options);		
 }
 
 
