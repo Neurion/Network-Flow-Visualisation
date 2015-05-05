@@ -56,16 +56,6 @@ def index(request):
 	udp_count = Flow.objects.extra(where=["protocol=17"]).count
 
 
-
-
-
-
-
-	#if request.method == 'POST':
-	#	form = TestForm(request.POST)
-	#else:
-	#	form = TestForm()
-
 	context = {'packets_list': packets_all,
 				'time_oldest': time_oldest,
 				'time_newest': time_newest,

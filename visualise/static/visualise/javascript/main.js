@@ -7,15 +7,16 @@ var ar = new Array("a","b"); <==> var ar = ["a","b"];
 var protocols_distribution = [];
 var timelineData = [];
 var sourceMACAddresses = [];
-var sourceMACBytes = [];
-
+var sourceMACDownloadedBytes = [];
+var sourceMACUploadedBytes = [];
 
 var PROTO_TCP = 6;
 var PROTO_UDP = 17;
 
 // Default filter values
 var f_interval = "daily";
-var INTERVAL = {"daily" : 86400000,
+var INTERVAL = {"hourly" : 3600000,
+				"daily" : 86400000,
 				"weekly" : 604800000,
 				"monthly" : 2628000000};
 
@@ -56,16 +57,18 @@ $(document).ready(function(){
 	loadUsageChart();
 
 	// Filters
-	populateMACAddresses(sourceMACAddresses);
+	populateMACAddressesSelectBox(sourceMACAddresses);
 
-	populateFlowTable(sourceMACAddresses, sourceMACBytes);
+	populateIntervalSelectBox();
+
+	populateFlowTable(sourceMACAddresses, sourceMACDownloadedBytes, sourceMACUploadedBytes);
 });
 
 
 
 
 
-function populateMACAddresses(macs){
+function populateMACAddressesSelectBox(macs){
 	var i;
 	$("#select_mac").append($("<option></option>").attr("value", "all_devices").text("(All Devices)")); 
 	for(i = 0; i < macs.length; ++i)
@@ -74,16 +77,28 @@ function populateMACAddresses(macs){
 
 
 
+function populateIntervalSelectBox(){
+	var i;
+	$("#select_interval").append($("<option></option>").attr("value", "hourly").text("Hourly")); 
+	$("#select_interval").append($("<option></option>").attr("value", "daily").text("Daily"));
+	$("#select_interval").append($("<option></option>").attr("value", "weekly").text("Weekly")); 
+	$("#select_interval").append($("<option></option>").attr("value", "monthly").text("Monthly")); 
 
-function populateFlowTable(macs, bytes){
+	$("#select_interval").attr("name", "time_interval").val(f_interval);
+}
+
+
+
+function populateFlowTable(macs, downloadedBytes, uploadedBytes){
 	var i;
 	for(i = 0; i < macs.length; ++i){
 		$bar = $('<div></div>').addClass("horizontal_bar");
 		$row = $('<div></div>').addClass("row");
 		$c1 = $('<div></div>').addClass("cell").html(macs[i]);
 		$c2 = $('<div></div>').addClass("cell").html("(to do)");
-		$c3 = $('<div></div>').addClass("cell").html((bytes[i]/1000000).toFixed(2)+" MB");
-		$row.append($c1).append($c2).append($c3);
+		$c3 = $('<div></div>').addClass("cell").html((downloadedBytes[i]/1000000).toFixed(2)+" MB");
+		$c4 = $('<div></div>').addClass("cell").html((uploadedBytes[i]/1000000).toFixed(2)+" MB");
+		$row.append($c1).append($c2).append($c3).append($c4);
 		$("#flows_table").append($bar).append($row);
 	}
 }
@@ -112,6 +127,9 @@ function loadTimeline(dat){
 
 	var msPerInterval;
 	switch(f_interval){
+		case "hourly":
+			msPerInterval = INTERVAL["hourly"];
+			break;		
 		case "daily":
 			msPerInterval = INTERVAL["daily"];
 			break;
@@ -195,7 +213,7 @@ function loadTimeline(dat){
 
 function loadProtocolChart(){
 
-	var data = [ 
+	var data = [
 		{ label: "TCP", data: tcpCount },
 		{ label: "UDP", data: udpCount }
 	];
@@ -203,7 +221,16 @@ function loadProtocolChart(){
 	var options = {
 	    series: {
 	        pie: {
-	            show: true,	 		                 
+	            show: true,	
+	            radius: 1,
+	            label: {
+	            	show: true,
+	                radius: 2/3,
+	                formatter: function(label, point){
+	                	return(point.percent.toFixed(2) + '%');
+	                },
+	                threshold: 0.1,            	
+		        } 		                 
 	        }
 	    },
 	    grid: {
@@ -211,8 +238,8 @@ function loadProtocolChart(){
 	        //clickable: true,
 	    },
 	    legend: {	    	
-	        show: true,
-	        container:$("#protocol_container_legend"),
+	        show: false,
+	        //container:$("#protocol_container_legend"),
 	    }	        
 	};
 
@@ -245,7 +272,7 @@ function loadUsageChart(){
 	    },
 	    legend: {
 	        show: true,
-	        container:$("#usage_container_legend"),
+	        //container:$("#usage_container_legend"),
 	    }	        
 	};
 

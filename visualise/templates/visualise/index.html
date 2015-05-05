@@ -56,51 +56,24 @@ console.log(bytesUploaded);
 
                 <span class="bold">Device:(to do)</span><br>
                 <select id="select_mac" ></select>            
-                <br><br>
-                <span class="bold">Time period:(to do)</span><br>
+                <br><br><br>
+                <span class="bold">Time period:</span><br>
+                <select id="select_interval" ></select> 
                 <!--{{ filter_form }}-->
                 {% if f_interval %}
-
                     <script>
                         f_interval = "{{ f_interval }}";
                     </script>
-                    
-                    {% if f_interval == "daily" %}
-                        <input type="radio" name="time_interval" value="daily" checked="true">Daily</input>
-                    {% else %}
-                        <input type="radio" name="time_interval" value="daily">Daily</input>     
-                    {% endif %}
-
-
-                    {% if f_interval == "weekly" %}
-                        <input type="radio" name="time_interval" value="weekly" checked="true">Weekly</input>
-                    {% else %}
-                        <input type="radio" name="time_interval" value="weekly">Weekly</input>     
-                    {% endif %}
-                    
-
-                    {% if f_interval == "monthly" %}
-                        <input type="radio" name="time_interval" value="monthly" checked="true">Monthly</input>
-                    {% else %}
-                        <input type="radio" name="time_interval" value="monthly">Monthly</input>     
-                    {% endif %}
-
-                {% else %}
-
-                    <input type="radio" name="time_interval" value="daily" checked="true">Daily</input>
-                    <input type="radio" name="time_interval" value="weekly">Weekly</input>
-                    <input type="radio" name="time_interval" value="monthly">Monthly</input>
-
                 {% endif %}
                 <!-- Direction -->
-                <br><br>
+                <br><br><br>
                 <span class="bold">Direction:(to do)</span><br>
                 Ingress:
                 <input id="check_ingress" name="check_ingress" type="checkbox" checked="true">  
                 Egress:
                 <input id="check_egress" name="check_egress" type="checkbox" checked="true">          
                 <!-- Ports -->
-                <br><br>
+                <br><br><br>
                 <span class="bold">Port:</span>
                 <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
                 <br><br>
@@ -179,10 +152,11 @@ console.log(bytesUploaded);
             <script>
                 console.log("{{ macs_bytes }}");
             </script>        
-            {% for mac in macs_bytes %} 
+            {% for b in macs_bytes %} 
                 <script>
-                    //console.log("{{ mac }}");
-                    sourceMACBytes.push("{{ mac }}");
+                    //console.log("{{ b }}");
+                    sourceMACDownloadedBytes.push("{{ b }}");
+                    sourceMACUploadedBytes.push("{{ b }}"-0.5*"{{ b }}");
                 </script>
             {% endfor %}
         {% endif %}
