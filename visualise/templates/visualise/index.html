@@ -7,10 +7,51 @@
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.axislabels.js' %}"></script>
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.pie.js' %}"></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/main.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/yqlgeo.js' %}"></script>
+
+{% if f_interval %}
+    <script>
+        f_interval = "{{ f_interval }}";
+    </script>
+{% endif %}
+
+{% if macs_bytes %}
+    <script>
+        console.log("{{ macs_bytes }}");
+    </script>        
+    {% for b in macs_bytes %} 
+        <script>
+            //console.log("{{ b }}");
+            sourceMACDownloadedBytes.push("{{ b }}");
+            sourceMACUploadedBytes.push("{{ b }}"-0.5*"{{ b }}");
+        </script>
+    {% endfor %}
+{% endif %}
+
+{% if source_macs %}
+    {% for a in source_macs %}            
+        <script>
+            // Populate MAC address select box
+            sourceMACAddresses.push("{{ a }}");
+        </script>                
+    {% endfor %}
+{% endif %}
+
+{% if packets_list %}
+    {% for packet in packets_list %}
+        <script>
+            var t = [Math.floor({{ packet.timestamp }}), {{ packet.bytes_size }}];
+            timelineData.push(t);
+            var p1 = {{ packet.protocol }};
+            protocols_distribution.push(p1);
+        </script>
+
+    {% endfor %}
+{% else %}
+    <p>No data is available.</p>
+{% endif %}
 
 <script>
-
-
 
 var timeOldest = "{{ time_oldest }}"*1000;
 var timeNewest = "{{ time_newest }}"*1000;
@@ -42,78 +83,99 @@ console.log(bytesUploaded);
 
 <div id="container">    
 
-    <div id="title">
-        <h1>Network Flow Visualisation</h1>
-    </div> <!-- Close title -->
+    <div id="top_1">
 
-    <div id="left">
-        <div id="filter_container">        
-            <h2>Filter</h2>
-            <hr>
-            <form action="/" method="POST">
+        <span id="title">        
+            Network Flow Visualisation
+        </span>
 
-                {% csrf_token %}
+        <div id="m_devices">            
+            Devices            
+            <div id="m_devices_list"></div>         
+        </div>     
 
-                <span class="bold">Device:(to do)</span><br>
-                <select id="select_mac" ></select>            
-                <br><br><br>
-                <span class="bold">Time period:</span><br>
-                <select id="select_interval" ></select> 
-                <!--{{ filter_form }}-->
-                {% if f_interval %}
-                    <script>
-                        f_interval = "{{ f_interval }}";
-                    </script>
-                {% endif %}
-                <!-- Direction -->
-                <br><br><br>
-                <span class="bold">Direction:(to do)</span><br>
-                Ingress:
-                <input id="check_ingress" name="check_ingress" type="checkbox" checked="true">  
-                Egress:
-                <input id="check_egress" name="check_egress" type="checkbox" checked="true">          
-                <!-- Ports -->
-                <br><br><br>
-                <span class="bold">Port:</span>
-                <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
-                <br><br>
-                <input id="btn_submit" name="btn_submit" type="submit" value="Apply">
-            </form>  
-        </div><!-- Close filter_container -->
+        <span class="divider">|</span>
 
-    </div><!-- Close left -->
+        <div id="m_applications">            
+            Applications            
+            <div id="m_applications_list">
+                <div class="element">Skype</div>
+                <div class="element">Bittorrent</div>
+                <div class="element">Youtube</div>
+            </div>         
+        </div>  
 
-    <div id="middle">
+    </div>
 
-        <div id="timeline">
-            <div id="timeline_container_chart"></div>
-        </div><!-- Close timeline --> 
+    <div id="top_2">
 
-        <div id="flows_table">
-            <!-- Table header -->
-            <div class="row">
-                <div class="cell">Device MAC</div>
-                <div class="cell">Application</div>
-                <div class="cell">Downloaded</div>
-                <div class="cell">Uploaded</div>
-            </div>
-            <!-- Data -->
-        </div><!-- Close flows_table -->  
+        <div id="geolocation">         
+            <span>Geolocation</span>
 
-    </div><!-- Close middle -->  
+        </div>
 
-    <div id="right">
-
-        <div id="usage">
-            <div class="header">Usage</div>             
+        <div id="usage">         
             <div id="usage_container_chart"></div>
         </div>
 
         <div id="protocols">
-            <div class="header">Common Protocols</div>                  
             <div id="protocol_container_chart"></div>
-        </div>
+        </div>  
+    </div>
 
+    <div id="top_3">
+
+        <div id="filter_container">                  
+            <form action="/" method="POST">
+                {% csrf_token %}          
+               
+                <!-- Direction -->
+                <span class="bold">Direction:(to do)</span>
+                <label for="check_ingress">Ingress:</label>
+                <input id="check_ingress" name="check_ingress" type="checkbox" checked="true">
+                <label for="check_egress">Egress:</label>
+                <input id="check_egress" name="check_egress" type="checkbox" checked="true">
+                
+                <!-- Ports -->
+                <span class="bold">Port:</span>
+                <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
+                
+                <!-- Submit -->
+                <input id="btn_submit" name="btn_submit" type="submit" value="Apply">
+
+            </form>  
+
+            <hr />
+
+        </div><!-- Close filter_container -->
+
+    </div><!-- Close left -->
+
+    <div id="top_4">
+
+        <div id="timeline_container">        
+            <select id="select_interval" name="time_interval"></select>
+            <label for="time_interval">Display Latest:</label>
+            <div id="timeline_container_chart"></div>
+        </div><!-- Close timeline --> 
+
+        <div id="flows_table_container">
+            <div id="flows_table">
+                <div id="header"><!-- Table header -->
+                    <div class="cell">Device MAC</div>
+                    <div class="cell">Application</div>
+                    <div class="cell">Downloaded</div>
+                    <div class="cell">Uploaded (to do)</div>
+                </div>
+                <!-- Data -->
+            </div>            
+        </div><!-- Close flows_table -->  
+
+    </div><!-- Close middle -->  
+
+    <div id="top_5">
+
+        <!--
         <div class="geolocation">
             <div class="header">Geolocation(to do)</div>
             Top 10 countries
@@ -123,111 +185,9 @@ console.log(bytesUploaded);
                 <li>UK</li>
                 <li>USA</li>
             </ol>  
-        </div><!-- Close geolocation -->
+        </div><!-- Close geolocation
+        -->
 
     </div><!-- Close right -->
 
-
-
-
-
-
-
-
-
-
-
-
-    <br>
-
-    <div id="junk">
-
-        {% if f_source_port %}
-            <script>
-                console.log("{{ f_source_port }}");
-            </script>        
-        {% endif %}
-
-        {% if macs_bytes %}
-            <script>
-                console.log("{{ macs_bytes }}");
-            </script>        
-            {% for b in macs_bytes %} 
-                <script>
-                    //console.log("{{ b }}");
-                    sourceMACDownloadedBytes.push("{{ b }}");
-                    sourceMACUploadedBytes.push("{{ b }}"-0.5*"{{ b }}");
-                </script>
-            {% endfor %}
-        {% endif %}
-
-
-        {% if source_macs %}
-            <script>
-                //console.log("{{ source_macs }}");
-            </script>
-            {% for a in source_macs %}            
-                <script>
-                    // Populate MAC address select box
-                    sourceMACAddresses.push("{{ a }}");
-                </script>                
-            {% endfor %}
-        {% endif %}
-        
-            {% if packets_list %}
-                {% for packet in packets_list %}
-
-                    <script>
-                        //console.log({{ packet.timestamp }});
-                        var t = [Math.floor({{ packet.timestamp }}), {{ packet.bytes_size }}];
-                        //console.log(t);
-                        timelineData.push(t);
-                    </script>
-
-                    <!--
-                    <ul>                 
-                    <li>{{ packet.timestamp }}</li>
-                    <li>{{ packet.bytes_size }}</li>
-                    <li>{{ packet.mac_src }}</li>
-                    <li>{{ packet.mac_dst }}</li>
-                    <li>{{ packet.ip_src}}:{{ packet.source_port }}</li>        
-                    <li>{{ packet.ip_dst }}:{{ packet.destination_port }}</li>
-                    <li>{{ packet.protocol }}</li>
-                    </ul>
-                    -->
-
-                    <script>
-                        var p1 = {{ packet.protocol }};
-                        protocols_distribution.push(p1);
-                    </script>
-
-                {% endfor %}
-            {% else %}
-                <p>No packets are available.</p>
-            {% endif %}
-            
-    </div>
-    
-    <!--
-        {% if protocols_list %}
-        {% for protocol in protocols_list %}
-            <li><a href="{% url 'visualise:detail' protocol.id %}">{{ protocol.protocol_type }}</a></li>  
-            <script>
-            var p1 = {{ protocol.protocol_type }};
-            </script>
-        {% endfor %}
-        {% else %}
-            <p>No protocols are available.</p>
-        {% endif %}
-    -->
-
 </div><!-- Close container -->
-
-
-
-
-<!--
-    Things to do:
-        IP address location
-        Use Libprotoident for application inspection?
--->
