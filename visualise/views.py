@@ -1,21 +1,38 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.db.models import Max, Min, Sum
-
-from visualise.models import Flow
-
+from django.core import serializers
+from visualise.models import IngressFlow, EgressFlow
 import json
+
+#data = serializers.serialize("json", ret)
+#data = json.dumps(ret)
+
+class INTERVAL():
+	HOURLY = 3600000
+	DAILY = 86400000
+	WEEKLY = 604800000
+	MONTHLY = 2628000000
 
 
 def index(request):
 
-	packets_all = Flow.objects.all().order_by('timestamp')
+	ingress_all = IngressFlow.objects.all().order_by('time_start')
+	egress_all = EgressFlow.objects.all().order_by('time_start')
 
 	# Filter options from the POST request
 	f_interval = ""
 	f_ingress = ""
 	f_egress = ""
 	f_source_port = ""
+
+	# Generic network information
+	n_time_oldest = ""
+	n_time_newest = ""
+	n_bytes_downloaded = ""
+	n_bytes_uploaded = ""
+	#n_device_macs = []
+	n_protocols = {}
 
 	isValid = False;
 
@@ -28,55 +45,113 @@ def index(request):
 		if isNum(f_source_port):
 			isValid = True;
 			# Make the filtered query
-			packets_all = Flow.objects.all().order_by('timestamp').filter(source_port=f_source_port)
+			ingress_all = IngressFlow.objects.all().order_by('time_start').filter(source_port=f_source_port)
 
 	# Else query all flows
 	if isValid is False:
-		packets_all = Flow.objects.all().order_by('timestamp')	# Get packets in ascending order
+		ingress_all = IngressFlow.objects.all()#.order_by('time_start')	# Get packets in ascending order
 
-	# Get Dictionaries of min and max timestamps
-	time_oldest = packets_all.aggregate(Min('timestamp'))["timestamp__min"]
-	time_newest = packets_all.aggregate(Max('timestamp'))["timestamp__max"]
+	n_bytes_downloaded = ingress_all.aggregate(Sum('bytes_in'))
+	n_bytes_uploaded = ingress_all.aggregate(Sum('bytes_in'))
 
-	bytes_downloaded = packets_all.aggregate(Sum('bytes_size'))
-	bytes_uploaded = packets_all.aggregate(Sum('bytes_size'))
+	# Get a List of distinct MAC addresses of outgoing traffic
+	n_device_macs = ingress_all.order_by().values_list('mac_dst', flat=True).distinct()
 
-	# Get a List of distinct MAC source addresses of outgoing traffic	
-	source_macs = packets_all.order_by().values_list('mac_src', flat=True).distinct()
+	#macs_bytes = [] # List of bytes sent for each source MAC
 
-	macs_bytes = [] # List of bytes sent for each source MAC
-
-	for mac in source_macs:
+	#for mac in n_device_macs:
 		# Get Dictionary of sent bytes of each source mac address
-		num = packets_all.filter(mac_src=mac).aggregate(Sum('bytes_size'))
-		macs_bytes.append(num["bytes_size__sum"])
+		#num = ingress_all.filter(mac_src=mac).aggregate(Sum('bytes_in'))
+		#macs_bytes.append(num["bytes_in__sum"])
 
 	# Protocol counts
-	tcp_count = Flow.objects.extra(where=["protocol=6"]).count		
-	udp_count = Flow.objects.extra(where=["protocol=17"]).count
+	n_protocols["TCP"] = IngressFlow.objects.extra(where=['protocol="TCP"']).count #+ EgressFlow.objects.extra(where=['protocol="TCP"']).count
+	n_protocols["UDP"] = IngressFlow.objects.extra(where=['protocol="UDP"']).count #+ EgressFlow.objects.extra(where=['protocol="UDP"']).count
+	n_protocols["ICMP"] = IngressFlow.objects.extra(where=['protocol="ICMP"']).count #+ EgressFlow.objects.extra(where=['protocol="ICMP"']).count
 
-
-	context = {'packets_list': packets_all,
-				'time_oldest': time_oldest,
-				'time_newest': time_newest,
-				'source_macs': source_macs,
-				'tcp_count': tcp_count,
-				'udp_count': udp_count,
-				'macs_bytes': macs_bytes,
-				'bytes_downloaded': bytes_downloaded,
-				'bytes_uploaded': bytes_uploaded,
-				#'form': form,
-				'f_interval': f_interval,
-				'f_ingress': f_ingress,
-				'f_egress': f_egress,
-				'f_source_port': f_source_port,
-				}
+	context = {
+				'n_device_macs': n_device_macs,
+			}
 
 
 
-	return render(request, 'visualise/index.html', context)	
+	return render(request, 'visualise/index.html', context)
 
 
+def get_usage(request):
+	if request.is_ajax():
+		filterValues = getFilterValues(request)
+		usage = {}
+		downBytes = EgressFlow.objects.aggregate(Sum('bytes_in'))
+		usage["downloaded"] = downBytes["bytes_in__sum"]
+		upBytes = IngressFlow.objects.aggregate(Sum('bytes_in'))
+		usage["uploaded"] = upBytes["bytes_in__sum"]
+		usage = json.dumps(usage)
+		return HttpResponse(usage, content_type='application/json')
+
+
+# Returns 3 lists; protocols, downloaded and uploaded.
+def get_protocols(request):
+	if request.is_ajax():
+		filterValues = getFilterValues(request)
+		data = IngressFlow.objects.values_list('protocol').distinct()
+		protocols = []
+		bytes = []
+		ret = {}
+
+		if filterValues["direction"] == "all":	
+			for i in data:
+				protocols.append(i[0])
+				b1 = IngressFlow.objects.filter(protocol=i[0]).aggregate(Sum('bytes_in'))
+				b2 = EgressFlow.objects.filter(protocol=i[0]).aggregate(Sum('bytes_in'))
+				bytes.append(b1["bytes_in__sum"] + b2["bytes_in__sum"])
+		elif filterValues["direction"] == "ingress":
+			for i in data:
+				protocols.append(i[0])
+				b1 = IngressFlow.objects.filter(protocol=i[0]).aggregate(Sum('bytes_in'))
+				bytes.append(b1["bytes_in__sum"])
+		elif filterValues["direction"] == "egress":
+			for i in data:
+				protocols.append(i[0])
+				b1 = EgressFlow.objects.filter(protocol=i[0]).aggregate(Sum('bytes_in'))			
+				bytes.append(b1["bytes_in__sum"])
+			
+		ret["bytes"] = bytes
+		ret["protocols"] = protocols
+
+		ret = json.dumps(ret)
+		return HttpResponse(ret, content_type='application/json')
+
+
+def get_timeline(request):
+	if request.is_ajax():
+		filterValues = getFilterValues(request)
+		ret = {}
+		if request.POST.get('interval') == 'hourly':
+			ret["earliest"] = ingress_all.aggregate(Min('time_start'))["time_start__min"]
+			ret["latest"] = ingress_all.aggregate(Max('time_end'))["time_end__max"]		
+		#elif request.POST.get('interval') == 'weekly':
+		#elif request.POST.get('interval') == 'monthly':
+		#else: # default is daily.
+		ret = json.dumps(ret)
+		return HttpResponse(ret, content_type='application/json')
+
+
+def get_flows(request):
+	if request.is_ajax():
+		amount = request.POST.get('count')
+		flows = []
+		flows = json.dumps(flows)
+		return HttpResponse(flows, content_type='application/json')	
+
+
+def getFilterValues(request):
+	vals = {}
+	vals["device"] = request.POST.get('device')
+	vals["direction"] = request.POST.get('direction')
+	vals["port"] = request.POST.get('port')
+	vals["port"] = request.POST.get('application')
+	return vals
 
 
 def isNum(data):

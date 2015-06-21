@@ -62,8 +62,13 @@ WSGI_APPLICATION = 'network_flow_visualisation.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'flow_database'
+        'ENGINE': 'mysql.connector.django',
+        'NAME': 'flows_db',
+        'USER': 'root',
+        'PASSWORD': 'dbroot',
+        'OPTIONS': {
+          'autocommit': True,
+        },        
     }
 }
 

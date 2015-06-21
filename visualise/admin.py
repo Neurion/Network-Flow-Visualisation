@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from visualise.models import Flow
+#from visualise.models import IngressFlows
 
-admin.site.register(Flow)
+#admin.site.register(IngressFlows)

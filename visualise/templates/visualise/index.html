@@ -1,60 +1,42 @@
 {% load staticfiles %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'visualise/css/main.css' %}" />
-<script type="text/javascript" src="{% static 'visualise/javascript/jquery-2.1.3.min.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/jquery-2.1.4.min.js' %}" ></script>
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.js' %}"></script>
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.time.js' %}"></script>
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.axislabels.js' %}"></script>
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.pie.js' %}"></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/graph.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/main.js' %}" ></script>
-<script type="text/javascript" src="{% static 'visualise/javascript/yqlgeo.js' %}"></script>
 
-{% if f_interval %}
-    <script>
-        f_interval = "{{ f_interval }}";
-    </script>
-{% endif %}
+<!-- 
+The default page displays generic network information.
+For specific device information to be displayed, the filter must be applied which sends an AJAX request to the server to retreive statistics about the selected MAC address.
+-->
 
-{% if macs_bytes %}
-    <script>
-        console.log("{{ macs_bytes }}");
-    </script>        
-    {% for b in macs_bytes %} 
-        <script>
-            //console.log("{{ b }}");
-            sourceMACDownloadedBytes.push("{{ b }}");
-            sourceMACUploadedBytes.push("{{ b }}"-0.5*"{{ b }}");
-        </script>
-    {% endfor %}
-{% endif %}
-
-{% if source_macs %}
-    {% for a in source_macs %}            
+<!-- Generic statistics -->
+{% if n_device_macs %}    
+    {% for m in n_device_macs %}            
         <script>
             // Populate MAC address select box
-            sourceMACAddresses.push("{{ a }}");
+            n_deviceMACs.push("{{ m }}");
         </script>                
     {% endfor %}
 {% endif %}
 
-{% if packets_list %}
-    {% for packet in packets_list %}
+{% if n_protocols %}    
+    {% for p in n_protocols %}            
         <script>
-            var t = [Math.floor({{ packet.timestamp }}), {{ packet.bytes_size }}];
-            timelineData.push(t);
-            var p1 = {{ packet.protocol }};
-            protocols_distribution.push(p1);
+            // Populate MAC address select box
+            n_protocols.protocols.push("{{ p }}");
         </script>
-
     {% endfor %}
-{% else %}
-    <p>No data is available.</p>
 {% endif %}
 
 <script>
 
-var timeOldest = "{{ time_oldest }}"*1000;
-var timeNewest = "{{ time_newest }}"*1000;
+var timeOldest = "{{ time_oldest }}" * 1000;
+var timeNewest = "{{ time_newest }}" * 1000;
 //console.log("\n\n\nTimeline");
 //console.log("Time oldest:"+timeOldest);
 //console.log("Time newest:"+timeNewest);
@@ -65,129 +47,119 @@ var date = new Date(Math.round(timeOldest));
 date = new Date(Math.round(timeNewest));
 //console.log(date.toString());
 
-var tcpCount = "{{ tcp_count }}";
-var udpCount = "{{ udp_count }}";
-//console.log("\n\n\nProtocols");
-//console.log("TCP packets:"+tcpCount);
-//console.log("UDP packets:"+udpCount);
+var n_bytes_downloaded = "{{ n_bytes_downloaded }}";
+var n_bytes_uploaded = "{{ n_bytes_uploaded }}";
 
-var bytesDownloaded = "{{ bytes_downloaded }}";
-var bytesUploaded = "{{ bytes_uploaded }}";
-console.log(bytesDownloaded);
-console.log(bytesUploaded);
-//console.log("\n\n\nUsage:");
-//console.log("downloaded:"+bytesDownloaded);
-//console.log("uploaded:"+bytesUploaded);
 </script>
-
 
 <div id="container">    
 
     <div id="top_1">
 
-        <span id="title">        
-            Network Flow Visualisation
-        </span>
-
-        <div id="m_devices">            
-            Devices            
-            <div id="m_devices_list"></div>         
-        </div>     
+        <div id="m_network" class="menu_item">
+            Network
+        </div>
 
         <span class="divider">|</span>
 
-        <div id="m_applications">            
-            Applications            
-            <div id="m_applications_list">
-                <div class="element">Skype</div>
-                <div class="element">Bittorrent</div>
-                <div class="element">Youtube</div>
-            </div>         
+        <div id="m_users" class="menu_item">
+            Users
         </div>  
+
+        <span id="title">
+            Network Flow Visualisation
+        </span>
 
     </div>
 
     <div id="top_2">
 
-        <div id="geolocation">         
-            <span>Geolocation</span>
+        <div id="filter_header">
+            <div class="section">Devices:</div>
+            <div class="section">Direction:</div>
+            <div class="section">Port:</div>
+            <div class="section">Interval:</div>
+            <div class="section">Application:</div>
+        </div><!-- Close filter_header -->
 
-        </div>
+        <div id="filter_container">
+            <!--<form action="/" method="POST">
+                {% csrf_token %}-->
 
-        <div id="usage">         
-            <div id="usage_container_chart"></div>
-        </div>
+                <!-- Devices -->
+                <div class="section">
+                    <select id="select_devices" name="select_devices">
+                        <option>All</option>
+                    </select>
+                </div>
 
-        <div id="protocols">
-            <div id="protocol_container_chart"></div>
-        </div>  
-    </div>
+                 <!-- Direction -->
+                <div class="section">
+                    <label for="check_direction">Incoming:</label>                    
+                    <input id="check_ingress" name="check_direction" type="checkbox" checked="true">
+                    <label for="check_direction">Outgoing:</label>
+                    <input id="check_egress" name="check_direction" type="checkbox" checked="true">
+                </div>
 
-    <div id="top_3">
-
-        <div id="filter_container">                  
-            <form action="/" method="POST">
-                {% csrf_token %}          
-               
-                <!-- Direction -->
-                <span class="bold">Direction:(to do)</span>
-                <label for="check_ingress">Ingress:</label>
-                <input id="check_ingress" name="check_ingress" type="checkbox" checked="true">
-                <label for="check_egress">Egress:</label>
-                <input id="check_egress" name="check_egress" type="checkbox" checked="true">
-                
                 <!-- Ports -->
-                <span class="bold">Port:</span>
-                <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
-                
+                <div class="section">
+                    <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
+                </div>
+
+                <!-- Interval -->
+                <div class="section">
+                    <select id="select_interval" name="select_interval"></select>
+                </div>
+
+                <!-- Application -->
+                <div class="section">
+                    <select id="select_applications" name="select_applications">
+                        <option>All</option>
+                    </select>
+                </div>
+
                 <!-- Submit -->
-                <input id="btn_submit" name="btn_submit" type="submit" value="Apply">
+                <!--<input id="btn_submit" name="btn_submit" type="submit" value="Apply">-->
 
-            </form>  
-
-            <hr />
+            <!--</form>  -->
 
         </div><!-- Close filter_container -->
 
-    </div><!-- Close left -->
+    </div>
+
+    <div id="top_3"></div>
 
     <div id="top_4">
-
-        <div id="timeline_container">        
-            <select id="select_interval" name="time_interval"></select>
-            <label for="time_interval">Display Latest:</label>
-            <div id="timeline_container_chart"></div>
-        </div><!-- Close timeline --> 
-
         <div id="flows_table_container">
             <div id="flows_table">
-                <div id="header"><!-- Table header -->
+                <div id="header">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--
+        <div id="visual_protocols" class="visual_container">
+            <div class="visual_title"></div>
+            <div class="visual_controls">
+            </div>
+            <div class="visual">
+            </div>
+        </div>
+    -->
+
+        <!--<div id="flows_table_container">
+            <div id="flows_table">
+                <div id="header">Table header
                     <div class="cell">Device MAC</div>
                     <div class="cell">Application</div>
                     <div class="cell">Downloaded</div>
                     <div class="cell">Uploaded (to do)</div>
                 </div>
-                <!-- Data -->
+                <!-- Data
             </div>            
-        </div><!-- Close flows_table -->  
-
-    </div><!-- Close middle -->  
-
-    <div id="top_5">
-
-        <!--
-        <div class="geolocation">
-            <div class="header">Geolocation(to do)</div>
-            Top 10 countries
-            <ol>
-                <li>New Zealand</li>
-                <li>China</li>
-                <li>UK</li>
-                <li>USA</li>
-            </ol>  
-        </div><!-- Close geolocation
+        </div><!-- Close flows_table
         -->
-
-    </div><!-- Close right -->
 
 </div><!-- Close container -->

@@ -36,7 +36,6 @@ h2{
 
 .clear{
 	clear: both;
-	float: right;
 }
 
 .center_text{
@@ -99,13 +98,23 @@ h2{
 		vertical-align: middle;
 	}
 
+		.menu_item:hover{
+			opacity: 0.5;
+			cursor: pointer;
+		}
+
+		.current{
+			opacity: 0.5;
+			cursor: pointer;
+		}		
+
 		span#title{
 			background-color: white;
-			padding-right: 100px;
-			color: black;			
+			/*padding-right: 100px;*/
+			color: black;
 			font-weight: bold;
-			float: left;
-			text-align: left;			
+			float: right;
+			text-align: right;
 		}
 
 		#top_1 span.divider{
@@ -127,7 +136,7 @@ h2{
 				display: none;
 				width: 100%;
 				float: left;
-				overflow-y: scroll;
+				/*overflow-y: scroll;*/
 				border-bottom: 5px black solid;		
 			}
 
@@ -147,10 +156,63 @@ h2{
 	#top_2{
 		display: block;
 		width: 98%;
-		height: 24%;
+		min-height: 50px;
 		padding: 0.5% 1%;
 		background-color: #2F3B31;
 	}	
+
+		#top_2 .section{
+			display: inline-block;
+			width: 200px;
+			margin-right: 100px;
+			color: white;
+		}
+
+		#filter_header{
+			display: block;
+			width: 100%;
+		}
+
+		#filter_container{
+			display: inline-block;
+			width: 100%;		
+			float: left;
+		}
+
+			#select_devices{
+				width: 200px;
+			}
+
+			#select_applications{
+				width: 200px;
+			}
+
+			#filter_container hr{
+				width: 80%;
+			}
+
+			#filter_container form{
+				margin: 0px;
+				padding: 0px;
+			}		
+
+			#filter_container label{
+				display: inline-block;
+				height: 20px;				
+			}
+
+			#text_port{
+				display: inline-block;
+				width: 80px;
+				/*height: 40px;*/
+				text-align: center;	
+			}	
+
+			#btn_submit{
+				width: 100px;
+				height: 40px;
+			}
+
 
 		#usage{
 			display: inline-block;
@@ -184,103 +246,71 @@ h2{
 				background-color: #2F3B31;
 			}
 
-
 	#top_3{
 		display: block;
-		width: 98%;
-		height: 11%;
-		padding: 1% 1%;
+		width: 100%;
+		min-height: 400px;
+		padding-bottom: 1%;
+		/* transparent */
 		background-color: white;
 		color: black;		
 	}
 
-		#filter_container{
+		.visual_container{
 			display: inline-block;
-			width: 100%;		
-			height: 68%;
-			padding: 1% 0%;			
-			float: left;
-			text-align: center;
+			width: 40%;
+			height: 40%;
+			min-height: 300px;
+			padding: 0.5%;
+			background-color: #2F3B31;
+			color: white;
 		}
 
-			#filter_container hr{
-				width: 80%;
-			}
+		.visual_container:nth-child(even){
+			margin: 1% 0% 0% 6%;
+			float: left;
+		}
 
-			#filter_container form{
-				margin: 0px;
-				padding: 0px;
-			}		
+		.visual_container:nth-child(odd){
+			margin: 1% 6% 0% 0%;
+			float: right;
+		}
 
-			#filter_container label{
+			.visual_title{
 				display: inline-block;
-				height: 20px;				
+				width: 100%;
+				height: 1.5em;
+				font-size: 1.5em;
+				line-height: 1.5em;
+				/*background-color: yellow;*/
+				text-align: center;
 			}
 
-			#filter_container input[type="checkbox"]{
-				
+			.visual{
+				display: inline-block;
+				width: 100%;
+				height: 85%;
+				float: left;
+				/*background-color: orange;*/
+				color: black;
 			}			
 
-			#select_mac{
-				display: inline-block;
-				width: 150px;
-				height: 40px;
-				text-align: center;	
-			}
-
-			#select_mac option{
-				text-align: center;
-			}	
-
-			#select_interval{
-				display: inline-block;
-				width: 150px;
-				height: 40px;	
-				text-align: center;		
-			}
-
-			#select_interval option{
-				text-align: center;
-			}	
-
-			#text_port{
-				display: inline-block;
-				width: 80px;
-				height: 40px;
-				text-align: center;	
-			}	
-
-			#btn_submit{
-				width: 100px;
-				height: 40px;
-			}
-
-	#top_4{
-		display: block;
-		width: 100%;
-		height: 50%;
-		min-height: 400px;
-		background-color: yellow;
-		color: black;		
-	}			
-
-		#timeline_container{
+		#usage_timeline_c{
 			display: inline-block;	
-			width: 48%;	
+			width: 50%;	
 			height: 98%;
-			padding: 1%;
 			float: left;
 			background-color: #2F3B31;
 			/*background-color: white;*/
 			z-index: 1;	
 		}
 
-		#timeline_container select{
+		#usage_timeline_c select{
 			float: right;
 			height: 40px;
 		}
 
-		#timeline_container label{
+		#usage_timeline_c label{
 			float: right;
 			height: 40px;
 			padding-right: 10px;
@@ -289,7 +319,7 @@ h2{
 			font-weight: bold;
 		}		
 
-			#timeline_container_chart{
+			#usage_timeline_chart{
 				display: inline-block;
 				width: 100%;
 				height: 100%;			
@@ -297,21 +327,30 @@ h2{
 				float: left;
 			}
 
+	#top_4{
+		display: block;
+		width: 100%;
+		height: 50%;
+		min-height: 400px;
+		/* transparent */
+		color: black;		
+	}
+
 		#flows_table_container{
 			display: inline-block;	
-			width: 48%;
+			width: 98%;
 			height: 98%;
 			padding: 1%;
 			float: left;
-			background-color: white;
+			background-color: #2F3B31;
 			overflow-y: scroll;
 		}	
 
 			#flows_table{
 				display: block;
-				width: 98%;
-				padding: 1%;
-				background-color: #2F3B31;				
+				width: 100%;
+				/*padding: 1%;*/
+				background-color: green;				
 			}
 
 				#header{				
@@ -319,7 +358,8 @@ h2{
 					display: block;	
 					width: 100%;	
 					height: 40px;
-					line-height: 40px;					
+					line-height: 40px;
+					background-color: white;			
 				}
 		
 				#flows_table .row{
@@ -335,38 +375,6 @@ h2{
 						display: inline-block;	
 						min-width: 150px;
 						float: left;
-						background-color: white;
+						/*background-color: red;*/
 						text-align: center;
-					}	
-
-
-	#top_5{
-		display: block;
-		width: 98%;
-		height: 8%;
-		padding: 1% 1%;
-		background-color: orange;
-		color: black;		
-	}
-
-	#geolocation{
-		display: inline-block;
-		width: 25%;
-		height: 100%;
-		background-color: white;
-		background-color: #2F3B31;
-	}
-
-	#geolocation span{
-		display: block;
-		font-size: 30px;
-		font-weight: bold;
-		text-align: center;
-		color: white;
-
-	}	
-
-	#geolocation li{
-		text-align: left;
-		width: 150px;	
-	}
+					}					
