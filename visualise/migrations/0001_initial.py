@@ -11,35 +11,15 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='EgressFlow',
+            name='Flow',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
                 ('time_start', models.IntegerField(null=True, blank=True)),
                 ('time_end', models.IntegerField(null=True, blank=True)),
                 ('protocol', models.CharField(max_length=5, blank=True)),
+                ('direction', models.IntegerField(null=True, blank=True)),
                 ('inf_in', models.IntegerField(null=True, blank=True)),
                 ('mac_src', models.CharField(max_length=17, blank=True)),
-                ('ip_src', models.CharField(max_length=15, blank=True)),
-                ('ip_dst', models.CharField(max_length=15, blank=True)),
-                ('port_src', models.IntegerField(null=True, blank=True)),
-                ('port_dst', models.IntegerField(null=True, blank=True)),
-                ('packets_in', models.IntegerField(null=True, blank=True)),
-                ('bytes_in', models.IntegerField(null=True, blank=True)),
-            ],
-            options={
-                'managed': False,
-                'db_table': 'egress_flow',
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='IngressFlow',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('time_start', models.IntegerField(null=True, blank=True)),
-                ('time_end', models.IntegerField(null=True, blank=True)),
-                ('protocol', models.CharField(max_length=5, blank=True)),
-                ('inf_in', models.IntegerField(null=True, blank=True)),
                 ('mac_dst', models.CharField(max_length=17, blank=True)),
                 ('ip_src', models.CharField(max_length=15, blank=True)),
                 ('ip_dst', models.CharField(max_length=15, blank=True)),
@@ -49,8 +29,21 @@ class Migration(migrations.Migration):
                 ('bytes_in', models.IntegerField(null=True, blank=True)),
             ],
             options={
+                'db_table': 'flows',
                 'managed': False,
-                'db_table': 'ingress_flow',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Host',
+            fields=[
+                ('id', models.IntegerField(primary_key=True, serialize=False)),
+                ('mac', models.CharField(max_length=17, blank=True)),
+                ('name', models.CharField(max_length=20, blank=True)),
+            ],
+            options={
+                'db_table': 'hosts',
+                'managed': False,
             },
             bases=(models.Model,),
         ),

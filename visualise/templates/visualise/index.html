@@ -6,7 +6,10 @@
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.time.js' %}"></script>
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.axislabels.js' %}"></script>
 <script language="javascript" type="text/javascript" src="{% static 'visualise/javascript/flot/jquery.flot.pie.js' %}"></script>
-<script type="text/javascript" src="{% static 'visualise/javascript/graph.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/variables.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/misc.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/populate.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/load.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/main.js' %}" ></script>
 
 <!-- 
@@ -14,41 +17,7 @@ The default page displays generic network information.
 For specific device information to be displayed, the filter must be applied which sends an AJAX request to the server to retreive statistics about the selected MAC address.
 -->
 
-<!-- Generic statistics -->
-{% if n_device_macs %}    
-    {% for m in n_device_macs %}            
-        <script>
-            // Populate MAC address select box
-            n_deviceMACs.push("{{ m }}");
-        </script>                
-    {% endfor %}
-{% endif %}
-
-{% if n_protocols %}    
-    {% for p in n_protocols %}            
-        <script>
-            // Populate MAC address select box
-            n_protocols.protocols.push("{{ p }}");
-        </script>
-    {% endfor %}
-{% endif %}
-
 <script>
-
-var timeOldest = "{{ time_oldest }}" * 1000;
-var timeNewest = "{{ time_newest }}" * 1000;
-//console.log("\n\n\nTimeline");
-//console.log("Time oldest:"+timeOldest);
-//console.log("Time newest:"+timeNewest);
-//console.log(Math.round(timeOldest));
-var date = new Date(Math.round(timeOldest));
-//console.log(date.toString());
-//console.log(Math.round(timeNewest));
-date = new Date(Math.round(timeNewest));
-//console.log(date.toString());
-
-var n_bytes_downloaded = "{{ n_bytes_downloaded }}";
-var n_bytes_uploaded = "{{ n_bytes_uploaded }}";
 
 </script>
 
@@ -62,9 +31,9 @@ var n_bytes_uploaded = "{{ n_bytes_uploaded }}";
 
         <span class="divider">|</span>
 
-        <div id="m_users" class="menu_item">
-            Users
-        </div>  
+        <div id="m_user" class="menu_item">
+            User
+        </div>
 
         <span id="title">
             Network Flow Visualisation
@@ -72,64 +41,57 @@ var n_bytes_uploaded = "{{ n_bytes_uploaded }}";
 
     </div>
 
-    <div id="top_2">
+    <div id="top_2"></div>
+
+    <div id="top_3">
 
         <div id="filter_header">
             <div class="section">Devices:</div>
             <div class="section">Direction:</div>
-            <div class="section">Port:</div>
-            <div class="section">Interval:</div>
-            <div class="section">Application:</div>
+            <div class="section_port">Port:</div>
+            <div class="section_interval">Interval:</div>
+            <div class="section">Application(to do):</div>
         </div><!-- Close filter_header -->
 
         <div id="filter_container">
-            <!--<form action="/" method="POST">
-                {% csrf_token %}-->
 
-                <!-- Devices -->
-                <div class="section">
-                    <select id="select_devices" name="select_devices">
-                        <option>All</option>
-                    </select>
-                </div>
+            <!-- Devices -->
+            <div class="section">
+                <select id="select_devices" name="select_devices"></select>
+            </div>
 
-                 <!-- Direction -->
-                <div class="section">
-                    <label for="check_direction">Incoming:</label>                    
-                    <input id="check_ingress" name="check_direction" type="checkbox" checked="true">
-                    <label for="check_direction">Outgoing:</label>
-                    <input id="check_egress" name="check_direction" type="checkbox" checked="true">
-                </div>
+             <!-- Direction -->
+            <div class="section">
+                <label id ="check_ingress_label" for="check_ingress">Incoming:</label>
+                <input id="check_ingress" name="check_direction" type="checkbox" checked="true">
+                <label id="check_egress_label" for="check_egress">Outgoing:</label>
+                <input id="check_egress" name="check_direction" type="checkbox" checked="true">
+            </div>
 
-                <!-- Ports -->
-                <div class="section">
-                    <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
-                </div>
+            <!-- Port -->
+            <div class="section_port">
+                <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
+            </div>
 
-                <!-- Interval -->
-                <div class="section">
-                    <select id="select_interval" name="select_interval"></select>
-                </div>
+            <!-- Interval -->
+            <div class="section_interval">
+                <select id="select_interval_type" name="select_interval_type"></select>
+            </div>
 
-                <!-- Application -->
-                <div class="section">
-                    <select id="select_applications" name="select_applications">
-                        <option>All</option>
-                    </select>
-                </div>
+            <!-- Application -->
+            <div class="section">
+                <select id="select_applications" name="select_applications">
+                    <option>All</option>
+                </select>
+            </div>
 
-                <!-- Submit -->
-                <!--<input id="btn_submit" name="btn_submit" type="submit" value="Apply">-->
-
-            <!--</form>  -->
-
-        </div><!-- Close filter_container -->
+        </div>
 
     </div>
 
-    <div id="top_3"></div>
+    <div id="top_4"></div>
 
-    <div id="top_4">
+    <div id="top_5">
         <div id="flows_table_container">
             <div id="flows_table">
                 <div id="header">
