@@ -25,19 +25,13 @@ function refreshInformation(){
 			$('#select_devices').val(oldMac);
 
 			updateIntervalSelectBoxes();
+			updateFilterInterval();
 
 			var date = new Date(flowData.time.earliest * 1000);
 			filter.interval.year = date.getFullYear()
-			filter.interval.month = controls.selectBox.interval.months.val();
-			if(controls.selectBox.interval.days){
-				filter.interval.day = controls.selectBox.interval.days.val();
-			}
-			if(controls.selectBox.interval.hours){
-				filter.interval.hour = controls.selectBox.interval.hours.val();
-			}
 
 			updateVisuals();
-			printFilterValues();
+			//printFilterValues();
 		},
 	});	
 }
@@ -126,9 +120,6 @@ function populateIntervalSelectBox(){
 
 function updateIntervalSelectBoxes(){
 
-	//console.log("earliest: " + flowData.time.earliest);
-	//console.log("latest: " + flowData.time.latest);
-
 	// Store the old selected values.
 	var oldMonth, oldDay, oldHour;
 	if(controls.selectBox.interval.months != null){
@@ -173,6 +164,7 @@ function updateIntervalSelectBoxes(){
 function updateMonthsSelectBox(){
 	controls.selectBox.interval.months = $('<select></select>').attr('id', 'select_interval_month');
 	controls.selectBox.interval.months.change(function(){
+		
 		filter.interval.month = controls.selectBox.interval.months.val();
 
 		var now = new Date();
@@ -189,6 +181,8 @@ function updateMonthsSelectBox(){
 			$('#select_interval_hour').remove();
 			updateHoursSelectBox();
 		}
+
+		refreshInformation();
 	});
 	$('#select_interval_type').parent().append(controls.selectBox.interval.months);
 	populateMonths();
@@ -201,10 +195,10 @@ function updateDaysSelectBox(){
 	controls.selectBox.interval.days.change(function(){
 		filter.interval.day = controls.selectBox.interval.days.val();		
 		if(filter.intervalType == INTERVAL.HOURLY){
-			//console.log("updating hour select box.");
 			$('#select_interval_hour').remove();		
 			updateHoursSelectBox();
-		}		
+		}
+		refreshInformation();			// Request new data
 	});
 	populateDays();
 }

@@ -1,18 +1,29 @@
 $(document).ready(function(){
 
+	setup();
+
+	/** Request flows information and draw visuals. */
+	refreshInformation();	
+});
+
+function setup(){
 	/** Menu */
 	setMenuPointers();
 	setMenu(menu.network);
 
-	/** Request flows information and draw visuals. */
-	refreshInformation();
-
 	/** Controls */
 	setControlPointers();
-	populateMACAddresses();		// Populate filter controls.
-	setFilterListeners();		// Setup listener events for the filter controls.
-	populateIntervalSelectBox();
-});
+	populateMACAddresses();			// Populate filter controls.
+	setFilterListeners();			// Setup listener events for the filter controls.
+	populateIntervalSelectBox();	// Add "Monthly", "Daily", and "Hourly".
+	updateIntervalSelectBoxes();	// Add default "Monthly" select box.
+
+	updateFilterMac();
+	updateFilterDirection();
+	updateFilterPorts();
+	updateFilterInterval();
+	updateFilterApplication();	
+}
 
 function setMenuPointers(){
 	menu.network = $('#m_network');
@@ -51,16 +62,25 @@ function updateFilterDirection(){
 }
 
 function updateFilterPorts(){
-	filter.port.src = controls.textBox.port.src.val();
-	filter.port.dst = controls.textBox.port.dst.val();
-
+	filter.port.src = parseInt(controls.textBox.port.src.val());
+	filter.port.dst = parseInt(controls.textBox.port.dst.val());
+	if(!filter.port.src){
+		filter.port.src = -1;
+	}
+	if(!filter.port.dst){
+		filter.port.dst = -1;
+	}
 }
 
 function updateFilterInterval(){
 	filter.intervalType = controls.selectBox.intervalType.val();
-	filter.interval.month = controls.selectBox.month.val();
-	filter.interval.day = controls.selectBox.day.val();
-	filter.interval.hour = controls.selectBox.hour.val();
+	filter.interval.month = controls.selectBox.interval.months.val();
+	if(filter.interval.day){
+		filter.interval.day = controls.selectBox.interval.days.val();
+	}
+	if(filter.interval.hour){
+		filter.interval.hour = controls.selectBox.interval.hours.val();
+	}
 }
 
 function updateFilterApplication(){
@@ -155,11 +175,31 @@ function setMenu(option){
 }
 
 function getAJAXParameters(){
+	var initialDate = new Date(filter.interval.year, filter.interval.month, filter.interval.day, filter.interval.hour);
+	var finalDate;
+	if(filter.intervalType == INTERVAL.MONTHLY){
+		var finalMonth = parseInt(filter.interval.month) + 1;
+		finalDate = new Date(filter.interval.year, finalMonth);
+	}
+	else if(filter.intervalType == INTERVAL.DAILY){
+		var finalDay = parseInt(filter.interval.day) + 1;
+		finalDate = new Date(filter.interval.year, filter.interval.month, finalDay);
+	}
+	else if(filter.intervalType == INTERVAL.HOURLY){
+		var finalHour = parseInt(filter.interval.hour) + 1;
+		finalDate = new Date(filter.interval.year, filter.interval.month, filter.interval.day, finalHour);
+	}
+	else{
+		alert("should not happen...");
+	}
+	//console.log("start from: " + initialDate);
+	//console.log("to: " + finalDate);
 	return {
 		csrfmiddlewaretoken: getCookie('csrftoken'),
 		mac: filter.mac,
 		direction: filter.direction,
 		port_source: filter.port.src,
 		port_destination: filter.port.dst,
+		//interval_start: ,
 	}
 }

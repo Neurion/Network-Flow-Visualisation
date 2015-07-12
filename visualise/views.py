@@ -97,12 +97,6 @@ def get_upload_timeline(request):
 		time_current = time.time()		# timestamp of current time
 		time_earliest = ""
 		data = []
-		#if request.POST.get('interval') == 'hourly':
-		#	ret["earliest"] = ingress_all.aggregate(Min('time_start'))["time_start__min"]
-		#	ret["latest"] = ingress_all.aggregate(Max('time_end'))["time_end__max"]
-		#elif request.POST.get('interval') == 'weekly':
-		#elif request.POST.get('interval') == 'monthly':
-		#else: # default is daily.
 		time_earliest = time_current - INTERVAL.DAILY
 		if filterValues['direction'] == 'ingress':
 			ingress_all.objects.order_by('time_start')
@@ -120,29 +114,21 @@ def get_upload_timeline(request):
 
 def get_download_timeline(request):
 	if request.is_ajax():
-		time_current = time.time()		# timestamp of current time
-		time_earliest = ""
-		data = []
-		#if request.POST.get('interval') == 'hourly':
-		#	ret["earliest"] = ingress_all.aggregate(Min('time_start'))["time_start__min"]
-		#	ret["latest"] = ingress_all.aggregate(Max('time_end'))["time_end__max"]
-		#elif request.POST.get('interval') == 'weekly':
-		#elif request.POST.get('interval') == 'monthly':
-		#else: # default is daily.
-
+		data = get_relevant_flows(request)
 		time_earliest = time_current - INTERVAL.DAILY
-		if filterValues['direction'] == 'ingress':
-			ingress_all.objects.order_by('time_start')
-		time_threshold_lower = time_earliest
+		time_current = time.time()		# timestamp of current time
+		ret = []
+
+		time_threshold_lower = request.POST.get('')
 		time_threshold_upper = time_earliest + INTERVAL.HOURLY
 		while time_threshold_upper <= time_current:
 			block = Flow.objects.filter(direction=DIRECTION.OUTGOING).filter(time_start__range=[time_threshold_lower, time_threshold_upper])
 			bytes = block.aggregate(Sum('bytes_in'))['bytes_in__sum']
-			data.append([time_threshold_lower, bytes])		# [timeslice, bytes downloaded]
+			ret.append([time_threshold_lower, bytes])		# [timeslice, bytes downloaded]
 			time_threshold_lower = time_threshold_upper
 			time_threshold_upper += INTERVAL.HOURLY
-		data = json.dumps(data)
-		return HttpResponse(data, content_type='application/json')
+		ret = json.dumps(ret)
+		return HttpResponse(ret, content_type='application/json')
 
 
 def get_relevant_flows(request):
