@@ -2,6 +2,7 @@ from django.db import models
 import time
 
 class Flow(models.Model):
+	id = models.AutoField(primary_key=True)
 	time_start = models.IntegerField(blank=True, null=True)
 	time_end = models.IntegerField(blank=True, null=True)
 	protocol = models.CharField(max_length=5, blank=True)
@@ -21,7 +22,7 @@ class Flow(models.Model):
 		db_table = 'flows'
 
 class Host(models.Model):
-	id = models.IntegerField(primary_key=True)
+	id = models.AutoField(primary_key=True)
 	mac = models.CharField(max_length=17, blank=True)
 	name = models.CharField(max_length=20, blank=True)
 

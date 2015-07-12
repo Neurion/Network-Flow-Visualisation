@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
-from django.db.models import Max, Min, Sum, Count
+from django.db.models import Max, Min, Sum, Count, Q
 from django.core import serializers
 from django.views.generic.edit import UpdateView
 from visualise.models import Flow, Host
@@ -20,26 +20,7 @@ class DIRECTION():
 	OUTGOING = 1
 
 def index(request):
-
-	# Filter options from the POST request
-	f_interval_range	= None
-	f_interval 			= None
-	f_direction 		= None
-	f_source_port 		= None
-
-	# Information to populate the controls
-	c_device_macs 		= []
-
-	data = Flow.objects.all()	# Get flows in ascending order	
-
-	# Get a List of distinct MAC addresses of incoming (or outgoing) traffic
-	c_device_macs = data.filter(direction=DIRECTION.OUTGOING).values_list('mac_src', flat=True).distinct()
-
-	context = {
-				'c_device_macs': c_device_macs,
-			}
-
-	return render(request, 'visualise/index.html', context)
+	return render(request, 'visualise/index.html')
 
 def get_flows_info(request):
 	"""
@@ -47,80 +28,72 @@ def get_flows_info(request):
 	If a mac address is given as a POST argument, the values returned are specific to that device.
 	"""
 	if request.is_ajax():
-		mac = request.POST.get('mac')
-		name = None
+		
+		names = {}
 		macs = list(Flow.objects.filter(direction=DIRECTION.OUTGOING).values_list('mac_src', flat=True).distinct())
+
+		for m in macs:
+			try:
+				names[m] = Host.objects.get(mac=m).name
+			except Host.DoesNotExist:
+				pass
+
+		data = get_relevant_flows(request)
+
 		time_earliest = None
 		time_latest = None
-		if mac == 'All':
+		mac = request.POST.get('mac')
+
+		if mac == 'all':
 			mac = ''
+
 		if mac is not '' and mac is not None:	# Info about all flows			
-			time_earliest = Flow.objects.filter(mac_src=mac).aggregate(Min('time_start', distinct=True))['time_start__min']
-			time_latest = Flow.objects.filter(mac_src=mac).aggregate(Max('time_end', distinct=True))['time_end__max']				
+			time_earliest = data.filter(mac_src=mac).aggregate(Min('time_start', distinct=True))['time_start__min']
+			time_latest = data.filter(mac_src=mac).aggregate(Max('time_end', distinct=True))['time_end__max']				
 		else:			# Info about flows specific to the device
-			time_earliest = Flow.objects.aggregate(Min('time_start', distinct=True))['time_start__min']
-			time_latest = Flow.objects.aggregate(Max('time_end', distinct=True))['time_end__max']
-		
-		try:
-			host = Host.objects.get(mac=mac)
-		except Host.DoesNotExist:
-			name = mac
-		
+			time_earliest = data.aggregate(Min('time_start', distinct=True))['time_start__min']
+			time_latest = data.aggregate(Max('time_end', distinct=True))['time_end__max']
+
 		ret = {
-			'name': name,
+			'names': names,
 			'macs': macs,
 			'timestamp_earliest': time_earliest,
 			'timestamp_latest': time_latest,
 		}
 
-		ret = json.dumps(ret)
-		return HttpResponse(ret, content_type='application/json')
+		return HttpResponse(json.dumps(ret), content_type='application/json')
 
 def get_usage(request):
 	if request.is_ajax():
-		filterValues = get_filter_values(request)
-		usage = {}
-		downBytes = Flow.objects.filter(direction=DIRECTION.INCOMING).aggregate(Sum('bytes_in'))
-		usage["downloaded"] = downBytes["bytes_in__sum"]
-		upBytes = Flow.objects.filter(direction=DIRECTION.OUTGOING).aggregate(Sum('bytes_in'))
-		usage["uploaded"] = upBytes["bytes_in__sum"]
-		usage = json.dumps(usage)
-		return HttpResponse(usage, content_type='application/json')
+		data = get_relevant_flows(request)
+		ret = {}
+		downBytes = data.filter(direction=DIRECTION.INCOMING).aggregate(Sum('bytes_in'))["bytes_in__sum"]		
+		upBytes = data.filter(direction=DIRECTION.OUTGOING).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+		ret["downloaded"] = downBytes
+		ret["uploaded"] = upBytes
+
+		return HttpResponse(json.dumps(ret), content_type='application/json')
 
 
 # Returns 3 lists; protocols, downloaded and uploaded.
-def get_protocols(request):
+def get_protocols(request):	
 	if request.is_ajax():
-		filterValues = get_filter_values(request)
-		data = Flow.objects.filter(direction=DIRECTION.INCOMING).values_list('protocol').distinct()
-		protocols = []
-		bytes = []
-		ret = {}
+		data = get_relevant_flows(request)		
+		protocols = data.values_list('protocol').distinct()
 
-		if filterValues["direction"] == "all":
-			for i in data:	# Get all rows of specified protocol
-				protocols.append(i[0])
-				b1 = Flow.objects.filter(protocol=i[0]).aggregate(Sum('bytes_in'))
-				bytes.append(b1["bytes_in__sum"])
-		elif filterValues["direction"] == "ingress":
-			for i in data:	# Get only incoming rows with specified protocol
-				protocols.append(i[0])
-				b1 = Flow.objects.objects.filter(direction=DIRECTION.INCOMING).filter(protocol=i[0]).aggregate(Sum('bytes_in'))
-				bytes.append(b1["bytes_in__sum"])
-		elif filterValues["direction"] == "egress":
-			for i in data:	# Get only outoging rows with specified protocol
-				protocols.append(i[0])
-				b1 = Flow.objects.filter(direction=DIRECTION.OUTGOING).filter(protocol=i[0]).aggregate(Sum('bytes_in'))			
-				bytes.append(b1["bytes_in__sum"])
-			
-		ret["bytes"] = bytes
-		ret["protocols"] = protocols
-		ret = json.dumps(ret)
-		return HttpResponse(ret, content_type='application/json')
+		ret = {}
+		ret["protocols"] = []
+		ret["bytes"] = []
+
+		for i in protocols:	# Get all rows of specified protocol
+			ret["protocols"].append(i[0])
+			b = data.filter(protocol=i[0]).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+			ret["bytes"].append(b)
+
+		return HttpResponse(json.dumps(ret), content_type='application/json')
 
 def get_upload_timeline(request):
 	if request.is_ajax():
-		filterValues = get_filter_values(request)
 		time_current = time.time()		# timestamp of current time
 		time_earliest = ""
 		data = []
@@ -147,7 +120,6 @@ def get_upload_timeline(request):
 
 def get_download_timeline(request):
 	if request.is_ajax():
-		filterValues = get_filter_values(request)
 		time_current = time.time()		# timestamp of current time
 		time_earliest = ""
 		data = []
@@ -173,27 +145,50 @@ def get_download_timeline(request):
 		return HttpResponse(data, content_type='application/json')
 
 
-def get_flows(request):
-	if request.is_ajax():
-		amount = request.POST.get('count')
-		flows = []
-		flows = json.dumps(flows)
-		return HttpResponse(flows, content_type='application/json')
+def get_relevant_flows(request):
+	"""
+	Returns a queryset based on the filter values.
+	"""
 
-def get_filter_values(request):
-	vals = {}
-	vals["device"] = request.POST.get('device')
-	vals["direction"] = request.POST.get('direction')
-	vals["port"] = request.POST.get('port')
-	vals["application"] = request.POST.get('application')
-	return vals
+	mac = request.POST.get('mac')
+	direction = request.POST.get("direction")
+	port_src = int(request.POST.get("port_source"))
+	port_dst = int(request.POST.get("port_destination"))
+	interval_start = request.POST.get("interval_start")
+	interval_end = request.POST.get("interval_end")
 
-def save_device_name(request):
+	data = Flow.objects
+
+	# Mac
+	if mac != "all":
+		data = data.filter(Q(mac_src=mac) | Q(mac_dst=mac))
+
+	# Direction
+	if direction == "ingress":
+		data = data.filter(direction=DIRECTION.INCOMING)
+	elif direction == "egress":
+		data = data.filter(direction=DIRECTION.OUTGOING)
+
+	# Port
+	if port_src != -1:
+		data = data.filter(port_src=port_src)
+
+	if port_dst != -1:
+		data = data.filter(port_dst=port_dst)
+
+	return data
+
+def save_host_name(request):
 	mac = request.POST.get('mac')
 	name = request.POST.get('name')
-	host = Host.objects.filter(mac=mac)
-	host.name = name
+	host = None
+	try:
+		host = Host.objects.get(mac=mac)
+		host.name = name
+	except Host.DoesNotExist:
+		host = Host(mac=mac, name=name)
 	host.save()
+	return HttpResponse('')
 
 def isNum(data):
 	try:
@@ -201,9 +196,3 @@ def isNum(data):
 		return True
 	except ValueError:
 		return False
-'''
-class HostUpdate(UpdateView):
-	model = Host
-	fields = ['name']
-	template_name_suffix = '_update_form'
-'''

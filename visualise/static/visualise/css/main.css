@@ -91,6 +91,7 @@ h2{
 		color: black;
 		font-size: 40px;
 		line-height: 70px;
+		/*background-color: orange;*/
 	}
 
 	#top_1 span{
@@ -117,35 +118,30 @@ h2{
 			font-size: inherit;
 		}
 
-		#top_1 > div{
+		#top_1 #m_network, #m_user{
 			display: inline-block;
 			width: 10%;
-			height: 100%;					
+			height: 100%;
 			text-align: center;
 			float: left;
-			font-size: 20px;	
+			font-size: 20px;
+		}	
+
+		#top_1 #button_name_container{
+			display: inline-block;
+			height: 35px;
+			margin-top: 18px;
 		}
 
-			#top_1 > div > div{		
-				display: none;
-				width: 100%;
-				float: left;
-				/*overflow-y: scroll;*/
-				border-bottom: 5px black solid;		
+			#top_1 #button_name_container #text_name{
+				display: inline-block;
+				height: 100%;			
 			}
 
-				#top_1 > div > div .element{		
-					display: block;
-					width: 100%;
-					height: 30px;
-					line-height: 30px;
-					float: left;
-					background-color: white;
-				}	
-
-				#top_1 > div > div .element:hover{		
-					background-color: orange;
-				}												
+			#top_1 #button_name_container #button_save{
+				display: inline-block;
+				height: 100%;
+			}			
 
 	#top_2{
 		display: block;
@@ -196,10 +192,15 @@ h2{
 
 		#top_3 .section_port{
 			display: inline-block;
-			width: 150px;
+			width: 300px;
 			margin-right: 50px;
 			color: white;
 		}	
+
+			#top_3 .section_port input[type=text]{
+				display: inline-block;
+				width: 60px;
+			}
 
 		#top_3 .section_interval{
 			display: inline-block;
@@ -257,10 +258,9 @@ h2{
 				cursor: pointer;
 			}
 
-			#text_port{
+			#text_port_source, #text_port_destination{
 				display: inline-block;
 				width: 80px;
-				/*height: 40px;*/
 				text-align: center;	
 			}	
 

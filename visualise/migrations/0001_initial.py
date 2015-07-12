@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Flow',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
+                ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('time_start', models.IntegerField(null=True, blank=True)),
                 ('time_end', models.IntegerField(null=True, blank=True)),
                 ('protocol', models.CharField(max_length=5, blank=True)),
@@ -29,21 +29,21 @@ class Migration(migrations.Migration):
                 ('bytes_in', models.IntegerField(null=True, blank=True)),
             ],
             options={
-                'db_table': 'flows',
                 'managed': False,
+                'db_table': 'flows',
             },
             bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Host',
             fields=[
-                ('id', models.IntegerField(primary_key=True, serialize=False)),
+                ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('mac', models.CharField(max_length=17, blank=True)),
                 ('name', models.CharField(max_length=20, blank=True)),
             ],
             options={
-                'db_table': 'hosts',
                 'managed': False,
+                'db_table': 'hosts',
             },
             bases=(models.Model,),
         ),

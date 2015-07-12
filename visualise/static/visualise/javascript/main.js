@@ -4,108 +4,127 @@ $(document).ready(function(){
 	setMenuPointers();
 	setMenu(menu.network);
 
-	/** Flows information */
-	populateFlowsInfo();
+	/** Request flows information and draw visuals. */
+	refreshInformation();
 
 	/** Controls */
 	setControlPointers();
-	setFilterListeners();	// Setup listener events for the filter controls.
-	populateMACAddresses();	// Populate filter controls.
-	populateIntervalSelectBox();	
-
-	// Create the visual objects.
-	updateVisuals();
+	populateMACAddresses();		// Populate filter controls.
+	setFilterListeners();		// Setup listener events for the filter controls.
+	populateIntervalSelectBox();
 });
 
 function setMenuPointers(){
-	menu.network = document.getElementById('m_network');
-	menu.user = document.getElementById('m_user');
+	menu.network = $('#m_network');
+	menu.user = $('#m_user');
 }
 
 function setControlPointers(){
-	controls.selectBox.macs = document.getElementById('select_devices');
-	controls.checkBox.incoming = document.getElementById('check_ingress');
-	controls.checkBox.outgoing = document.getElementById('check_egress');
-	controls.textBox.port = document.getElementById('text_port');
-	controls.selectBox.intervalType = document.getElementById('select_interval_type');
-	controls.selectBox.application = document.getElementById('select_applications');	
+	controls.selectBox.macs = $('#select_devices');
+	controls.checkBox.incoming = $('#check_ingress');
+	controls.checkBox.outgoing = $('#check_egress');
+	controls.textBox.port.src = $('#text_port_source');
+	controls.textBox.port.dst = $('#text_port_destination');
+	controls.selectBox.intervalType = $('#select_interval_type');
+	controls.selectBox.application = $('#select_applications');
 }
 
-function updateVisuals(){
+/** Filter updating methods. */
+function updateFilterMac(){
+	filter.mac = controls.selectBox.macs.find(":selected").val();
+}
 
-	removeAllChildren(document.getElementById('top_4'));
-	removeAllChildren(document.getElementById('header'));
+function updateFilterDirection(){
+	if($('#check_ingress').is(':checked') && $('#check_egress').is(':checked')){
+		filter.direction = DIRECTION.ALL;
+	}
+	else if(controls.checkBox.incoming.is(':checked')){
+		filter.direction = DIRECTION.INGRESS;
+	}
+	else if(controls.checkBox.outgoing.is(':checked')){
+		filter.direction = DIRECTION.EGRESS;
+	}
+	else{
+		alert("You must select at least one direction.");
+		filter.direction = "error";
+	}
+}
 
-	// Charts/Graphs
-	var newVisualContainer = $("<div></div>").addClass("visual_container");
-	var newVisualTitle = $("<div></div>").addClass("visual_title").text("Protocols");
-	var newVisual = $("<div></div>").addClass("visual");
-	loadProtocolChart(newVisual);
-	newVisualContainer.append(newVisualTitle);
-	newVisualContainer.append(newVisual);
-	$("#top_4").append(newVisualContainer);
+function updateFilterPorts(){
+	filter.port.src = controls.textBox.port.src.val();
+	filter.port.dst = controls.textBox.port.dst.val();
 
-	newVisualContainer = $("<div></div>").addClass("visual_container");
-	newVisualTitle = $("<div></div>").addClass("visual_title").text("Usage");
-	newVisual = $("<div></div>").addClass("visual");
-	loadUsageChart(newVisual);
-	newVisualContainer.append(newVisualTitle);
-	newVisualContainer.append(newVisual);
-	$("#top_4").append(newVisualContainer);
+}
 
-	newVisualContainer = $("<div></div>").addClass("visual_container");
-	newVisualTitle = $("<div></div>").addClass("visual_title").text("Upload Timeline");
-	newVisual = $("<div></div>").addClass("visual");
-	//loadUploadTimeline(newVisual);
-	newVisualContainer.append(newVisualTitle);
-	newVisualContainer.append(newVisual);
-	$("#top_4").append(newVisualContainer);
+function updateFilterInterval(){
+	filter.intervalType = controls.selectBox.intervalType.val();
+	filter.interval.month = controls.selectBox.month.val();
+	filter.interval.day = controls.selectBox.day.val();
+	filter.interval.hour = controls.selectBox.hour.val();
+}
 
-	newVisualContainer = $("<div></div>").addClass("visual_container");
-	newVisualTitle = $("<div></div>").addClass("visual_title").text("Download Timeline");
-	newVisual = $("<div></div>").addClass("visual");
-	//loadDownloadTimeline(newVisual);
-	newVisualContainer.append(newVisualTitle);
-	newVisualContainer.append(newVisual);
-	$("#top_4").append(newVisualContainer);
-
-	$("#top_4").append($('<div></div>').addClass('clear'));
-
-	// Flows table
-	loadFlowsTable($('#header'));	
+function updateFilterApplication(){
+	filter.application = controls.selectBox.application.find(":selected").text();
 }
 
 function setFilterListeners(){
 
 	$("#select_devices").change(function(){
-		filter.mac = $('#select_devices').find(":selected").text();
-		populateFlowsInfo();
-		if(filter.mac == 'All'){
+		updateFilterMac();			// Update filter value
+		refreshInformation();		// Request new data
+		if(filter.mac == 'all'){
 			setMenu(menu.network);
+
+			$('#button_name_container').remove();
+			$('#text_name').remove();
+			$('#button_save').remove();
 		}
 		else{
 			setMenu(menu.user);
+
+			if(!$('#button_name_container').length){
+				var buttonContainer = $('<div></div>');
+				buttonContainer.attr('id', 'button_name_container');
+
+				var textName = $('<input>');
+				textName.attr('id', 'text_name');
+				textName.attr('type', 'text');
+				buttonContainer.append(textName);
+
+				var buttonSave = $('<input>');
+				buttonSave.attr('id', 'button_save');
+				buttonSave.attr('type', 'button');
+				buttonSave.val('Save Name');
+				buttonSave.click(function(){
+					console.log("Saving name for: " + filter.mac + " to: " + textName.val());
+					saveHostName(textName.val());
+					textName.val("");
+				});
+				buttonContainer.append(buttonSave);
+
+				menu.user.parent().append(buttonContainer);
+			}
 		}
-		updateVisuals();
 	});
 
-	$("#check_ingress").change(function(){
-		filter.direction = getDirection();
-		updateVisuals();
+	$("#check_ingress").change(function(){		
+		updateFilterDirection();	// Update filter value
+		refreshInformation();		// Request new data
 	});
 
 	$("#check_egress").change(function(){
-		filter.direction = getDirection();
-		updateVisuals();
+		updateFilterDirection();	// Update filter value
+		refreshInformation();		// Request new data
 	});
 
 	$("#text_port").change(function(){
-		filter.port = $('#text_port').val();
-		updateVisuals();		
+		updateFilterPort();			// Update filter value
+		refreshInformation();		// Request new data
 	});
 
 	$("#select_interval_type").change(function(){
 		filter.intervalType = $("#select_interval_type").val();
+		refreshInformation();			// Request new data
 		updateIntervalSelectBoxes();
 		if(filter.intervalType == INTERVAL.DAILY){
 			filter.interval.hour = null;
@@ -115,9 +134,9 @@ function setFilterListeners(){
 		}
 	});
 
-	$("#text_application").change(function(){
-		filter.application = $('#select_application').find(":selected").text();
-		updateVisuals();
+	$("#text_application").change(function(){		
+		updateFilterApplication();	// Update filter value
+		refreshInformation();			// Request new data
 	});
 
 	$("#button_save_name").click(function(){
@@ -125,82 +144,22 @@ function setFilterListeners(){
 	});
 }
 
+function getTimestamp(){
+	return new Date(filter.interval.year, filter.interval.month).getTime() / 1000;
+}
+
 function setMenu(option){
-	menu.network.className = '';
-	menu.user.className = '';
-	option.className = 'current';
+	menu.network.attr('class', '');
+	menu.user.attr('class', '');
+	option.addClass('current');
 }
 
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function getDeviceUsage(mac){
-	$.ajax({
-		type	: "POST",
-		url 	: "get_device_usage",
-		data 	: {
-			csrfmiddlewaretoken : getCookie('csrftoken'),
-		},
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-		success : function(json_data){
-			//console.log(json_data);
-			//console.log(json_data["downloaded"]);
-			//console.log(json_data["uploaded"]);
-		},
-	});
-}
-
-function getDirection(){
-	if($('#check_ingress').is(':checked') && $('#check_egress').is(':checked')){
-		//console.log("Both.");
-		return "all";
+function getAJAXParameters(){
+	return {
+		csrfmiddlewaretoken: getCookie('csrftoken'),
+		mac: filter.mac,
+		direction: filter.direction,
+		port_source: filter.port.src,
+		port_destination: filter.port.dst,
 	}
-	if(!$('#check_ingress').is(':checked')){		
-		if(!$('#check_egress').is(':checked')){
-			//console.log("Neither, throw an error...");
-			alert("You must select at least one direction.");
-		}
-		//console.log("Only egress.");
-		return "egress";
-	}
-	//console.log("Only ingress.");
-	return "ingress";
-}
-
-function saveHostName(name){
-	$.ajax({
-		type	: "POST",
-		url 	: "save_device_name",
-		data 	: {
-			csrfmiddlewaretoken : getCookie('csrftoken'),
-			mac : filter.mac,
-		},
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-		success : function(json_data){
-			console.log(json_data);
-			console.log(json_data["status"]);
-			populateMACAddresses();
-		},
-	});
 }

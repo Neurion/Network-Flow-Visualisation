@@ -9,6 +9,7 @@ urlpatterns = patterns('',
 	url(r'get_usage/?$', views.get_usage, name='index'),
 	url(r'get_upload_timeline/?$', views.get_upload_timeline, name='index'),
 	url(r'get_download_timeline/?$', views.get_download_timeline, name='index'),
+	url(r'save_host_name/?$', views.save_host_name, name='index'),
 
 	# match anything after '/visualise/'
 	url(r'^$', views.index, name='index'),

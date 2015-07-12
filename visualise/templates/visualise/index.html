@@ -46,11 +46,11 @@ For specific device information to be displayed, the filter must be applied whic
     <div id="top_3">
 
         <div id="filter_header">
-            <div class="section">Devices:</div>
+            <div class="section">Device:</div>
             <div class="section">Direction:</div>
             <div class="section_port">Port:</div>
             <div class="section_interval">Interval:</div>
-            <div class="section">Application(to do):</div>
+            <div class="section">Application:(to do)</div>
         </div><!-- Close filter_header -->
 
         <div id="filter_container">
@@ -70,7 +70,10 @@ For specific device information to be displayed, the filter must be applied whic
 
             <!-- Port -->
             <div class="section_port">
-                <input id="text_port" name="text_port" type="text" placeholder="0-65535" value="{{ f_source_port }}">
+                <label for="text_port_src">Source:</label>
+                <input id="text_port_src" name="text_port_src" type="text" placeholder="0-65535" value="{{ f_source_port }}">
+                <label for="text_port_dst">Destination:</label>
+                <input id="text_port_dst" name="text_port_dst" type="text" placeholder="0-65535" value="{{ f_source_port }}">
             </div>
 
             <!-- Interval -->

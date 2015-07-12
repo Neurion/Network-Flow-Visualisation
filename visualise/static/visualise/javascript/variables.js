@@ -4,6 +4,12 @@ var INTERVAL = {
 	MONTHLY: "monthly",
 };
 
+var DIRECTION = {
+	INGRESS: "ingress",
+	EGRESS: "egress",
+	ALL: "all",
+};
+
 var DEFAULT = {
 	INTERVAL: INTERVAL.MONTHLY,
 };
@@ -15,13 +21,13 @@ var SECONDS = {
 				MONTH: 2628000,
 			};
 
+var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 var menu = {
 	network: null,
 	user: null,
 };
-
-var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 var controls = {
 	selectBox: {
@@ -39,17 +45,24 @@ var controls = {
 		outgoing: null,
 	},
 	textBox: {
-		port: null,
+		port: {
+			src: null,
+			dst: null,
+		},
 	},
 };
 
 /* Values of the filter controls. This gets updated after a control value is changed. */
 var filter = {
-	mac: "All",
+	mac: "all",
 	direction: "all",
-	port: -1,
+	port: {
+		src: -1,
+		dst: -1,
+	},
 	intervalType: null,
 	interval: {
+		year: null,
 		month: null,
 		day: null,
 		hour: null,
@@ -69,12 +82,4 @@ var flowData = {
 /* All local MAC addresses. Used to request information specific to a particular device. */
 var n_deviceMACs = [];
 
-/*
-var now = new Date();
-var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-var timestamp = startOfDay / 1000;
-console.log("start of day: " + timestamp);
-var startOfMonth = new Date(now.getFullYear(), now.getMonth());
-timestamp = startOfMonth / 1000;
-console.log("start of month: " + timestamp);
-*/
+var n_names = {};

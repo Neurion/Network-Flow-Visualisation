@@ -1,3 +1,99 @@
+function loadUsageChart(container){
+
+    $.ajax({
+		type	: "POST",
+		url 	: "get_usage",
+		data 	: getAJAXParameters(),
+		dataType : "json",
+		async : true,
+		error : function(data){
+			alert('AJAX error:' + data);
+		},
+    	success : function(json_data){
+
+    		var data = [];
+    		data.push({ label: "Downloaded", data: json_data["downloaded"] });
+    		data.push({ label: "Uploaded", data: json_data["uploaded"] });
+			var options = {
+			    series: {
+			        pie: {
+			            show: true,	
+			            radius: 1,
+			            label: {
+			            	show: true,
+			                radius: 1/2,
+			                formatter: function(label, point){
+			                	return(point.percent.toFixed(2) + '%');
+			                },
+			                threshold: 0.1,            	
+			        	}
+			        }
+			    },
+			    grid: {
+			        //hoverable: true,
+			        //clickable: true
+			    },
+			    legend: {
+			        show: true,
+			        //container:$("#usage_container_legend"),
+			    }	        
+			};
+
+			// Plot the usage pie chart
+			var plot = $.plot(container, data , options);	
+    	},
+    });		
+}
+
+
+
+function loadProtocolChart(container){
+
+    $.ajax({
+		type	: "POST",
+		url 	: "get_protocols",
+		data 	: getAJAXParameters(),
+		dataType : "json",
+		async : true,
+		error : function(data){
+			alert('AJAX error:' + data);
+		},
+    	success : function(json_data){
+
+    		var i;
+    		var data = [];
+    		for(i = 0; i < json_data["protocols"].length; i++){
+    			data.push({ label : json_data["protocols"][i], data : json_data["bytes"][i] });
+    		}
+			var options = {
+			    series: {
+			        pie: {
+			            show: true,	
+			            radius: 1,
+			            label: {
+			            	show: true,
+			                radius: 1/2,
+			                formatter: function(label, point){
+			                	return(point.percent.toFixed(2) + '%');
+			                },
+			                threshold: 0.1,            	
+				        } 		                 
+			        }
+			    },
+			    grid: {
+			        //hoverable: true,
+			        //clickable: true,
+			    },
+			    legend: {	    	
+			        show: true,
+			        //container:$("#protocol_container_legend"),
+			    }	        
+			};
+			// Plot the protocol pie chart
+			var plot = $.plot(container, data, options);
+    	},
+    });	
+}
 
 
 
@@ -7,9 +103,7 @@ function loadUploadTimeline(container){
     $.ajax({
 		type	: "POST",
 		url 	: "get_upload_timeline/",
-		data 	: {
-			csrfmiddlewaretoken : getCookie('csrftoken'),
-		},
+		data 	: getAJAXParameters(),
 		dataType : "json",
 		async : true,
 		error : function(data){
@@ -153,9 +247,7 @@ function loadDownloadTimeline(container){
     $.ajax({
 		type	: "POST",
 		url 	: "get_download_timeline/",
-		data 	: {
-			csrfmiddlewaretoken : getCookie('csrftoken'),
-		},
+		data 	: getAJAXParameters(),
 		dataType : "json",
 		async : true,
 		error : function(data){
@@ -284,118 +376,6 @@ function loadDownloadTimeline(container){
 	    }
 	});
 }
-
-
-
-function loadProtocolChart(container){
-
-    $.ajax({
-		type	: "POST",
-		url 	: "get_protocols/",
-		data 	: {
-			csrfmiddlewaretoken : getCookie('csrftoken'),
-			device : filter.device,
-			direction : filter.direction,
-			port : filter.port,
-		},
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-    	success : function(json_data){
-    		//console.log(json_data);
-    		var i;
-    		var data = [];
-    		for(i = 0; i < json_data["protocols"].length; i++){
-    			data.push({ label : json_data["protocols"][i], data : json_data["bytes"][i] });
-    		}
-			var options = {
-			    series: {
-			        pie: {
-			            show: true,	
-			            radius: 1,
-			            label: {
-			            	show: true,
-			                radius: 1/2,
-			                formatter: function(label, point){
-			                	return(point.percent.toFixed(2) + '%');
-			                },
-			                threshold: 0.1,            	
-				        } 		                 
-			        }
-			    },
-			    grid: {
-			        //hoverable: true,
-			        //clickable: true,
-			    },
-			    legend: {	    	
-			        show: true,
-			        //container:$("#protocol_container_legend"),
-			    }	        
-			};
-			// Plot the protocol pie chart
-			var plot = $.plot(container, data, options);
-    	},
-    });	
-}
-
-
-
-
-
-
-
-function loadUsageChart(container){
-
-    $.ajax({
-		type	: "POST",
-		url 	: "get_usage/",
-		data 	: {
-			csrfmiddlewaretoken : getCookie('csrftoken'),
-		},
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-    	success : function(json_data){
-    		//console.log(json_data);
-    		var data = [];
-    		data.push({ label : "Downloaded", data : json_data["downloaded"] });
-    		data.push({ label : "Uploaded", data : json_data["uploaded"] });
-			var options = {
-			    series: {
-			        pie: {
-			            show: true,	
-			            radius: 1,
-			            label: {
-			            	show: true,
-			                radius: 1/2,
-			                formatter: function(label, point){
-			                	return(point.percent.toFixed(2) + '%');
-			                },
-			                threshold: 0.1,            	
-			        	}
-			        }
-			    },
-			    grid: {
-			        //hoverable: true,
-			        //clickable: true
-			    },
-			    legend: {
-			        show: true,
-			        //container:$("#usage_container_legend"),
-			    }	        
-			};
-
-			// Plot the usage pie chart
-			var plot = $.plot(container, data , options);	
-    	},
-    });		
-}
-
-
 
 
 
