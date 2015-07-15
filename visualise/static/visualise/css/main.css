@@ -64,6 +64,7 @@ h2{
 	height: 3px;
 }
 
+/*
 .header{
 	display: block;
 	width: 100%;
@@ -72,6 +73,7 @@ h2{
 	font-weight: bold;
 	background-color: #2F3B31;
 }
+*/
 
 #container{
 	display: block;
@@ -84,7 +86,7 @@ h2{
 	#top_1{
 		display: inline-block;
 		width: 98%;
-		height: 70px;
+		height: 60px;
 		padding: 5px 1%;
 		background-color: green;
 		background-color: white;
@@ -141,7 +143,12 @@ h2{
 			#top_1 #button_name_container #button_save{
 				display: inline-block;
 				height: 100%;
-			}			
+			}
+
+			#top_1 #button_name_container #button_remove{
+				display: inline-block;
+				height: 100%;
+			}						
 
 	#top_2{
 		display: block;
@@ -175,49 +182,64 @@ h2{
 		}
 
 	#top_3{
+		display: inline-block;
+		width: 100%;
+		height: 40px;
+		line-height: 40px;
+		background-color: #2F3B31;
+		color: white;
+	}
+
+		#top_3 .item{
+			display: inline-block;
+			width: 100px;
+			height: 100%;
+			text-align: center;
+			float: left;
+		}
+
+		#top_3 .item:hover{
+			cursor: pointer;
+			opacity: 0.5;
+		}
+
+	#filter_container{
 		display: block;
+		display: none;
 		width: 98%;
-		min-height: 50px;
-		padding: 0.5% 1%;
+		height: 60px;
+		padding: 0% 1%;
 		background-color: #2F3B31;
 	}	
 
-		#top_3 .section{
+		#filter_container .section_container{
 			display: inline-block;
 			width: 200px;
+			height: 50px;
+			margin: 5px 0px;
 			margin-right: 50px;
+			float: left;			
 			color: white;
-			/*background-color: orange;*/
+			/*background-color: red;*/
 		}
 
-		#top_3 .section_port{
-			display: inline-block;
-			width: 300px;
-			margin-right: 50px;
-			color: white;
-		}	
+			#filter_container .section_container.port{
+				width: 300px;
+			}
 
-			#top_3 .section_port input[type=text]{
+			#filter_container .section_container.port input[type=text]{
 				display: inline-block;
 				width: 60px;
 			}
 
-		#top_3 .section_interval{
-			display: inline-block;
-			width: 350px;
-			margin-right: 50px;
-			color: white;
-		}		
+			#filter_container .section_container.interval{
+				width: 350px;
+			}
 
-		#filter_header{
+		#filter_container .section{
 			display: block;
 			width: 100%;
-		}
-
-		#filter_container{
-			display: inline-block;
-			width: 100%;		
-			float: left;
+			height: 50%;
 		}
 
 			#select_devices{
@@ -262,59 +284,37 @@ h2{
 				display: inline-block;
 				width: 80px;
 				text-align: center;	
-			}	
-
-			#btn_submit{
-				width: 100px;
-				height: 40px;
 			}
 
+	#preferences_container{
+		display: block;
+		display: none;
+		width: 98%;
+		padding: 0% 1%;
+		background-color: #2F3B31;
+		color: white;
+	}	
 
-		#usage{
-			display: inline-block;
-			width: 20%;
-			height: 100%;	
-			font-size: 20px;
-			float: right;
-		}	
+	#preferences_container span.header{
+		font-weight: bold;
+	}
 
-			#usage_container_chart{
-				display: block;
-				width: 100%;
-				height: 100%;
-				float: left;
-				background-color: #2F3B31;
-			}
-
-		#protocols{
-			display: inline-block;
-			width: 20%;
-			height: 100%;
-			font-size: 20px;
-			float: right;
-		}
-
-			#protocol_container_chart{
-				display: block;
-				width: 100%;
-				height: 100%;
-				float: left;	
-				background-color: #2F3B31;
-			}
+	#preferences_container #network_container > label, #device_container > label{
+		margin-right: 30px;
+	}
 
 	#top_4{
 		display: block;
 		width: 100%;
 		min-height: 400px;
 		padding-bottom: 1%;
-		/* transparent */
 		background-color: white;
 		color: black;		
 	}
 
 		.visual_container{
 			display: inline-block;
-			width: 40%;
+			width: 25%;
 			height: 40%;
 			min-height: 300px;
 			padding: 0.5%;

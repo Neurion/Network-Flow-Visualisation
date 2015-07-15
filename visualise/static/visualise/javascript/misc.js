@@ -11,6 +11,13 @@ function removeAllChildren(element){
 	}	
 }
 
+function createInput(id, type){
+    var $input = $('<input></input>');
+    $input.attr('id', id);
+    $input.attr('type', type);
+    return $input;
+}
+
 /**
  * Returns the specified cookie.
 */

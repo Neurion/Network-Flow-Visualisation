@@ -6,6 +6,8 @@ from django.views.generic.edit import UpdateView
 from visualise.models import Flow, Host
 import json, time
 
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 #data = serializers.serialize("json", ret)
 #data = json.dumps(ret)
 
@@ -19,9 +21,11 @@ class DIRECTION():
 	INCOMING = 0
 	OUTGOING = 1
 
+@ensure_csrf_cookie
 def index(request):
 	return render(request, 'visualise/index.html')
 
+@ensure_csrf_cookie
 def get_flows_info(request):
 	"""
 	Returns the number of devices, the earliest timestamp and the latest timestamp of the flows to be displayed.

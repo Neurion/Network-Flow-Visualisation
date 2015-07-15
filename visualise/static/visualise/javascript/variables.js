@@ -24,33 +24,77 @@ var SECONDS = {
 var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-var menu = {
+/* All possible visuals that can be displayed. */
+var VISUALS = {
+	GRAPHS_CHARTS: {
+		DOWNLOADED_TIMELINE: "",
+		UPLOADED_TIMELINE: "",
+		DOWNLOADED: "",
+		UPLOADED: "",
+	},
+	TABLES: {
+		DOWNLOADED: "",
+		UPLOADED: "",
+	},
+};
+
+var mode = {
 	network: null,
 	user: null,
 };
 
+var menu = {
+	filter: null,
+	display: null,
+}
+
 var controls = {
-	selectBox: {
-		macs: null,
-		intervalType: null,
-		interval: {
-			hours: null,
-			days: null,
-			months: null,
+	filters: {
+		selectBox: {
+			macs: null,
+			intervalType: null,
+			interval: {
+				hours: null,
+				days: null,
+				months: null,
+			},
+			application: null,
 		},
-		application: null,
+		checkBox: {
+			incoming: null,
+			outgoing: null,
+		},
+		textBox: {
+			port: {
+				src: null,
+				dst: null,
+			},
+		},
 	},
-	checkBox: {
-		incoming: null,
-		outgoing: null,
-	},
-	textBox: {
-		port: {
-			src: null,
-			dst: null,
+	preferences: {
+		network: {
+			devices_downloaded: null,
+			devices_uploaded: null,			
+			downloaded_timeline: null,
+			uploaded_timeline: null,
+			usage: null,
+			application: null,
+			domains: null,
+			country: null,			
+		},
+		device: {
+			devices_downloaded: null,
+			devices_uploaded: null,			
+			usage: null,
+			application: null,
+			domains: null,
+			country: null,
 		},
 	},
 };
+
+/** An array of graphs and charts or tables. */
+var visuals = [];
 
 /* Values of the filter controls. This gets updated after a control value is changed. */
 var filter = {

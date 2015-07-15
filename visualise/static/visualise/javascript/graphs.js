@@ -1,3 +1,10 @@
+/**
+ * loadUsageChart();
+ * loadProtocolChart();
+ * loadUploadTimeline();
+ * loadDownloadTimeline();
+ */
+
 function loadUsageChart(container){
 
     $.ajax({
@@ -40,7 +47,7 @@ function loadUsageChart(container){
 			};
 
 			// Plot the usage pie chart
-			var plot = $.plot(container, data , options);	
+			var plot = $.plot(container, data , options);
     	},
     });		
 }
@@ -233,7 +240,7 @@ function loadUploadTimeline(container){
 			    },      
 			};
 			// Plot the usage timeline
-			var plot = $.plot(container, dataset , options);	
+			var plot = $.plot(container, dataset , options);
 	    }
 	});
 }
@@ -372,17 +379,7 @@ function loadDownloadTimeline(container){
 			    },      
 			};
 			// Plot the usage timeline
-			var plot = $.plot(container, dataset , options);	
+			var plot = $.plot(container, dataset , options);
 	    }
 	});
-}
-
-
-
-
-function loadFlowsTable(container){
-	container.append($('<span></span>').addClass('cell').text('Device'));
-	container.append($('<span></span>').addClass('cell').text('Downloaded'));
-	container.append($('<span></span>').addClass('cell').text('Uploaded'));
-	container.append($('<span></span>').addClass('cell').text('Protocol'));
 }

@@ -1,46 +1,8 @@
-function refreshInformation(){
-	$.ajax({
-		type: "POST",
-		url: "get_flows_info",
-		data: getAJAXParameters(),
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-		success : function(json_data){
-
-			n_deviceMACs = json_data['macs'];
-
-			flowData.time.earliest = json_data['timestamp_earliest']
-			flowData.time.latest = json_data['timestamp_latest']			
-
-			var oldMac = $('#select_devices').val();
-			$('#select_devices').val(filter.mac);
-
-			updateFlowsInfo();
-
-			// Populate the filter controls.
-			populateMACAddresses(json_data['names'], json_data['macs']);
-			$('#select_devices').val(oldMac);
-
-			updateIntervalSelectBoxes();
-			updateFilterInterval();
-
-			var date = new Date(flowData.time.earliest * 1000);
-			filter.interval.year = date.getFullYear()
-
-			updateVisuals();
-			//printFilterValues();
-		},
-	});	
-}
-
 function updateFlowsInfo(){
 
 	removeAllChildren(document.getElementById("top_2"));
 
-	/* Num devices or device name */
+	/* Display 'Num devices' or 'Device name' */
 	if(filter.mac != 'all'){
 		$('#top_2').append($('<span></span>').addClass('info').text('Device:'));
 		$('#top_2').append($('<span></span>').addClass('value').text(filter.mac));
@@ -64,34 +26,10 @@ function updateFlowsInfo(){
 	$('#top_2').append($('<span></span>').addClass('info').text('Latest data:'));
 	date = new Date(flowData.time.latest * 1000);
 	t = date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();		
-	$('#top_2').append($('<span></span>').addClass('value').text(t));	
-}
+	$('#top_2').append($('<span></span>').addClass('value').text(t));
 
-function updateVisuals(){
-
-	removeAllChildren(document.getElementById('top_4'));
-	removeAllChildren(document.getElementById('header'));
-
-	/** Charts/Graphs */
-	loadProtocolChart(createVisual("Protocols"));
-	loadUsageChart(createVisual("Usage"));
-	//loadUploadTimeline(createVisual("Upload Timeline"));
-	//loadDownloadTimeline(createVisual("Download Timeline"));
-
-	$("#top_4").append($('<div></div>').addClass('clear'));
-
-	// Flows table
-	loadFlowsTable($('#header'));	
-}
-
-function createVisual(title){
-	newVisualContainer = $("<div></div>").addClass("visual_container");
-	newVisualTitle = $("<div></div>").addClass("visual_title").text(title);
-	newVisual = $("<div></div>").addClass("visual");
-	newVisualContainer.append(newVisualTitle);
-	newVisualContainer.append(newVisual);
-	$("#top_4").append(newVisualContainer);	
-	return newVisual;
+	$('#top_2').append($('<span></span>').addClass('info').text('Downloaded:'));
+	$('#top_2').append($('<span></span>').addClass('info').text('Uploaded:'));
 }
 
 function populateMACAddresses(names, macs){
@@ -122,14 +60,14 @@ function updateIntervalSelectBoxes(){
 
 	// Store the old selected values.
 	var oldMonth, oldDay, oldHour;
-	if(controls.selectBox.interval.months != null){
-		oldMonth = controls.selectBox.interval.months.val();
+	if(controls.filters.selectBox.interval.months != null){
+		oldMonth = controls.filters.selectBox.interval.months.val();
 	}
-	if(controls.selectBox.interval.days != null){
-		oldDay = controls.selectBox.interval.days.val();
+	if(controls.filters.selectBox.interval.days != null){
+		oldDay = controls.filters.selectBox.interval.days.val();
 	}
-	if(controls.selectBox.interval.hours != null){
-		oldHour = controls.selectBox.interval.hours.val();
+	if(controls.filters.selectBox.interval.hours != null){
+		oldHour = controls.filters.selectBox.interval.hours.val();
 	}
 
 	// Remove the select boxes.
@@ -141,20 +79,20 @@ function updateIntervalSelectBoxes(){
 	updateMonthsSelectBox();
 	if(oldMonth != null){
 		if($("#select_interval_month option[value='" + oldMonth + "']").length == 1){
-			controls.selectBox.interval.months.val(oldMonth);
+			controls.filters.selectBox.interval.months.val(oldMonth);
 			filter.interval.month = oldMonth;			
 		}
 	}	
 	if(filter.intervalType == INTERVAL.DAILY || filter.intervalType == INTERVAL.HOURLY){
 		updateDaysSelectBox();
 		if(oldDay != null){
-			controls.selectBox.interval.days.val(oldDay);
+			controls.filters.selectBox.interval.days.val(oldDay);
 			filter.interval.day = oldDay;
 		}		
 		if(filter.intervalType == INTERVAL.HOURLY){
 			updateHoursSelectBox();
 			if(oldHour != null){
-				controls.selectBox.interval.hours.val(oldHour);
+				controls.filters.selectBox.interval.hours.val(oldHour);
 				filter.interval.hour = oldHour;
 			}
 		}
@@ -162,10 +100,10 @@ function updateIntervalSelectBoxes(){
 }
 
 function updateMonthsSelectBox(){
-	controls.selectBox.interval.months = $('<select></select>').attr('id', 'select_interval_month');
-	controls.selectBox.interval.months.change(function(){
+	controls.filters.selectBox.interval.months = $('<select></select>').attr('id', 'select_interval_month');
+	controls.filters.selectBox.interval.months.change(function(){
 		
-		filter.interval.month = controls.selectBox.interval.months.val();
+		filter.interval.month = controls.filters.selectBox.interval.months.val();
 
 		var now = new Date();
 		var startOfMonth = new Date(now.getFullYear(), filter.interval.month);
@@ -184,16 +122,16 @@ function updateMonthsSelectBox(){
 
 		refreshInformation();
 	});
-	$('#select_interval_type').parent().append(controls.selectBox.interval.months);
+	$('#select_interval_type').parent().append(controls.filters.selectBox.interval.months);
 	populateMonths();
 }
 
 function updateDaysSelectBox(){
-	controls.selectBox.interval.days = $('<select></select>').attr('id', 'select_interval_day');
-	$('#select_interval_type').parent().append(controls.selectBox.interval.days);
+	controls.filters.selectBox.interval.days = $('<select></select>').attr('id', 'select_interval_day');
+	$('#select_interval_type').parent().append(controls.filters.selectBox.interval.days);
 	console.log("listing days for month: " + filter.interval.month);
-	controls.selectBox.interval.days.change(function(){
-		filter.interval.day = controls.selectBox.interval.days.val();		
+	controls.filters.selectBox.interval.days.change(function(){
+		filter.interval.day = controls.filters.selectBox.interval.days.val();		
 		if(filter.intervalType == INTERVAL.HOURLY){
 			$('#select_interval_hour').remove();		
 			updateHoursSelectBox();
@@ -204,11 +142,11 @@ function updateDaysSelectBox(){
 }
 
 function updateHoursSelectBox(){
-	controls.selectBox.interval.hours = $('<select></select>').attr('id', 'select_interval_hour');
-	$('#select_interval_type').parent().append(controls.selectBox.interval.hours);
+	controls.filters.selectBox.interval.hours = $('<select></select>').attr('id', 'select_interval_hour');
+	$('#select_interval_type').parent().append(controls.filters.selectBox.interval.hours);
 	console.log("listing hours for day: " + filter.interval.day);
-	controls.selectBox.interval.hours.change(function(){
-		filter.interval.hour = controls.selectBox.interval.hours.val();		
+	controls.filters.selectBox.interval.hours.change(function(){
+		filter.interval.hour = controls.filters.selectBox.interval.hours.val();		
 	});
 	populateHours();
 }
@@ -220,10 +158,10 @@ function populateMonths(){
 	while(currentDate.getTime() <= finalDate.getTime()){
 		var monthString = MONTHS[currentDate.getMonth()];
 		//console.log(monthString);
-		controls.selectBox.interval.months.append($("<option></option>").attr("value", currentDate.getMonth()).text(monthString)); 
+		controls.filters.selectBox.interval.months.append($("<option></option>").attr("value", currentDate.getMonth()).text(monthString)); 
 		currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);	// Increment by one month.
 	}
-	filter.interval.month = controls.selectBox.interval.months.val();
+	filter.interval.month = controls.filters.selectBox.interval.months.val();
 }
 
 function populateDays(){	
@@ -235,11 +173,11 @@ function populateDays(){
 		var day = currentDate.getDay();
 		var dayOfTheMonth = currentDate.getDate();
 		var dayString = DAYS[day];
-		controls.selectBox.interval.days.append($("<option></option>").attr("value", dayOfTheMonth).text(dayString + " " + dayOfTheMonth)); 
+		controls.filters.selectBox.interval.days.append($("<option></option>").attr("value", dayOfTheMonth).text(dayString + " " + dayOfTheMonth)); 
 		currentDate = new Date(currentDate.getTime() + (SECONDS.DAY * 1000));	// Increment by one day.
 		currentMonth = currentDate.getMonth();
 	}
-	filter.interval.day = controls.selectBox.interval.days.val();
+	filter.interval.day = controls.filters.selectBox.interval.days.val();
 }
 
 /** Populates the hours select box control. It is required that the month and day select boxes are already populated. */
@@ -253,7 +191,7 @@ function populateHours(){
 		// While within the desired day AND before the absolute latest date.
 		//console.log("current day: " + currentDate + ", target day: " + filter.interval.day);
 		var hour = date.getHours();
-		controls.selectBox.interval.hours.append($("<option></option>").attr("value", hour).text(hour + ":00")); 		
+		controls.filters.selectBox.interval.hours.append($("<option></option>").attr("value", hour).text(hour + ":00")); 		
 		// Update hour for next iteration
 		date = new Date(date.getTime() + (SECONDS.HOUR * 1000));	// Increment by one hour.
 		//console.log(date.toString());		
@@ -261,7 +199,7 @@ function populateHours(){
 		seconds = date.getTime() / 1000;
 	}
 	//console.log("current day: " + currentDate + ", target day: " + filter.interval.day);
-	filter.interval.hour = controls.selectBox.interval.hours.val();
+	filter.interval.hour = controls.filters.selectBox.interval.hours.val();
 }
 
 function populateApplications(applications){
@@ -271,51 +209,121 @@ function populateApplications(applications){
 	}	
 }
 
-function saveHostName(name){
-    $.ajax({
-		type	: "POST",
-		url 	: "save_host_name",
-		data 	: { 
-			csrfmiddlewaretoken: getCookie('csrftoken'),
-			mac: filter.mac,
-			name: name,
-		},
-		dataType : "text",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-    	success : function(){
-    		console.log("name saved!");
-    	},
-    });		
-}
+function populatePreferences(){
 
-/**
-* Populates the flows table with the top 5 devices.
-*/
-function populateFlowTable(macs, downloadedBytes, uploadedBytes){
-	var i;
-	for(i = 0; i < macs.length; ++i){
-		//$bar = $('<div></div>').addClass("horizontal_bar");
-		$row = $('<div></div>').addClass("row");
-		$c1 = $('<div></div>').addClass("cell").html(macs[i]);
-		$c2 = $('<div></div>').addClass("cell").html("(to do)");
-		$c3 = $('<div></div>').addClass("cell").html((downloadedBytes[i]/1000000).toFixed(2)+" MB");
-		$c4 = $('<div></div>').addClass("cell").html((uploadedBytes[i]/1000000).toFixed(2)+" MB");
-		$row.append($c1).append($c2).append($c3).append($c4);
-		$("#flows_table").append($row);
-	}
-}
+	$('#preferences_container').prepend('<br />');		
+	$('#preferences_container').prepend($('<div></div>').attr('id', 'device_container'));
+	$('#preferences_container').prepend('<hr />');
+	$('#preferences_container').prepend('<span class="header">Device statistics</span>');
+	$('#preferences_container').prepend('<br />');
+		
+	$('#preferences_container').prepend($('<div></div>').attr('id', 'network_container'));
+	$('#preferences_container').prepend('<hr />');
+	$('#preferences_container').prepend('<span class="header">Network statistics</span>');
+	$('#preferences_container').prepend('<br />');	
 
-function printFilterValues(){
-	console.log("### filter values ###");
-	console.log("	mac: " + filter.mac);
-	console.log("	direction: " + filter.direction);
-	console.log("	month: " + filter.interval.month);
-	console.log("	day: " + filter.interval.day);
-	console.log("	hour: " + filter.interval.hour);
-	console.log("	port_source: " + filter.port.src);
-	console.log("	port_destination: " + filter.port.dst);
-	console.log("\n\n");
+	var $networkParent = $('#preferences_container #network_container');
+	var $deviceParent = $('#preferences_container #device_container');
+	var $check, $label;
+
+	/* These visuals can only be displayed for network data. */
+	/* Devices downloaded */
+	$check = createInput('check_network_devices_downloaded', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Devices downloaded</label>');
+	$label.attr('for', $check.attr('name'));		
+	$networkParent.append($check, $label);
+
+	/* Devices uploaded */
+	$check = createInput('check_network_devices_uploaded', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Devices uploaded</label>');
+	$label.attr('for', $check.attr('name'));		
+	$networkParent.append($check, $label);
+
+	/* Downloaded timeline */
+	$check = createInput('check_network_downloaded_timeline', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Downloaded timeline</label>');
+	$label.attr('for', $check.attr('name'));		
+	$networkParent.append($check, $label);	
+
+	/* Uploaded timeline */
+	$check = createInput('check_network_uploaded_timeline', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Uploaded timeline</label>');
+	$label.attr('for', $check.attr('name'));		
+	$networkParent.append($check, $label);
+
+	/* Usage */
+	$check = createInput('check_network_usage', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Usage</label>');
+	$label.attr('for', $check.attr('name'));
+	$networkParent.append($check, $label);
+
+	/* Application */
+	$check = createInput('check_network_application', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Application</label>');
+	$label.attr('for', $check.attr('name'));		
+	$networkParent.append($check, $label);	
+
+	/* Domains */
+	$check = createInput('check_network_domains', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Domains</label>');
+	$label.attr('for', $check.attr('name'));		
+	$networkParent.append($check, $label);	
+
+	/* Country */
+	$check = createInput('check_network_country', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Country</label>');
+	$label.attr('for', $check.attr('name'));		
+	$networkParent.append($check, $label);
+
+	/* These visuals can only be displayed for device data. */
+	/* Downloaded timeline */
+	$check = createInput('check_device_downloaded_timeline', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Downloaded timeline</label>');
+	$label.attr('for', $check.attr('name'));		
+	$deviceParent.append($check, $label);	
+
+	/* Uploaded timeline */
+	$check = createInput('check_device_uploaded_timeline', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Uploaded timeline</label>');
+	$label.attr('for', $check.attr('name'));		
+	$deviceParent.append($check, $label);
+
+	/* Usage */
+	$check = createInput('check_device_usage', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Usage</label>');
+	$label.attr('for', $check.attr('name'));
+	$deviceParent.append($check, $label);
+
+	/* Application */
+	$check = createInput('check_device_application', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Application</label>');
+	$label.attr('for', $check.attr('name'));		
+	$deviceParent.append($check, $label);	
+
+	/* Domains */
+	$check = createInput('check_device_domains', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Domains</label>');
+	$label.attr('for', $check.attr('name'));		
+	$deviceParent.append($check, $label);	
+
+	/* Country */
+	$check = createInput('check_device_country', 'checkbox');
+	$check.attr('name', $check.attr('id'));
+	$label = $('<label>Country</label>');
+	$label.attr('for', $check.attr('name'));		
+	$deviceParent.append($check, $label);		
+	
 }
