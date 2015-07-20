@@ -36,3 +36,27 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+// from http://scratch99.com/web-development/javascript/convert-bytes-to-mb-kb/
+function bytesToSize(bytes) {
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes == 0) return 'n/a';
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    if (i == 0) return bytes + ' ' + sizes[i];
+    return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+}; 
+
+
+
+
+function printFilterValues(){
+    console.log("### filter values ###");
+    console.log("   mac: " + filter.mac);
+    console.log("   direction: " + filter.direction);
+    console.log("   month: " + filter.interval.month);
+    console.log("   day: " + filter.interval.day);
+    console.log("   hour: " + filter.interval.hour);
+    console.log("   port_source: " + filter.port.src);
+    console.log("   port_destination: " + filter.port.dst);
+    console.log("\n\n");
+}

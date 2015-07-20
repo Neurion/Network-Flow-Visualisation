@@ -1,4 +1,5 @@
 var INTERVAL = {
+	ALL: "all",
 	HOURLY: "hourly",
 	DAILY: "daily",
 	MONTHLY: "monthly",
@@ -25,16 +26,60 @@ var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "A
 var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /* All possible visuals that can be displayed. */
-var VISUALS = {
-	GRAPHS_CHARTS: {
-		DOWNLOADED_TIMELINE: "",
-		UPLOADED_TIMELINE: "",
-		DOWNLOADED: "",
-		UPLOADED: "",
+var visuals = {
+	network: {
+		devices_downloaded: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		devices_uploaded: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		usage: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		domains: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		country: {
+			container: null,
+			func: null,
+			data: null,
+		},
 	},
-	TABLES: {
-		DOWNLOADED: "",
-		UPLOADED: "",
+	device: {
+		downloaded: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		uploaded: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		usage: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		domains: {
+			container: null,
+			func: null,
+			data: null,
+		},
+		country: {
+			container: null,
+			func: null,
+			data: null,
+		},
 	},
 };
 
@@ -93,37 +138,52 @@ var controls = {
 	},
 };
 
-/** An array of graphs and charts or tables. */
-var visuals = [];
-
 /* Values of the filter controls. This gets updated after a control value is changed. */
 var filter = {
 	mac: "all",
-	direction: "all",
+	direction: DIRECTION.ALL,
 	port: {
 		src: -1,
 		dst: -1,
 	},
-	intervalType: null,
+	intervalType: DEFAULT.INTERVAL,
 	interval: {
-		year: null,
-		month: null,
-		day: null,
-		hour: null,
+		start: -1,
+		end: -1,
+		year: -1,
+		month: -1,
+		day: -1,
+		hour: -1,
 	},
 	application: "all",
 };
 
-/* Information about the flow data being displayed, be it specific to a device or to the network in general. */
-var flowData = {
+/*  */
+var data = {
 	time: {
 		earliest: 0,
 		latest: 0,
-	}
+	},	
+	bytes: {
+		uploaded: 0,
+		downloaded: 0,
+	},	
+	devices: {
+		macs: null,
+		names: null,
+		bytes: {
+			downloaded: null,
+			uploaded: null,
+		},
+	},
 };
 
 /* Generic network information. */
 /* All local MAC addresses. Used to request information specific to a particular device. */
-var n_deviceMACs = [];
+//var n_deviceMACs = [];
+
+var n_applications = [];
 
 var n_names = {};
+
+var visuals = [];

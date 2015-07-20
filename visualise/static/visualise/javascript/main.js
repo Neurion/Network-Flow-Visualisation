@@ -1,12 +1,14 @@
 $(document).ready(function(){
 
+	/* Populates the filter controls and sets the initial filter values. */
 	setup();
 
-	/** Request flows information and draw visuals. */
-	refreshInformation();	
+	/* Request flows information. */
+	requestMetaData(initialUpdate);
 });
 
 function setup(){
+
 	/* Mode */
 	setModePointers();	
 	/* Menu */
@@ -18,19 +20,23 @@ function setup(){
 
 	setMode(mode.network);
 
-	populateMACAddresses();			// Populate filter controls.
-	populateIntervalSelectBox();	// Add "Monthly", "Daily", and "Hourly".
-	populatePreferences();
+	setControlListeners();			// Setup listener events for the filter controls.
 
-	setFilterListeners();			// Setup listener events for the filter controls.
-	
-	updateIntervalSelectBoxes();	// Add default "Monthly" select box.
+	visuals.push(loadUsageTimeline);
+	visuals.push(loadProtocol);
+	visuals.push(loadUsage);
 
-	updateFilterMac();
-	updateFilterDirection();
-	updateFilterPorts();
-	updateFilterInterval();
-	updateFilterApplication();
+	window.setInterval(onTimeout, 30000);
+}
+
+function onTimeout(){
+	requestMetaData(test);
+}
+
+function initialUpdate(){
+	console.log('initial setup...');
+	addPreferences();
+	updateControls();	
 }
 
 function setModePointers(){
@@ -78,6 +84,14 @@ function setFilterPointers(){
 	controls.filters.selectBox.application = $('#select_applications');
 }
 
+function updateFilter(){
+	updateFilterMac();
+	updateFilterDirection();
+	updateFilterPorts();
+	updateFilterInterval();
+	updateFilterApplication();
+}
+
 /** Filter updating methods. */
 function updateFilterMac(){
 	filter.mac = controls.filters.selectBox.macs.find(":selected").val();
@@ -111,21 +125,56 @@ function updateFilterPorts(){
 }
 
 function updateFilterInterval(){
+
 	filter.intervalType = controls.filters.selectBox.intervalType.val();
-	filter.interval.month = controls.filters.selectBox.interval.months.val();
+
+	if(filter.interval.month){
+		filter.interval.month = controls.filters.selectBox.interval.months.val();
+	}
 	if(filter.interval.day){
 		filter.interval.day = controls.filters.selectBox.interval.days.val();
 	}
 	if(filter.interval.hour){
 		filter.interval.hour = controls.filters.selectBox.interval.hours.val();
 	}
+
+	if(filter.intervalType == INTERVAL.MONTHLY){
+		var date_start = new Date(filter.interval.year, filter.interval.month);
+		var date_end = new Date(filter.interval.year, parseInt(filter.interval.month) + 1);
+		//filter.interval.start = parseInt(date_start.getTime() / 1000);
+		//filter.interval.end = parseInt(date_end.getTime() / 1000);
+		//console.log("interval.start: " + date_start);
+		//console.log("interval.end: " + date_end);	
+	}
+	else if(filter.intervalType == INTERVAL.DAILY){		
+		var date_start = new Date(filter.interval.year, filter.interval.month, filter.interval.day);
+		var date_end = new Date(filter.interval.year, filter.interval.month, parseInt(filter.interval.day) + 1);
+		filter.interval.start = parseInt(date_start.getTime() / 1000);
+		filter.interval.end = parseInt(date_end.getTime() / 1000);
+		//console.log("interval.start: " + date_start);
+		//console.log("interval.end: " + date_end);			
+	}
+	else if(filter.intervalType == INTERVAL.HOURLY){
+		var date_start = new Date(filter.interval.year, filter.interval.month, filter.interval.day, filter.interval.hour);
+		var date_end = new Date(filter.interval.year, filter.interval.month, filter.interval.day, parseInt(filter.interval.hour) + 1);
+		filter.interval.start = date_start.getTime() / 1000;
+		filter.interval.end = date_end.getTime() / 1000;
+		//console.log("interval.start: " + date_start);
+		//console.log("interval.end: " + date_end);
+	}
+	else if(filter.intervalType == INTERVAL.ALL){
+		//console.log("Showing all data.");		
+	}
+	else{
+		console.log("invalid filter.intervalType.");
+	}
 }
 
 function updateFilterApplication(){
-	filter.application = controls.filters.selectBox.application.find(":selected").text();
+	filter.application = controls.filters.selectBox.application.find(":selected").val();
 }
 
-function setFilterListeners(){
+function setControlListeners(){
 
 	$("#select_devices").change(function(){
 		updateFilterMac();			// Update filter value
@@ -218,41 +267,7 @@ function setFilterListeners(){
 }
 
 function refreshInformation(){
-	$.ajax({
-		type: "POST",
-		url: "get_flows_info",
-		data: getAJAXParameters(),
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-		success : function(json_data){
 
-			n_deviceMACs = json_data['macs'];
-
-			flowData.time.earliest = json_data['timestamp_earliest']
-			flowData.time.latest = json_data['timestamp_latest']			
-
-			var oldMac = $('#select_devices').val();
-			$('#select_devices').val(filter.mac);
-
-			updateFlowsInfo();
-
-			// Populate the filter controls.
-			populateMACAddresses(json_data['names'], json_data['macs']);
-			$('#select_devices').val(oldMac);
-
-			updateIntervalSelectBoxes();
-			updateFilterInterval();
-
-			var date = new Date(flowData.time.earliest * 1000);
-			filter.interval.year = date.getFullYear()
-
-			updateVisuals();
-			//printFilterValues();
-		},
-	});	
 }
 
 function getTimestamp(){
@@ -265,80 +280,92 @@ function setMode(option){
 	option.addClass('current');
 }
 
-/** 
- * Adds the selected visuals to the global 'visuals' variable.
- */
-function getSelectedVisuals(){
-
-	visuals.push(loadProtocolChart);
-}
-
 function updateVisuals(){
 
 	removeAllChildren(document.getElementById('top_4'));	// Remove all visuals.
 
-	getSelectedVisuals();
 	for(var i = 0; i < visuals.length; i++){
-		var visual = createVisual("Protocols");
-		visuals[i](visual);
+		visuals[i]();		// Call the function for each visual.
 	}
 
-	/** Graphs, charts and tables. */
-	//loadProtocolChart(createVisual("Protocols"));
-	//loadUsageChart(createVisual("Usage"));
-
-	$("#top_4").append($('<div></div>').addClass('clear'));
+	$("#top_4").append($('<span></span>').addClass('clear'));
 
 	// Flows table
 	loadFlowsTable($('#header'));	
 }
 
-function createVisual(title){
+function createVisual(type, title, id){
+
 	newVisualContainer = $("<div></div>").addClass("visual_container");
+	/*
+	if(type == "timeline"){
+		newVisualContainer.addClass("timeline");
+	}
+	else if(type == "timeline"){
+		newVisualContainer.addClass("pie");
+	}
+	*/
+	newVisualContainer.addClass(type);
+	newVisualContainer.attr('id', id);
 	newVisualTitle = $("<div></div>").addClass("visual_title").text(title);
 	newVisual = $("<div></div>").addClass("visual");
 	newVisualContainer.append(newVisualTitle);
 	newVisualContainer.append(newVisual);
 	$("#top_4").append(newVisualContainer);	
-	return newVisual;
+	return newVisual;		// Return a reference to the element in which the visual is to be placed.
 }
 
 function getAJAXParameters(){
-	var initialDate = new Date(filter.interval.year, filter.interval.month, filter.interval.day, filter.interval.hour);
-	var finalDate;
+
 	if(filter.intervalType == INTERVAL.MONTHLY){
-		var finalMonth = parseInt(filter.interval.month) + 1;
-		finalDate = new Date(filter.interval.year, finalMonth);
+		var startDate = new Date(filter.interval.year, filter.interval.month);
+		var endDate = new Date(filter.interval.year, parseInt(filter.interval.month) + 1);
+		//filter.interval.start = parseInt(startDate.getTime() / 1000);
+		//filter.interval.end = parseInt(endDate.getTime() / 1000);
 	}
 	else if(filter.intervalType == INTERVAL.DAILY){
-		var finalDay = parseInt(filter.interval.day) + 1;
-		finalDate = new Date(filter.interval.year, filter.interval.month, finalDay);
+		var startDate = new Date(filter.interval.year, filter.interval.month, filter.interval.day);
+		var endDate = new Date(filter.interval.year, filter.interval.month, parseInt(filter.interval.day) + 1);
+		filter.interval.start = parseInt(startDate.getTime() / 1000);
+		filter.interval.end = parseInt(endDate.getTime() / 1000);
 	}
 	else if(filter.intervalType == INTERVAL.HOURLY){
-		var finalHour = parseInt(filter.interval.hour) + 1;
-		finalDate = new Date(filter.interval.year, filter.interval.month, filter.interval.day, finalHour);
+		var startDate = new Date(filter.interval.year, filter.interval.month, filter.interval.day, filter.interval.hour);
+		var endDate = new Date(filter.interval.year, filter.interval.month, filter.interval.day, parseInt(filter.interval.hour) + 1);
+		filter.interval.start = startDate.getTime() / 1000;
+		filter.interval.end = endDate.getTime() / 1000;
 	}
 	else{
-		alert("should not happen...");
+		//alert("this must be the very first request.");
 	}
+
 	return {		
 		csrfmiddlewaretoken: getCookie('csrftoken'),
 		mac: filter.mac,
 		direction: filter.direction,
 		port_source: filter.port.src,
 		port_destination: filter.port.dst,
-		//interval_start: ,
+		interval_type: filter.intervalType,
+		interval_year: filter.interval.year,
+		interval_month: filter.interval.month,
+		interval_day: filter.interval.day,
+		interval_hour: filter.interval.hour,
+		interval_start: filter.interval.start,
+		interval_end: filter.interval.end,
+		application: filter.application,
 	}
 }
 
 function printFilterValues(){
-	console.log("### filter values ###");
+	console.log("##### filter values #####");
 	console.log("	mac: " + filter.mac);
 	console.log("	direction: " + filter.direction);
 	console.log("	month: " + filter.interval.month);
 	console.log("	day: " + filter.interval.day);
 	console.log("	hour: " + filter.interval.hour);
+	console.log("	start: " + filter.interval.start);
+	console.log("	end: " + filter.interval.end);	
 	console.log("	port_source: " + filter.port.src);
 	console.log("	port_destination: " + filter.port.dst);
-	console.log("\n\n");
+	console.log("");
 }

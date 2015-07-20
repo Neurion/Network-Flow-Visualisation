@@ -9,7 +9,8 @@
 <script type="text/javascript" src="{% static 'visualise/javascript/variables.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/misc.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/populate.js' %}" ></script>
-<script type="text/javascript" src="{% static 'visualise/javascript/graphs.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/request.js' %}" ></script>
+<script type="text/javascript" src="{% static 'visualise/javascript/visuals.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/tables.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/host.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/main.js' %}" ></script>
@@ -91,9 +92,7 @@ For specific device information to be displayed, the filter must be applied whic
             <div class="section">Application:(to do)</div>
             <!-- Application -->
             <div class="section">
-                <select id="select_applications" name="select_applications">
-                    <option>All</option>
-                </select>
+                <select id="select_applications" name="select_applications"></select>
             </div>                    
         </div>
 
@@ -110,6 +109,8 @@ For specific device information to be displayed, the filter must be applied whic
     <div id="preferences_container"></div>
 
     <div id="top_4"></div>
+
+     <div id="test"></div>
 
     <!--
         <div id="visual_protocols" class="visual_container">

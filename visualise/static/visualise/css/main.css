@@ -163,12 +163,12 @@ h2{
 
 		#top_2 span{
 			display: inline-block;
-			width: 150px;
-			height: 40px;
+			width: 140px;
 			margin: 5px 0%;
+			padding-right: 10px;
 			line-height: 40px;
 			float: left;
-			text-align: left;
+			text-align: right;
 			font-size: 1.4em;
 			vertical-align: middle;
 			/*background-color: red;*/
@@ -178,6 +178,7 @@ h2{
 			width: 100px;
 			padding-right: 100px;
 			font-weight: bold;
+			text-align: left;
 			/*background-color: orange;*/
 		}
 
@@ -209,6 +210,7 @@ h2{
 		width: 98%;
 		height: 60px;
 		padding: 0% 1%;
+		padding-bottom: 10px;
 		background-color: #2F3B31;
 	}	
 
@@ -308,20 +310,45 @@ h2{
 		width: 100%;
 		min-height: 400px;
 		padding-bottom: 1%;
+		padding: 2.5% 0%;
 		background-color: white;
+		/*background-color: orange;*/
 		color: black;		
 	}
 
-		.visual_container{
+		#top_4 div.visual_container{
 			display: inline-block;
-			width: 25%;
-			height: 40%;
-			min-height: 300px;
-			padding: 0.5%;
+			width: 30%;
+			height: 300px;
+			margin: 0% 2.5%;
+			margin-bottom: 20px;			
 			background-color: #2F3B31;
 			color: white;
 		}
 
+		#top_4>div.visual_container:nth-of-type(3n+1){
+			margin: 0%;
+			margin-left: 2.5%;
+			/*background-color: yellow;*/
+		}
+
+		#top_4>div.visual_container:nth-of-type(3n){
+			margin: 0%;
+			margin-right: 2.5%;
+			/*background-color: red;*/
+		}
+
+		#top_4 div.visual_container.pie{
+			width: 400px;
+			height: 300px;
+		}
+
+		#top_4 div.visual_container.timeline{
+			width: 40%;
+			height: 400px;
+		}
+
+		/*
 		.visual_container:nth-child(even){
 			margin: 1% 0% 0% 6%;
 			float: left;
@@ -331,8 +358,9 @@ h2{
 			margin: 1% 6% 0% 0%;
 			float: right;
 		}
+		*/
 
-			.visual_title{
+			.visual_container .visual_title{
 				display: inline-block;
 				width: 100%;
 				height: 1.5em;
@@ -342,45 +370,13 @@ h2{
 				text-align: center;
 			}
 
-			.visual{
+			.visual_container .visual{
 				display: inline-block;
 				width: 100%;
 				height: 85%;
 				float: left;
 				/*background-color: orange;*/
 				color: black;
-			}			
-
-		#usage_timeline_c{
-			display: inline-block;	
-			width: 50%;	
-			height: 98%;
-			float: left;
-			background-color: #2F3B31;
-			/*background-color: white;*/
-			z-index: 1;	
-		}
-
-		#usage_timeline_c select{
-			float: right;
-			height: 40px;
-		}
-
-		#usage_timeline_c label{
-			float: right;
-			height: 40px;
-			padding-right: 10px;
-			line-height: 40px;
-			font-size: 20px;
-			font-weight: bold;
-		}		
-
-			#usage_timeline_chart{
-				display: inline-block;
-				width: 100%;
-				height: 100%;			
-				background-color: #2F3B31;
-				float: left;
 			}
 
 	#top_5{
@@ -433,4 +429,4 @@ h2{
 						float: left;
 						/*background-color: red;*/
 						text-align: center;
-					}					
+					}
