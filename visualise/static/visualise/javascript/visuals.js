@@ -18,7 +18,7 @@ function loadTopDownloaders(){
 		},
     	success : function(json_data){
 
-			var visual = createVisual("pie", "Top Downloaders", "v_devices_downloaded");
+			var visualContainer = createVisual("pie", "Top Downloaders", "v_devices_downloaded");
 			var dataset = []
 
 			var downloaded = json_data[0];
@@ -54,7 +54,8 @@ function loadTopDownloaders(){
 			};
 
 			// Plot the usage pie chart
-			var plot = $.plot(visual, dataset, options);
+			$('#left_container').append(visualContainer);
+			var plot = $.plot(visualContainer.find('.visual'), dataset, options);			
     	},
     });		
 }
@@ -71,7 +72,7 @@ function loadTopUploaders(){
 		},
     	success : function(json_data){
 
-			var visual = createVisual("pie", "Top Uploaders", "v_devices_uploaded");
+			var visualContainer = createVisual("pie", "Top Uploaders", "v_devices_uploaded");
 			var dataset = []
 
 			for(var i = 0; i < json_data.length; i++){
@@ -103,7 +104,8 @@ function loadTopUploaders(){
 			};
 
 			// Plot the usage pie chart
-			var plot = $.plot(visual, dataset, options);
+			$('#left_container').append(visualContainer);
+			var plot = $.plot(visualContainer.find('.visual'), dataset, options);			
     	},
     });		
 }
@@ -121,7 +123,7 @@ function loadUsage(){
 		},
     	success : function(json_data){
 
-			var visual = createVisual("pie", "Usage", "v_usage");
+			var visualContainer = createVisual("pie", "Usage", "v_usage");
 
     		var data = [];
     		data.push({ label: "Downloaded", data: json_data["downloaded"] });
@@ -129,7 +131,7 @@ function loadUsage(){
 			var options = {
 			    series: {
 			        pie: {
-			            show: true,	
+			            show: true,
 			            radius: 1,
 			            label: {
 			            	show: true,
@@ -152,7 +154,8 @@ function loadUsage(){
 			};
 
 			// Plot the usage pie chart
-			var plot = $.plot(visual, data , options);
+			$('#right_container').append(visualContainer);
+			var plot = $.plot(visualContainer.find('.visual'), data, options);
     	},
     });		
 }
@@ -165,14 +168,14 @@ function loadProtocol(){
 		type	: "POST",
 		url 	: "get_protocols",
 		data 	: getAJAXParameters(),
-		dataType : "json",
-		async : true,
-		error : function(data){
+		dataType: "json",
+		async 	: true,
+		error 	: function(data){
 			alert('AJAX error:' + data);
 		},
     	success : function(json_data){
 
-    		var visual = createVisual("pie", "Protocols", "v_protocols");
+    		var visualContainer = createVisual("pie", "Protocols", "v_protocols");
 
     		var i;
     		var data = [];
@@ -204,7 +207,8 @@ function loadProtocol(){
 			    }	        
 			};
 			// Plot the protocol pie chart
-			var plot = $.plot(visual, data, options);
+			$('#left_container').append(visualContainer);
+			var plot = $.plot(visualContainer.find('.visual'), data, options);			
     	},
     });	
 }
@@ -225,34 +229,37 @@ function loadUsageTimeline(){
 		},
     	success : function(json_data){
 
-    		var visual = createVisual("timeline", "Usage", "v_usage");
+    		var month = MONTHS[filter.getMonth()];
+
+    		var visualContainer = createVisual("timeline", " Usage " + "(" + month + ")", "v_usage");
 
     		var downloaded = json_data[0];
     		var uploaded = json_data[1];
 
-			var timeLabel,timeFormat, tickSize, timeLabel, tickFormatter;
-			if(filter.intervalType == INTERVAL.MONTHLY){
+			var timeLabel, timeFormat, tickSize, timeLabel, tickFormatter;
+			if(filter.getInterval() == INTERVAL.MONTHLY){
 				timeLabel = "Days";
 				timeFormat = "%d";
 				tickSize = [1, "day"]; // tick every day
 				tickFormatter = function (val, axis) {
-			        return DAYS[new Date(val).getDay()];
+					var date = new Date(val);
+			        return DAYS[date.getDay()] + " " + date.getDate();
 			    };
 			}
-			else if(filter.intervalType == INTERVAL.DAILY){
+			else if(filter.getInterval() == INTERVAL.DAILY){
 				timeLabel = "Hours";
 				timeFormat = "%h";
 				tickSize = [1, "hour"]; // tick every hour
 			}
-			else if(filter.intervalType == INTERVAL.HOURLY){
+			else if(filter.getInterval() == INTERVAL.HOURLY){
 				timeLabel = "Minutes";
 				timeFormat = "%m";
 				tickSize = [1, "minute"]; // tick every minute
 			}
 
-			var data1 = [
-			    { label: "Downloaded", data: downloaded, points: { fillColor: "#058DC7" }, color: '#058DC7' },
-			    { label: "Uploaded", data: uploaded, points: { fillColor: "#AA4643" }, color: '#AA4643' },
+			var data = [
+			    { label: "Downloaded", data: downloaded, points: { fillColor: "blue" }, color: 'blue' },
+			    { label: "Uploaded", data: uploaded, points: { fillColor: "orange" }, color: 'orange' },
 			];
 
 			var options = {
@@ -288,7 +295,8 @@ function loadUsageTimeline(){
 			    },      
 			};
 			// Plot the usage timeline
-			var plot = $.plot(visual, data1, options);
+			$('#center_container').append(visualContainer);
+			var plot = $.plot(visualContainer.find('.visual'), data, options);			
 	    }
 	});
 }

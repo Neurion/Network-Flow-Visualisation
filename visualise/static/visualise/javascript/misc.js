@@ -39,6 +39,9 @@ function getCookie(name) {
 
 // from http://scratch99.com/web-development/javascript/convert-bytes-to-mb-kb/
 function bytesToSize(bytes) {
+    if(bytes == null){
+        return 0;
+    }
     var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     if (bytes == 0) return 'n/a';
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));

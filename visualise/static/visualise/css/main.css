@@ -78,9 +78,9 @@ h2{
 #container{
 	display: block;
 	width: 100%;
-	height: 100%;
 	margin-bottom: 20px;	
 	background-color: white;
+	/*background-color: yellow;*/
 }
 
 	#top_1{
@@ -155,7 +155,7 @@ h2{
 		width: 96%;
 		height: 50px;
 		margin: 0.5% 1%;
-		padding-left: 2%;
+		
 		border: 1px solid black;
 		border-radius: 10px;
 		/*background-color: yellow;*/
@@ -166,13 +166,23 @@ h2{
 			width: 140px;
 			margin: 5px 0%;
 			padding-right: 10px;
+			float: left;
+			text-align: right;
+			line-height: 40px;
+			font-size: 1.4em;
+			/*background-color: red;*/
+		}
+
+		#top_2 span.info:nth-child(1){
+			display: inline-block;
+			width: 150px;			
+			padding-right: 10px;
 			line-height: 40px;
 			float: left;
 			text-align: right;
 			font-size: 1.4em;
-			vertical-align: middle;
-			/*background-color: red;*/
-		}
+			/*background-color: blue;*/
+		}		
 
 		#top_2 span.value{
 			width: 100px;
@@ -185,8 +195,8 @@ h2{
 	#top_3{
 		display: inline-block;
 		width: 100%;
-		height: 40px;
-		line-height: 40px;
+		height: 50px;
+		line-height: 50px;
 		background-color: #2F3B31;
 		color: white;
 	}
@@ -212,6 +222,7 @@ h2{
 		padding: 0% 1%;
 		padding-bottom: 10px;
 		background-color: #2F3B31;
+		/*position: absolute;*/
 	}	
 
 		#filter_container .section_container{
@@ -244,11 +255,11 @@ h2{
 			height: 50%;
 		}
 
-			#select_devices{
+			#select_device{
 				width: 150px;
 			}
 
-			#select_applications{
+			#select_application{
 				width: 150px;
 			}
 
@@ -295,6 +306,7 @@ h2{
 		padding: 0% 1%;
 		background-color: #2F3B31;
 		color: white;
+		/*position: absolute;*/
 	}	
 
 	#preferences_container span.header{
@@ -306,87 +318,114 @@ h2{
 	}
 
 	#top_4{
-		display: block;
-		width: 100%;
+		display: block;		
 		min-height: 400px;
-		padding-bottom: 1%;
-		padding: 2.5% 0%;
+		margin: 0px 3%;
+		padding: 20px 0px;
+		/*background-color: blue;*/
 		background-color: white;
-		/*background-color: orange;*/
-		color: black;		
 	}
 
-		#top_4 div.visual_container{
-			display: inline-block;
-			width: 30%;
-			height: 300px;
-			margin: 0% 2.5%;
-			margin-bottom: 20px;			
-			background-color: #2F3B31;
-			color: white;
+		#top_4>div:nth-child(2n-1){
+			border-radius: 5px;
+			border: 1px solid black;
+			/*background-color: #2F3B31;*/
 		}
 
-		#top_4>div.visual_container:nth-of-type(3n+1){
-			margin: 0%;
-			margin-left: 2.5%;
+		#top_4>div div.visual_container:nth-child(1){			
+			border-radius: 5px;
 			/*background-color: yellow;*/
+			/*background-color: #2F3B31;*/
 		}
 
-		#top_4>div.visual_container:nth-of-type(3n){
-			margin: 0%;
-			margin-right: 2.5%;
-			/*background-color: red;*/
+		#top_4 div.visual_container{			
+			width: 300px;
+			height: 500px;
+			/*background-color: #2F3B31;*/			
+			background-color: white;			
 		}
 
-		#top_4 div.visual_container.pie{
-			width: 400px;
-			height: 300px;
+		.visual_container .visual_title{
+			display: inline-block;
+			width: 100%;
+			height: 1.5em;
+			font-size: 1.5em;
+			line-height: 1.5em;
+			/*background-color: yellow;*/
+			text-align: center;
+			color: black;
 		}
 
-		#top_4 div.visual_container.timeline{
-			width: 40%;
-			height: 400px;
-		}
-
-		/*
-		.visual_container:nth-child(even){
-			margin: 1% 0% 0% 6%;
+		.visual_container .visual{
+			display: inline-block;
+			width: 100%;
+			height: 85%;
 			float: left;
+			/*background-color: orange;*/
+			color: black;
 		}
 
-		.visual_container:nth-child(odd){
-			margin: 1% 6% 0% 0%;
+		#top_4 div#left_container{
+			display: inline-block;
+			min-width: 400px;
+			width: 300px;
+			height: 100%;			
+			float: left;
+			/*background-color: yellow;
+			background-color: white;*/
+		}
+
+		#top_4 div#center_container{
+			display: inline-block;
+			min-width: 600px;
+			width: 800px;
+			height: 100%;
+			float: left;
+			/*background-color: orange;
+			background-color: white;*/
+		}
+
+			#top_4 div#center_container div.visual_container{
+				display: block;				
+				width: 30%;
+				min-height: 200px;
+				height: 200px;
+				color: white;
+			}
+
+			#top_4 div#center_container div.visual_container.timeline{
+				width: 100%;
+				height: 400px;
+			}		
+
+			#top_4 div.visual_container.pie{
+				width: 100%;
+				height: 250px;
+			}
+
+		#top_4 div#right_container{
+			display: inline-block;
+			min-width: 400px;
+			width: 300px;
+			height: 100%;
 			float: right;
+			/*background-color: red;
+			background-color: white;*/
 		}
-		*/
 
-			.visual_container .visual_title{
-				display: inline-block;
-				width: 100%;
-				height: 1.5em;
-				font-size: 1.5em;
-				line-height: 1.5em;
-				/*background-color: yellow;*/
-				text-align: center;
-			}
+		#top_4 div#padding{
+			display: inline-block;
+			width: 3%;
+			height: 100%;
+			float: left;
+			background-color: orange;
+			background-color: white;
+		}
 
-			.visual_container .visual{
-				display: inline-block;
-				width: 100%;
-				height: 85%;
-				float: left;
-				/*background-color: orange;*/
-				color: black;
-			}
 
-	#top_5{
-		display: block;
-		width: 100%;
-		height: 50%;
-		min-height: 400px;
-		/* transparent */
-		color: black;		
-	}
+
+
+
 
 		#flows_table_container{
 			display: inline-block;	

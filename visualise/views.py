@@ -9,9 +9,6 @@ import json, time, datetime
 
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-#data = serializers.serialize("json", ret)
-#data = json.dumps(ret)
-
 class SECONDS():
 	HOURLY 	= 3600000
 	DAILY 	= 86400000
@@ -36,29 +33,19 @@ def get_relevant_flows(request):
 	direction = request.POST.get("direction")
 	port_src = int(request.POST.get("port_source"))
 	port_dst = int(request.POST.get("port_destination"))
-	interval_type = request.POST.get("interval_type")
-
-	interval_start = request.POST.get("interval_start")
-	if interval_start != -1:
-		interval_start = int(request.POST.get("interval_start"))
-
-	interval_end = request.POST.get("interval_end")
-	if interval_end != -1:
-		interval_end = int(request.POST.get("interval_end"))	
-	interval_month = request.POST.get("interval_month")
-	interval_day = request.POST.get("interval_day")
-	interval_hour = request.POST.get("interval_hour")
+	#interval = request.POST.get("interval")
+	start_ts = request.POST.get("time_start")
+	end_ts = request.POST.get("time_end")
 	application = request.POST.get("application")
-
 	data = Flow.objects.all()
 
 	# Interval
-	if interval_start != -1 and interval_end != -1:
-		data = data.filter(time_start__gte=interval_start).filter(time_end__lte=interval_end)
+	if start_ts != -1 and end_ts != -1:
+		data = data.filter(time_start__gte=start_ts, time_end__lte=end_ts)
 
 	# Mac
 	if mac != "all":
-		data = data.filter(Q(mac_src=mac) | Q(mac_dst=mac))
+		data = data.filter(Q(mac_src=mac) | Q(mac_dst=mac))		# OR
 
 	# Direction
 	if direction == "ingress":
@@ -80,31 +67,14 @@ def index(request):
 	return render(request, 'visualise/index.html')
 
 @ensure_csrf_cookie
-def get_flows_info(request):
+def get_meta_data(request):
 	"""
 	Returns the number of devices, the earliest timestamp and the latest timestamp of the flows to be displayed.
 	If a mac address is given as a POST argument, the values returned are specific to that device.
 	"""
 	if request.is_ajax():
-		
-		time_earliest = None
-		time_latest = None
-		mac = request.POST.get('mac')
 
-		if mac == 'all':
-			mac = ''
 		data = Flow.objects.all()
-
-		# Names
-		names = {}
-
-		# MAC's
-		macs = list(data.filter(direction=DIRECTION.OUTGOING).values_list('mac_src', flat=True).distinct())
-		for m in macs:
-			try:
-				names[m] = Host.objects.get(mac=m).name
-			except Host.DoesNotExist:
-				pass
 
 		# Interval
 		time_earliest = data.aggregate(Min('time_start', distinct=True))['time_start__min']
@@ -115,10 +85,8 @@ def get_flows_info(request):
 		bytes_uploaded = data.filter(direction=DIRECTION.OUTGOING).aggregate(Sum('bytes_in'))['bytes_in__sum']
 
 		ret = {
-			'names': names,
-			'macs': macs,
-			'timestamp_earliest': time_earliest,
-			'timestamp_latest': time_latest,
+			'time_earliest': time_earliest,
+			'time_latest': time_latest,
 			'bytes_downloaded': bytes_downloaded,
 			'bytes_uploaded': bytes_uploaded,
 		}
@@ -179,32 +147,32 @@ def get_usage_timeline(request):
 		ret = []
 		ret_downloaded = []
 		ret_uploaded = []
-		interval_type = request.POST.get('interval_type')
+		interval = request.POST.get('interval')
 
-		interval_year = request.POST.get('interval_year')
-		if interval_year != -1:
-			interval_year = int(request.POST.get('interval_year'))
+		year = request.POST.get('year')
+		if year != -1:
+			year = int(request.POST.get('year'))
 
-		interval_month = request.POST.get('interval_month')
-		if interval_month != -1:
-			interval_month = int(request.POST.get('interval_month')) + 1	# Javascript month is 0-based, Python month is 1-based.
+		month = request.POST.get('month')
+		if month != -1:
+			month = int(request.POST.get('month')) + 1	# Javascript month is 0-based, Python month is 1-based.
 
-		interval_day = request.POST.get('interval_day')
-		if interval_day != -1:
-			interval_day = int(request.POST.get('interval_day')) + 1	# Javascript day is 0-based, Python day is 1-based.
+		day = request.POST.get('day')
+		if day != -1:
+			day = int(request.POST.get('day')) + 1	# Javascript day is 0-based, Python day is 1-based.
 
-		interval_hour = request.POST.get('interval_hour')
-		if interval_hour != -1:
-			interval_hour = int(request.POST.get('interval_hour'))	# Python hour is 0-based for hours.
+		hour = request.POST.get('hour')
+		if hour != -1:
+			hour = int(request.POST.get('hour'))	# Python hour is 0-based for hours.
 
 		epoch_date = datetime.datetime(1970, 1, 1)
 
-		if interval_type == INTERVAL.MONTHLY:		# Days: Bytes
+		if interval == INTERVAL.MONTHLY:		# Days: Bytes
 			current_day = 1
-			total_days = monthrange(interval_year, interval_month)[1]
+			total_days = monthrange(year, month)[1]
 			while current_day < total_days:
-				initial_date = datetime.datetime(interval_year, interval_month, current_day)
-				final_date = datetime.datetime(interval_year, interval_month, current_day + 1)
+				initial_date = datetime.datetime(year, month, current_day)
+				final_date = datetime.datetime(year, month, current_day + 1)
 				start_ts = (initial_date - epoch_date).total_seconds()
 				end_ts = (final_date - epoch_date).total_seconds()
 				bytes_downloaded = data.filter(direction=DIRECTION.INCOMING, time_start__gte=start_ts, time_end__lte=end_ts).aggregate(Sum('bytes_in'))["bytes_in__sum"]
@@ -212,12 +180,12 @@ def get_usage_timeline(request):
 				ret_downloaded.append([start_ts * 1000, bytes_downloaded])
 				ret_uploaded.append([start_ts * 1000, bytes_uploaded])
 				current_day += 1		
-		elif interval_type == INTERVAL.DAILY:		# Hour: Bytes
+		elif interval == INTERVAL.DAILY:		# Hour: Bytes
 			current_hour = 1
 			total_hours = 23
-			while current_hour < total_hours:
-				initial_date = datetime.datetime(interval_year, interval_month, interval_day, current_hour)
-				final_date = datetime.datetime(interval_year, interval_month, interval_day, current_hour + 1)
+			while current_hour < total_hours:	# hours 00:00-01:00 to 22:00-23:00
+				initial_date = datetime.datetime(year, month, day, current_hour)
+				final_date = datetime.datetime(year, month, day, current_hour + 1)
 				start_ts = (initial_date - epoch_date).total_seconds()
 				end_ts = (final_date - epoch_date).total_seconds()
 				bytes_downloaded = data.filter(direction=DIRECTION.INCOMING, time_start__gte=start_ts, time_end__lte=end_ts).aggregate(Sum('bytes_in'))["bytes_in__sum"]
@@ -225,10 +193,29 @@ def get_usage_timeline(request):
 				ret_downloaded.append([start_ts * 1000, bytes_downloaded])
 				ret_uploaded.append([start_ts * 1000, bytes_uploaded])
 				current_hour += 1
-
-		#elif interval_type == INTERVAL.HOURLY:		# Minutes: Bytes
-
-		#test = (epoch_date - datetime.datetime(interval_year, interval_month, 0)).total_seconds()
+			# hour 23:00 - 00:00 of next day
+			initial_date = datetime.datetime(year, month, day, current_hour)
+			final_date = datetime.datetime(year, month, day + 1, 0)
+			start_ts = (initial_date - epoch_date).total_seconds()
+			end_ts = (final_date - epoch_date).total_seconds()
+			bytes_downloaded = data.filter(direction=DIRECTION.INCOMING, time_start__gte=start_ts, time_end__lte=end_ts).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+			bytes_uploaded = data.filter(direction=DIRECTION.OUTGOING, time_start__gte=start_ts, time_end__lte=end_ts).aggregate(Sum('bytes_in'))["bytes_in__sum"]										
+			ret_downloaded.append([start_ts * 1000, bytes_downloaded])
+			ret_uploaded.append([start_ts * 1000, bytes_uploaded])			
+		elif interval == INTERVAL.HOURLY:		# Minutes: Bytes
+			current_minute = 0
+			total_minutes = 59
+			while current_minute < total_minutes:
+				initial_date = datetime.datetime(year, month, day, hour, current_minute)
+				final_date = datetime.datetime(year, month, day, hour, current_minute + 1)
+				start_ts = (initial_date - epoch_date).total_seconds()
+				end_ts = (final_date - epoch_date).total_seconds()
+				bytes_downloaded = data.filter(direction=DIRECTION.INCOMING, time_start__gte=start_ts, time_end__lte=end_ts).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+				bytes_uploaded = data.filter(direction=DIRECTION.OUTGOING, time_start__gte=start_ts, time_end__lte=end_ts).aggregate(Sum('bytes_in'))["bytes_in__sum"]						
+				ret_downloaded.append([start_ts * 1000, bytes_downloaded])
+				ret_uploaded.append([start_ts * 1000, bytes_uploaded])
+				current_minute += 1
+		#test = (epoch_date - datetime.datetime(year, month, 0)).total_seconds()
 
 		ret.append(ret_downloaded)
 		ret.append(ret_uploaded)
@@ -245,6 +232,30 @@ def save_host_name(request):
 		host = Host(mac=mac, name=name)
 	host.save()
 	return HttpResponse('')
+
+def get_filter_values(request):
+	ret = []	
+	ret_macs = []
+	ret_names = []
+	ret_interval = []
+	# MAC's
+	ret_macs = list(Flow.objects.all().filter(direction=DIRECTION.OUTGOING).values_list('mac_src', flat=True).distinct())
+	ret.append(ret_macs)
+	# Names
+	ret_names = {}
+	for m in ret_macs:
+		try:
+			ret_names[m] = Host.objects.get(mac=m).name
+		except Host.DoesNotExist:
+			pass
+	ret.append(ret_names)
+	# Interval
+	time_earliest = Flow.objects.all().aggregate(Min('time_start', distinct=True))['time_start__min']
+	ret_interval.append(time_earliest)
+	time_latest = Flow.objects.all().aggregate(Max('time_end', distinct=True))['time_end__max']
+	ret_interval.append(time_latest)
+	ret.append(ret_interval)
+	return HttpResponse(json.dumps(ret), content_type='application/json')	
 
 def isNum(data):
 	try:
