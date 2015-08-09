@@ -20,101 +20,119 @@ The default page displays generic network information.
 For specific device information to be displayed, the filter must be applied which sends an AJAX request to the server to retreive statistics about the selected MAC address.
 -->
 
-<script>
-
-</script>
-
 <div id="container">    
 
     <div id="top_1">
+        <span id="title">Network Flow Visualisation</span>
+        <div id="">Overview</div> 
+        <div id="">Downloaded</div>
+        <div id="">Uploaded</div>
+        <div id="">Domains</div>  
+    </div>
 
-        <div id="m_network" class="menu_item">
-            Network
+    <div id="left_1">
+
+        <div id="overview_table">
+            <div id="netflow" class="row">
+                <div>Netflow</div>
+            </div>       
+            <div id="devices" class="row">
+                <div>Devices</div>
+            </div>
+            <div id="downloaded" class="row">
+                <div>Downloaded</div>
+            </div>
+            <div id="uploaded" class="row">
+                <div>Uploaded</div>
+            </div>                                             
         </div>
 
-        <span class="divider">|</span>
+        <div id="filter_container">
 
-        <div id="m_user" class="menu_item">
-            User
-        </div>
+            <div class="both_container">
+                <div id="filter_devices" class="hover">Device&nbsp&nbsp&nbsp&gt&gt</div>
+                <div class="inline">
+                    <div id="devices_menu"></div>
+                </div>
+            </div>
 
-        <span id="title">
-            Network Flow Visualisation
-        </span>
+            <div class="both_container">
+                <div id="filter_direction" class="hover">Direction&nbsp&nbsp&nbsp&gt&gt</div>
+                <div class="inline">
+                    <div id="direction_menu">
+                        <div id="direction_incoming" class="item">Incoming</div>
+                        <div id="direction_outgoing" class="item">Outgoing</div>
+                        <div id="direction_both" class="item">Both</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="both_container">
+                <div id="filter_interval" class="hover">Interval&nbsp&nbsp&nbsp&gt&gt</div>
+                <div class="inline">
+                    <div id="interval_menu">
+                        <div id="interval_monthly" class="item">Monthly</div>
+                        <div id="interval_daily" class="item">Daily</div>
+                        <div id="interval_hourly" class="item">Hourly</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="filter_months" class="hover">Months &nbsp&nbsp&nbsp&gt&gt</div>
+            <div id="filter_days" class="both_container hover">Days &nbsp&nbsp&nbsp&gt&gt</div>
+            <div id="filter_hours" class="both_container hover">Hours &nbsp&nbsp&nbsp&gt&gt</div>
+            <div class="inline">
+                <div class="stack">
+                    <div id="months_menu">
+                    </div>
+                </div>
+                <div class="stack">
+                    <div id="days_menu">
+                    </div>   
+                </div> 
+                <div class="stack">
+                    <div id="hours_menu">
+                    </div>
+                </div>
+            </div>
+
+            <div id="filter_more" class="both_container hover">More</div> 
+            <div id="filter_more_container">
+                <input id="filter_source_port" type="text" placeholder="Source Port"></input>
+                <input id="filter_destination_port" type="text" placeholder="Destination Port"></input>
+
+                <div class="both_container">
+                    <div id="filter_protocols" class="hover">L3 Protocols&nbsp&nbsp&nbsp&gt&gt</div>
+                    <div class="inline">
+                        <div id="protocols_menu"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!--<div class="">Domain</div>-->
+            <!--<div id="menu_filter" class="item">Filter</div>
+            <div id="menu_preferences" class="item">Preferences</div>-->
+        </div> 
 
     </div>
 
-    <div id="top_2"></div>
 
-    <div id="top_3">
-        <div id="menu_filter" class="item">Filter</div>
-        <div id="menu_preferences" class="item">Preferences</div>
-    </div>
-
-    <div id="filter_container">
-
-        <div class="section_container">
-            <div class="section">Device:</div>
-            <div class="section"><select id="select_device" name="select_device"></select></div>
+    
+    <div id="left_2">
+        <div id="devices_table">
+            <div class="header">
+                <span>Device</span>
+                <span>Volume</span>
+                <span>Downloaded</span>
+                <span>Uploaded</span>
+                <span>Flows</span>
+                <span>Start Date</span>
+                <span>End Date</span>
+            </div>        
         </div>
 
-        <div class="section_container">
-            <div class="section">Direction:</div>
-             <!-- Direction -->
-            <div class="section">
-                <label id ="check_ingress_label" for="check_ingress">Incoming:</label>
-                <input id="check_ingress" name="check_direction" type="checkbox" checked="true">
-                <label id="check_egress_label" for="check_egress">Outgoing:</label>
-                <input id="check_egress" name="check_direction" type="checkbox" checked="true">
-            </div>                    
-        </div>
-
-        <div class="section_container port">
-            <div class="section">Port:</div>
-            <!-- Port -->
-            <div class="section">
-                <label for="text_port_src">Source:</label>
-                <input id="text_port_src" name="text_port_src" type="text" placeholder="0-65535" value="{{ f_source_port }}">
-                <label for="text_port_dst">Destination:</label>
-                <input id="text_port_dst" name="text_port_dst" type="text" placeholder="0-65535" value="{{ f_source_port }}">
-            </div>                    
-        </div>
-
-        <div class="section_container interval">
-            <div class="section">Interval:</div>
-            <!-- Interval -->
-            <div class="section">
-                <select id="select_interval" name="select_interval"></select>
-            </div>                    
-        </div>
-
-        <div class="section_container">
-            <div class="section">Application:(to do)</div>
-            <!-- Application -->
-            <div class="section">
-                <select id="select_application" name="select_application"></select>
-            </div>                    
-        </div>
-
-        <div class="section_container">
-            <div class="section">Domain:(to do)</div>
-            <!-- Domain -->
-            <div class="section">
-                <select id="select_domain_type" name="select_domain_type"></select>
-            </div>                    
-        </div>                     
+        <!--<div id="top_downloaders"></div>-->
 
     </div>
-
-    <div id="preferences_container"></div>
-
-    <div id="top_4">
-        <div id="left_container"></div>
-        <div id="padding"></div>
-        <div id="center_container"></div>        
-        <div id="padding"></div>
-        <div id="right_container"></div>
-        <div class="clear"></div>
-    </div>
-
+    
 </div><!-- Close container -->

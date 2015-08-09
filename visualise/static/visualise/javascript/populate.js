@@ -3,12 +3,12 @@ function updateMetaData(){
 	removeAllChildren(document.getElementById("top_2"));
 
 	/* Display 'Num devices' or 'Device name' */
-	if(filter.getMAC() != 'all'){
+	if(filter.getDevice() != 'all'){
 		$('#top_2').append($('<span></span>').addClass('info').text('Device:'));
-		$('#top_2').append($('<span></span>').addClass('value').text(filter.getMAC()));
+		$('#top_2').append($('<span></span>').addClass('value').text(filter.getDevice()));
 
-		if(data.devices.names[filter.getMAC()]){
-			$('#text_name').val(n_names[filter.getMAC()]);
+		if(data.devices.names[filter.getDevice()]){
+			$('#text_name').val(n_names[filter.getDevice()]);
 		}
 		else{
 			$('#text_name').val('');
@@ -36,9 +36,61 @@ function updateMetaData(){
 	//console.log("...updated meta data.");
 }
 
+function createOverviewTable(){
+
+	//for(var i = 0; i < data.devices.)
+	//$('#table')
+}
+
+function populateDevicesTable(){
+	var table = $('#devices_table');
+	for(var i = 0; i < 10; i++){
+		var newRow = $('<div></div>').addClass('row');
+		newRow.append($('<span></span>').text(devices[i].device));
+		var volumeBytes = toInt(devices[i].downloaded) + toInt(devices[i].uploaded);
+		newRow.append($('<span></span>').text(bytesToSize(volumeBytes)));
+		var downloadedBytes = toInt(devices[i].downloaded);
+		newRow.append($('<span></span>').text(bytesToSize(downloadedBytes)));
+		var uploadedBytes = toInt(devices[i].uploaded);
+		newRow.append($('<span></span>').text(bytesToSize(uploadedBytes)));
+		newRow.append($('<span></span>').text(60));
+		var dateStart = devices[i].timeStart.getDate() + '/' + (devices[i].timeStart.getMonth() + 1) + '/' + devices[i].timeStart.getFullYear();
+		newRow.append($('<span></span>').text(dateStart));
+		var dateEnd = devices[i].timeEnd.getDate() + '/' + (devices[i].timeEnd.getMonth() + 1) + '/' + devices[i].timeEnd.getFullYear();
+		newRow.append($('<span></span>').text(dateEnd));
+		table.append(newRow);
+	}
+	table.append($('<div></div>').addClass('clear'));
+}
+
+function populateTopDownloaders(){
+	
+	var data = topDownloaders;
+
+	var options = {
+	    series: {
+	        pie: {
+	            show: true,	
+	            radius: 1,
+	            label: {
+	            	show: true,
+	                radius: 1/2,
+	                formatter: function(label, point){
+	                	return(point.percent.toFixed(2) + '%');
+	                },
+	                threshold: 0.1,            	
+		        } 		                 
+	        }
+	    },
+	    legend: {	    	
+	        show: true,
+	    }	        
+	};
+	var plot = $.plot($('#top_downloaders'), data, options);	
+}
+
 function updateFilterControls(){
 	updateIntervalSelectBoxes();
-	updateApplications();
 }
 
 function updateIntervalSelectBoxes(){
@@ -105,14 +157,6 @@ function updateIntervalSelectBoxes(){
 			}
 		}			
 	}
-}
-
-function updateApplications(){
-	//var i;
-	$("#select_applications").append($("<option></option>").attr("value", "all").text("All")); 
-	//for(i = 0; i < macs.length; ++i){
-	//	$("#select_applications").append($("<option></option>").attr("value",macs[i]).text(macs[i])); 
-	//}	
 }
 
 function addPreferences(){
@@ -185,16 +229,6 @@ function addPreferences(){
 	$label = $('<label>Usage</label>');
 	$label.attr('for', $check.attr('name'));
 	$networkParent.append($check, $label);
-
-	/* Application */
-	$check = createInput('check_network_application', 'checkbox');
-	$check.attr('name', $check.attr('id'));
-	$check.change(function(){
-		console.log("show network application.");
-	});	
-	$label = $('<label>Application</label>');
-	$label.attr('for', $check.attr('name'));		
-	$networkParent.append($check, $label);	
 
 	/* Domains */
 	$check = createInput('check_network_domains', 'checkbox');
@@ -282,16 +316,6 @@ function addPreferences(){
 	$label = $('<label>Usage</label>');
 	$label.attr('for', $check.attr('name'));
 	$deviceParent.append($check, $label);
-
-	/* Application */
-	$check = createInput('check_device_application', 'checkbox');
-	$check.attr('name', $check.attr('id'));
-	$check.change(function(){
-		console.log("show device application.");
-	});	
-	$label = $('<label>Application</label>');
-	$label.attr('for', $check.attr('name'));		
-	$deviceParent.append($check, $label);	
 
 	/* Domains */
 	$check = createInput('check_device_domains', 'checkbox');

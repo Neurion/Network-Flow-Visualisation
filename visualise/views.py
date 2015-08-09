@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
-from django.db.models import Max, Min, Sum, Count, Q
+from django.db.models import Max, Min, Sum, Count, Q, F
 from django.core import serializers
 from django.views.generic.edit import UpdateView
 from calendar import monthrange
@@ -27,14 +27,14 @@ class DIRECTION():
 def get_relevant_flows(request):
 	"""
 	Returns a queryset based on the filter values.
+	If the MAC address is not empty, then it is used to filter for a device. If it is empty, the source IP address is used.
 	"""
 
 	mac = request.POST.get('mac')
 	direction = request.POST.get("direction")
 	port_src = int(request.POST.get("port_source"))
 	port_dst = int(request.POST.get("port_destination"))
-	#interval = request.POST.get("interval")
-	start_ts = request.POST.get("time_start")
+	start_ts = request.POST.get("ts_filter")
 	end_ts = request.POST.get("time_end")
 	application = request.POST.get("application")
 	data = Flow.objects.all()
@@ -67,26 +67,33 @@ def index(request):
 	return render(request, 'visualise/index.html')
 
 @ensure_csrf_cookie
-def get_meta_data(request):
+def get_aggregate_data(request):
 	"""
-	Returns the number of devices, the earliest timestamp and the latest timestamp of the flows to be displayed.
-	If a mac address is given as a POST argument, the values returned are specific to that device.
+	Returns generic network information: number of devices, bytes downloaded, bytes uploaded, start time, end time and top 10 domains.
 	"""
 	if request.is_ajax():
 
 		data = Flow.objects.all()
 
+		# Netflow
+		netflow = get_netflow_version();
+
+		# Devices
+		devices = get_devices(data);
+
 		# Interval
-		time_earliest = data.aggregate(Min('time_start', distinct=True))['time_start__min']
-		time_latest = data.aggregate(Max('time_end', distinct=True))['time_end__max']
+		ts_earliest = data.aggregate(Min('time_start', distinct=True))['time_start__min']
+		ts_latest = data.aggregate(Max('time_end', distinct=True))['time_end__max']
 
 		# Bytes
 		bytes_downloaded = data.filter(direction=DIRECTION.INCOMING).aggregate(Sum('bytes_in'))['bytes_in__sum']
 		bytes_uploaded = data.filter(direction=DIRECTION.OUTGOING).aggregate(Sum('bytes_in'))['bytes_in__sum']
 
 		ret = {
-			'time_earliest': time_earliest,
-			'time_latest': time_latest,
+			'netflow': netflow,
+			'devices': devices,
+			'ts_earliest': ts_earliest,
+			'ts_latest': ts_latest,
 			'bytes_downloaded': bytes_downloaded,
 			'bytes_uploaded': bytes_uploaded,
 		}
@@ -122,24 +129,52 @@ def get_protocols(request):
 
 		return HttpResponse(json.dumps(ret), content_type='application/json')
 
-def get_devices_usage(request):
+def get_devices_data(request):
 	"""
 	Returns the bytes downloaded and uploaded by each device, ordered from highest to lowest.
 	"""
 	if request.is_ajax():
 		ret = []
+		ret_devices = []
+		ret_ts_start = []
+		ret_ts_end = []
 		ret_downloaded = []
 		ret_uploaded = []
-		downloaded_data = Flow.objects.all().filter(direction=DIRECTION.INCOMING).values('mac_dst').distinct().annotate(total_bytes=Sum('bytes_in')).order_by('-total_bytes')		
-		uploaded_data = Flow.objects.all().filter(direction=DIRECTION.OUTGOING).values('mac_src').distinct().annotate(total_bytes=Sum('bytes_in')).order_by('-total_bytes')
-		i = 0
-		while i < 10:
-			ret_downloaded.append([downloaded_data[i]["mac_src"], downloaded_data[i]["total_bytes"]])
-			ret_uploaded.append([uploaded_data[i]["mac_src"], uploaded_data[i]["total_bytes"]])
-			i += 1
-		ret.append(ret_downloaded)
-		ret.append(ret_uploaded)
-		return HttpResponse(json.dumps(ret), content_type='application/json')		
+		ret_volume = []
+
+		#ret_devices = list(Flow.objects.filter(direction=DIRECTION.INCOMING).values_list('mac_dst').annotate(volume=Sum('bytes_in')).order_by('-volume'))[:5]
+		ret_devices = get_devices(Flow.objects)
+
+		for d in ret_devices:
+			devData = Flow.objects.filter(Q(mac_src=d) | Q(mac_dst=d))
+			ts_start = devData.aggregate(Min('time_start'))['time_start__min']
+			ts_end = devData.aggregate(Max('time_end'))['time_end__max']
+			downloaded = devData.filter(direction=DIRECTION.INCOMING, mac_dst=d).aggregate(Sum('bytes_in'))['bytes_in__sum']
+			uploaded = devData.filter(direction=DIRECTION.OUTGOING, mac_src=d).aggregate(Sum('bytes_in'))['bytes_in__sum']
+			ret_volume.append(getInt(downloaded) + getInt(uploaded))
+			ret_ts_start.append(ts_start)
+			ret_ts_end.append(ts_end)
+			ret_downloaded.append(downloaded)
+			ret_uploaded.append(uploaded)
+		
+		ret = {
+			'devices': ret_devices,
+			'time_start': ret_ts_start,
+			'time_end': ret_ts_end,
+			'downloaded': ret_downloaded,
+			'uploaded': ret_uploaded,
+			'volume': ret_volume,
+		}
+
+		return HttpResponse(json.dumps(ret), content_type='application/json')
+
+def get_top_downloaders(request):
+	ret_devices = list(Flow.objects.filter(direction=DIRECTION.INCOMING).values_list('mac_dst').annotate(volume=Sum('bytes_in')).order_by('-volume'))[:5]
+	return HttpResponse(json.dumps(ret_devices), content_type='application/json')
+
+def get_top_uploaders(request):
+	ret_devices = list(Flow.objects.filter(direction=DIRECTION.OUTGOING).values_list('mac_src').annotate(volume=Sum('bytes_in')).order_by('-volume'))[:5]
+	return HttpResponse(json.dumps(ret_devices), content_type='application/json')
 
 def get_usage_timeline(request):
 	if request.is_ajax():
@@ -233,29 +268,36 @@ def save_host_name(request):
 	host.save()
 	return HttpResponse('')
 
-def get_filter_values(request):
-	ret = []	
-	ret_macs = []
-	ret_names = []
-	ret_interval = []
-	# MAC's
-	ret_macs = list(Flow.objects.all().filter(direction=DIRECTION.OUTGOING).values_list('mac_src', flat=True).distinct())
-	ret.append(ret_macs)
-	# Names
-	ret_names = {}
-	for m in ret_macs:
-		try:
-			ret_names[m] = Host.objects.get(mac=m).name
-		except Host.DoesNotExist:
-			pass
-	ret.append(ret_names)
-	# Interval
-	time_earliest = Flow.objects.all().aggregate(Min('time_start', distinct=True))['time_start__min']
-	ret_interval.append(time_earliest)
-	time_latest = Flow.objects.all().aggregate(Max('time_end', distinct=True))['time_end__max']
-	ret_interval.append(time_latest)
-	ret.append(ret_interval)
-	return HttpResponse(json.dumps(ret), content_type='application/json')	
+def get_devices(data):
+	"""
+	Inspects the database for MAC addresses. If they exist, then this method returns a list of distinct mac_src addresses
+	where the flow direction is outgoing.
+	If there are not MAC addresses, returns a list of distinct ip_src addresses.
+	"""
+	macsExist = True
+
+	distMacs = data.filter(direction=DIRECTION.INCOMING).values_list('mac_dst', flat=True).distinct()
+
+	if len(distMacs) == 1:
+		if distMacs[0] is None:
+			macsExist = False
+	
+	if macsExist:
+		return list(distMacs)
+	else:
+		return list(data.filter(direction=DIRECTION.INCOMING).values_list('ip_dst', flat=True).distinct())
+
+def get_netflow_version():
+	distMacs = list(Flow.objects.filter(direction=DIRECTION.OUTGOING).values_list('mac_src', flat=True).distinct())
+	if len(distMacs) == 1:
+		if distMacs[0] is None:
+			return 'v5'
+	return 'v9/10'
+
+def getInt(i):
+	if i is not None:
+		return int(i)
+	return 0;
 
 def isNum(data):
 	try:

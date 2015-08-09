@@ -1,10 +1,34 @@
+function createVisual(type, title, id){
 
+	newVisualContainer = $("<div></div>");
+	newVisualContainer.addClass("visual_container");
+	
+	if(type == "timeline"){
+		newVisualContainer.addClass("timeline");
+	}
+	else if(type == "pie"){
+		newVisualContainer.addClass("pie");
+	}
+	newVisualContainer.addClass(type);
+	newVisualContainer.attr('id', id);
 
+	newVisualTitle = $("<div></div>").addClass("visual_title").text(title);
+	newVisualContainer.append(newVisualTitle);
 
-function loadTopDownloaders(){
+	newVisual = $("<div></div>").addClass("visual");
+	newVisualContainer.append(newVisual);
+
+	return newVisualContainer;		// Return a reference to the element in which the visual is to be placed.
+}
+
+function loadDeviceUsers(){
 
 	if(data.devices.bytes.downloaded == null){
-		requestDevicesUsage();
+		//console.log("Requesting new data.");
+		//requestDevicesUsage();
+	}
+	else{
+		//console.log("Already have the required data.");
 	}
 
     $.ajax({
@@ -14,9 +38,82 @@ function loadTopDownloaders(){
 		dataType : "json",
 		async : true,
 		error : function(data){
-			alert('AJAX error:' + data);
+			//alert('AJAX error:' + data);
+			console.log("AJAX error with get_devices_usage.");
 		},
     	success : function(json_data){
+
+    		console.log(json_data);
+
+    		if(visualMode == VISUAL_MODE.TABLE){
+
+    		}
+    		else if(visualMode == VISUAL_MODE.TABLE){
+				var visualContainer = createVisual("pie", "Top Users", "v_devices_users");
+				var dataset = [];
+				var usage = [];
+
+				for(var i = 0; i < json_data[0].length; i++){
+					usage.append(parseInt(json_data[0]) + parseInt(json_data[1]));
+					dataset.push({ label: json_data[i][0], data: json_data[i][1] });
+				}
+
+				for(var i = 0; i < json_data.length; i++){
+					dataset.push({ label: json_data[i][0], data: json_data[i][1] });
+				}
+
+				var options = {
+				    series: {
+				        pie: {
+				            show: true,	
+				            radius: 1,
+				            label: {
+				            	show: true,
+				                radius: 1/2,
+				                formatter: function(label, point){
+				                	return(point.percent.toFixed(2) + '%');
+				                },
+				                threshold: 0.1,            	
+				        	}
+				        }
+				    },
+				    grid: {
+				        //hoverable: true,
+				        //clickable: true
+				    },
+				    legend: {
+				        show: true,
+				        //container:$("#usage_container_legend"),
+				    }	        
+				};
+
+				// Plot the usage pie chart
+				$('#left_container').append(visualContainer);
+				var plot = $.plot(visualContainer.find('.visual'), dataset, options);	
+			}		
+    	},
+    });		
+}
+
+function loadTopDownloaders(){
+
+	if(data.devices.bytes.downloaded == null){
+		//requestDevicesUsage();
+	}
+
+    $.ajax({
+		type	: "POST",
+		url 	: "get_devices_usage",
+		data 	: getAJAXParameters(),
+		dataType : "json",
+		async : true,
+		error : function(data){
+			//alert('AJAX error:' + data);
+			console.log("AJAX error with get_devices_usage.");
+		},
+    	success : function(json_data){
+
+    		console.log(json_data);
 
 			var visualContainer = createVisual("pie", "Top Downloaders", "v_devices_downloaded");
 			var dataset = []
@@ -68,7 +165,8 @@ function loadTopUploaders(){
 		dataType : "json",
 		async : true,
 		error : function(data){
-			alert('AJAX error:' + data);
+			//alert('AJAX error:' + data);
+			console.log("AJAX error with get_devices_uploaded.");
 		},
     	success : function(json_data){
 
@@ -119,7 +217,8 @@ function loadUsage(){
 		dataType : "json",
 		async : true,
 		error : function(data){
-			alert('AJAX error:' + data);
+			//alert('AJAX error:' + data);
+			console.log("AJAX error with get_usage.");
 		},
     	success : function(json_data){
 
@@ -171,7 +270,8 @@ function loadProtocol(){
 		dataType: "json",
 		async 	: true,
 		error 	: function(data){
-			alert('AJAX error:' + data);
+			//alert('AJAX error:' + data);
+			console.log("AJAX error with get_protocols.");
 		},
     	success : function(json_data){
 
@@ -225,7 +325,8 @@ function loadUsageTimeline(){
 		dataType : "json",
 		async : true,
 		error : function(data){
-			alert('AJAX error:' + data);
+			//alert('AJAX error:' + data);
+			console.log("AJAX error with get_usage_timeline.");
 		},
     	success : function(json_data){
 

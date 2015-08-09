@@ -8,7 +8,7 @@ body{
 	display: inline-block;
 	width: 100%;
 	height: 100%;
-	background-color: #2F3B31;
+	background-color: white;
 	margin: 50px 10% 0px 10%;
 	margin: 0px;
 	font-family: "Trebuchet MS", Helvetica, sans-serif;
@@ -58,291 +58,425 @@ h2{
 	float: left;	
 }
 
-.horizontal_bar{
-	display: block;
-	width: 100%;
-	height: 3px;
-}
-
-/*
-.header{
-	display: block;
-	width: 100%;
-	float: left;
-	font-size: 20px;
-	font-weight: bold;
-	background-color: #2F3B31;
-}
-*/
-
 #container{
 	display: block;
-	width: 100%;
-	margin-bottom: 20px;	
-	background-color: white;
-	/*background-color: yellow;*/
+	width: 100%;	
+	background-color: #3C4B53;
+	font-family: 'Courier';
 }
 
-	#top_1{
-		display: inline-block;
-		width: 98%;
-		height: 60px;
-		padding: 5px 1%;
-		background-color: green;
-		background-color: white;
-		color: black;
-		font-size: 40px;
-		line-height: 70px;
-		/*background-color: orange;*/
-	}
-
-	#top_1 span{
-		display: inline-block;
-		vertical-align: middle;
-	}
-
-		.current{
-			opacity: 0.5;
-		}		
-
-		span#title{
-			background-color: white;
-			/*padding-right: 100px;*/
-			color: black;
-			font-weight: bold;
-			float: right;
-			text-align: right;
-		}
-
-		#top_1 span.divider{
-			display: inline-block;
-			float: left;
-			font-size: inherit;
-		}
-
-		#top_1 #m_network, #m_user{
-			display: inline-block;
-			width: 10%;
-			height: 100%;
-			text-align: center;
-			float: left;
-			font-size: 20px;
-		}	
-
-		#top_1 #button_name_container{
-			display: inline-block;
-			height: 35px;
-			margin-top: 18px;
-		}
-
-			#top_1 #button_name_container #text_name{
-				display: inline-block;
-				height: 100%;			
-			}
-
-			#top_1 #button_name_container #button_save{
-				display: inline-block;
-				height: 100%;
-			}
-
-			#top_1 #button_name_container #button_remove{
-				display: inline-block;
-				height: 100%;
-			}						
-
-	#top_2{
+	.smooth_h{
 		display: block;
-		width: 96%;
-		height: 50px;
-		margin: 0.5% 1%;
-		
-		border: 1px solid black;
-		border-radius: 10px;
-		/*background-color: yellow;*/
+		width: 100%;
+		height: 1px;
+		background-color: #42535c;
 	}
 
-		#top_2 span{
-			display: inline-block;
-			width: 140px;
-			margin: 5px 0%;
-			padding-right: 10px;
-			float: left;
-			text-align: right;
-			line-height: 40px;
-			font-size: 1.4em;
-			/*background-color: red;*/
-		}
-
-		#top_2 span.info:nth-child(1){
-			display: inline-block;
-			width: 150px;			
-			padding-right: 10px;
-			line-height: 40px;
-			float: left;
-			text-align: right;
-			font-size: 1.4em;
-			/*background-color: blue;*/
-		}		
-
-		#top_2 span.value{
-			width: 100px;
-			padding-right: 100px;
-			font-weight: bold;
-			text-align: left;
-			/*background-color: orange;*/
-		}
-
-	#top_3{
-		display: inline-block;
-		width: 100%;
+	#top_1{
+		display: block;
+		width: 90%;
 		height: 50px;
-		line-height: 50px;
+		padding-left: 10%;
 		background-color: #2F3B31;
 		color: white;
+		position: fixed;
 	}
 
-		#top_3 .item{
+		#top_1 div{
 			display: inline-block;
 			width: 100px;
-			height: 100%;
+			height: 50px;
+			padding: 0px 10px;
+			line-height: 50px;
 			text-align: center;
 			float: left;
 		}
 
-		#top_3 .item:hover{
-			cursor: pointer;
+		#top_1 div:hover{
 			opacity: 0.5;
+			cursor: pointer;
+			/*background-color:rgba(231, 135, 39, 0.5);*/
 		}
 
-	#filter_container{
-		display: block;
-		display: none;
-		width: 98%;
-		height: 60px;
-		padding: 0% 1%;
-		padding-bottom: 10px;
-		background-color: #2F3B31;
-		/*position: absolute;*/
-	}	
-
-		#filter_container .section_container{
+		.interest{
 			display: inline-block;
-			width: 200px;
+			height: 100%;
+			padding: 0px 10px;
+			margin-right: 20px;
+			line-height: 50px;
+		}
+
+		span#title{
+			display: inline-block;
 			height: 50px;
-			margin: 5px 0px;
-			margin-right: 50px;
-			float: left;			
+			padding: 0px 10px;
+			vertical-align: middle;
 			color: white;
+			text-align: center;
+			line-height: 50px;
+			font-size: 1.1em;
+			float: right;
+		}
+
+	#left_1{
+		display: inline-block;
+		width: 10%;
+		height: 100%;
+		padding-top: 50px;
+		background-color: #2F3B31;
+		color: white;
+		float: left;
+		position: fixed;		
+	}
+
+		#overview_table{
+			display: block;
+		}
+
+			#overview_table .row{
+				display: block;
+				width: 100%;
+			}
+
+			#overview_table .row * {
+				float: left;
+			}
+
+			#overview_table .row :first-child{
+				display: inline-block;
+				width: 55%;
+				padding-right: 5%;
+				text-align: right;
+				color: white;
+			}
+
+			#overview_table .row :nth-child(2){
+				display: inline-block;
+				width: 40%;
+				text-align: left;
+				color: black;
+			}		
+
+		#filter_container{
+			display: block;
+			width: 100%;
+			margin-top: 100px;
 			/*background-color: red;*/
 		}
 
-			#filter_container .section_container.port{
-				width: 300px;
+			#filter_container > *{
+				height: 40px;
+				line-height: 40px;
+				font-size: 1em;
+				/*background-color: blue;*/
 			}
 
-			#filter_container .section_container.port input[type=text]{
+			div.inline{
 				display: inline-block;
-				width: 60px;
+				width: 100%;
+				height: 50px;			
+				position: absolute;
 			}
 
-			#filter_container .section_container.interval{
-				width: 350px;
+			div.stack{
+				display: block;
+				width: 100%;
+				height: 50px;
 			}
 
-		#filter_container .section{
-			display: block;
-			width: 100%;
-			height: 50%;
-		}
-
-			#select_device{
-				width: 150px;
-			}
-
-			#select_application{
-				width: 150px;
-			}
-
-			#filter_container hr{
-				width: 80%;
-			}
-
-			#filter_container form{
-				margin: 0px;
-				padding: 0px;
-			}		
-
-			#filter_container label{
-				display: inline-block;
-				height: 20px;				
-			}
-
-			#check_ingress_label:hover{
+			div.hover:hover{
+				opacity: 0.5;
 				cursor: pointer;
+				background-color:rgba(0, 0, 0, 0.5);
+			}
+
+			div.selected{
+				background-color: #3D4C40;
+				opacity: 0.5;
 			}	
 
-			#check_ingress:hover{
-				cursor: pointer;
-			}
-
-			#check_egress_label:hover{
-				cursor: pointer;
-			}		
-
-			#check_egress:hover{
-				cursor: pointer;
-			}
-
-			#text_port_source, #text_port_destination{
+			.both_container{
 				display: inline-block;
-				width: 80px;
+				width: 100%;
+			}
+
+			#filter_devices{
+				display: inline-block;
+				width: 100%;
+				text-align: center;
+				float: left;
+			}
+
+				#devices_menu{
+					display: none;
+					width: 100%;
+					height: 200px;
+					background-color: #2F3B31;
+					color: white;
+					float: left;
+					position: absolute;
+					overflow-y: scroll;
+				}
+
+				#devices_menu .item{
+					display: block;
+					width: 100%;
+					height: 30px;
+					line-height: 30px;
+					text-align: center;
+					font-size: 0.7em;
+				}
+
+				#devices_menu .item:hover{
+					cursor: pointer;
+					opacity: 0.5;
+				}
+
+			#filter_interval{
+				display: inline-block;
+				width: 100%;
+				text-align: center;
+				float: left;
+			}
+
+				#interval_menu{
+					display: none;
+					width: 100%;
+					background-color: #2F3B31;
+					color: white;
+					float: left;
+					position: absolute;
+				}
+
+				#interval_menu .item{
+					display: inline-block;
+					width: 33.33%;
+					height: 100%;
+					text-align: center;
+					float: left;
+					font-size: 0.7em;
+				}
+
+				#interval_menu .item:hover{
+					cursor: pointer;
+					opacity: 0.5;
+				}
+
+			#interval_monthly{
+				display: inline-block;
+				width: 100%;
+				height: 50px;
+				text-align: center;
+				float: left;		
+			}
+
+			#interval_daily{
+				display: block;
+				width: 100%;
+				height: 50px;
+				text-align: center;
+				float: left;			
+			}
+
+			#interval_hourly{
+				display: block;
+				width: 100%;
+				height: 50px;
+				text-align: center;
+				float: left;			
+			}					
+
+			#filter_months, #filter_days, #filter_hours{
+				display: none;
+				width: 100%;
+				font-size: 0.8em;
+				text-align: center;
+				float: left;	
+			}                                           
+
+			#months_menu, #days_menu, #hours_menu{
+				display: none;
+				width: 100%;
+				max-height: 300px;				
+				color: white;
+				background-color: #2F3B31;				
+				position: absolute;	
+				overflow-y: scroll;
+				float: left;
+			}          
+
+					#months_menu > div, #days_menu > div, #hours_menu > div{
+						display: block;
+						height: 30px;
+						line-height: 30px;
+						text-align: center;
+					}
+
+			#filter_direction{
+				display: inline-block;
+				width: 100%;
+				text-align: center;
+				float: left;
+			}
+
+				#direction_menu{
+					display: none;
+					width: 100%;
+					background-color: #2F3B31;
+					color: white;
+					float: left;
+					position: absolute;
+				}
+
+				#direction_menu .item{
+					display: inline-block;
+					width: 33.33%;
+					height: 100%;
+					text-align: center;
+					float: left;
+					font-size: 0.7em;
+				}
+
+				#direction_menu .item:hover{
+					cursor: pointer;
+					opacity: 0.5;
+				}
+
+			#filter_more{
+				display: inline-block;
+				width: 100%;
+				text-align: center;
+				float: left;
+			}
+
+		#filter_more_container{
+			display: none;
+			background-color: orange;
+		}
+
+			#filter_source_port, #filter_destination_port{
+				display: block;
+				width: 80%;
+				height: 30px;
+				margin: 0% 10%;
+				text-align: center;					
+			}
+
+			#filter_protocols{
+				display: block;
+				width: 100%;
+				height: 40px;
 				text-align: center;	
 			}
 
-	#preferences_container{
-		display: block;
-		display: none;
-		width: 98%;
-		padding: 0% 1%;
-		background-color: #2F3B31;
-		color: white;
-		/*position: absolute;*/
-	}	
+		#preferences_container{
+			display: block;
+			display: none;
+			width: 98%;
+			padding: 0% 1%;
+			background-color: #2F3B31;
+			color: white;
+			/*position: absolute;*/
+		}	
 
-	#preferences_container span.header{
-		font-weight: bold;
-	}
-
-	#preferences_container #network_container > label, #device_container > label{
-		margin-right: 30px;
-	}
-
-	#top_4{
-		display: block;		
-		min-height: 400px;
-		margin: 0px 3%;
-		padding: 20px 0px;
-		/*background-color: blue;*/
-		background-color: white;
-	}
-
-		#top_4>div:nth-child(2n-1){
-			border-radius: 5px;
-			border: 1px solid black;
-			/*background-color: #2F3B31;*/
+		#preferences_container span.header{
+			font-weight: bold;
 		}
 
-		#top_4>div div.visual_container:nth-child(1){			
-			border-radius: 5px;
-			/*background-color: yellow;*/
-			/*background-color: #2F3B31;*/
+		#preferences_container #network_container > label, #device_container > label{
+			margin-right: 30px;
 		}
 
-		#top_4 div.visual_container{			
+	#left_2{
+		display: inline-block;
+		width: 90%;	
+		min-height: 100%;
+		padding-top: 50px;
+		padding-left: 10%;
+		background-color: #3C4B53;
+		font-size: 1em;		
+	}
+
+		#devices_table{
+			display: block;
+			width: 50%;
+			min-width: 800px;
+			margin-top: 20px;
+			margin-left: 20px;
+			background-color: white;
+			text-align: center;
+			/*overflow-y: scroll;*/
+		}
+
+		#devices_table span{
+			padding: 5px;
+		}	
+
+			#devices_table .header{
+				font-weight: bold;
+			}
+
+			#devices_table .row{
+				width: 100%;
+				margin: auto;
+				float: left;
+				text-align: right;
+			}
+
+			#devices_table .row:hover{
+				cursor: pointer;
+				opacity: 0.5;				
+			}
+
+			#devices_table .row:nth-child(2n){
+				background-color: #F5F4F4;
+			}			
+
+			#devices_table span{
+				float: left;
+			}
+
+			#devices_table > div > span:nth-child(1){
+				width: 150px;
+				text-align: center;
+				/*background-color: red;*/
+			}
+
+			#devices_table > div > span:nth-child(2), #devices_table > div > span:nth-child(3), #devices_table > div > span:nth-child(4){
+				width: 100px;
+				/*background-color: blue;*/
+			}
+
+			#devices_table > div > span:nth-child(5){
+				width: 50px;
+				text-align: center;
+				/*background-color: yellow;*/
+			}
+
+			#devices_table > div > span:nth-child(6), #devices_table > div > span:nth-child(7), #devices_table > div > span:nth-child(8){
+				width: 100px;
+				text-align: center;
+				/*background-color: green;*/
+			}
+
+
+		#top_downloaders{
+			display: inline-block;
+			width: 300px;
+			height: 300px;
+			background-color: orange;
+			float: left;
+		}
+
+
+
+
+
+		#left_2 div.visual_container{			
 			width: 300px;
 			height: 500px;
 			/*background-color: #2F3B31;*/			
-			background-color: white;			
+			background-color: #3C4B53;			
 		}
 
 		.visual_container .visual_title{
@@ -365,27 +499,29 @@ h2{
 			color: black;
 		}
 
-		#top_4 div#left_container{
+		#left_2 div#left_container{
 			display: inline-block;
-			min-width: 400px;
-			width: 300px;
+			/*min-width: 400px;*/
+			width: 100px;
 			height: 100%;			
 			float: left;
 			/*background-color: yellow;
 			background-color: white;*/
+			background-color: red;	
 		}
 
-		#top_4 div#center_container{
+		#left_2 div#center_container{
 			display: inline-block;
-			min-width: 600px;
-			width: 800px;
+			/*min-width: 600px;*/
+			width: 600px;
 			height: 100%;
 			float: left;
 			/*background-color: orange;
 			background-color: white;*/
+			background-color: red;	
 		}
 
-			#top_4 div#center_container div.visual_container{
+			#left_2 div#center_container div.visual_container{
 				display: block;				
 				width: 30%;
 				min-height: 200px;
@@ -393,79 +529,32 @@ h2{
 				color: white;
 			}
 
-			#top_4 div#center_container div.visual_container.timeline{
+			#left_2 div#center_container div.visual_container.timeline{
 				width: 100%;
 				height: 400px;
 			}		
 
-			#top_4 div.visual_container.pie{
+			#left_2 div.visual_container.pie{
 				width: 100%;
 				height: 250px;
 			}
 
-		#top_4 div#right_container{
+		#left_2 div#right_container{
 			display: inline-block;
-			min-width: 400px;
-			width: 300px;
+			/*min-width: 400px;*/
+			width: 100px;
 			height: 100%;
 			float: right;
 			/*background-color: red;
 			background-color: white;*/
+			background-color: red;	
 		}
 
-		#top_4 div#padding{
+		#left_2 div#padding{
 			display: inline-block;
 			width: 3%;
 			height: 100%;
 			float: left;
 			background-color: orange;
-			background-color: white;
+			/*background-color: white;*/
 		}
-
-
-
-
-
-
-		#flows_table_container{
-			display: inline-block;	
-			width: 98%;
-			height: 98%;
-			padding: 1%;
-			float: left;
-			background-color: #2F3B31;
-			overflow-y: scroll;
-		}	
-
-			#flows_table{
-				display: block;
-				width: 100%;
-				/*padding: 1%;*/
-				background-color: green;				
-			}
-
-				#header{				
-					font-weight: bold;
-					display: block;	
-					width: 100%;	
-					height: 40px;
-					line-height: 40px;
-					background-color: white;			
-				}
-		
-				#flows_table .row{
-					display: block;	
-					width: 100%;	
-					height: 40px;
-					line-height: 40px;
-					margin-top: 5px;
-					background-color: #2F3B31;
-				}
-
-					#flows_table .cell{
-						display: inline-block;	
-						min-width: 150px;
-						float: left;
-						/*background-color: red;*/
-						text-align: center;
-					}

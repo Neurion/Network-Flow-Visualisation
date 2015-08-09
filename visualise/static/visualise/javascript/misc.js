@@ -6,9 +6,11 @@
  * Removes all children from the given element.
 */
 function removeAllChildren(element){
-	while (element.firstChild) {
-		element.removeChild(element.firstChild);
-	}	
+    if(element){
+    	while(element.firstChild){           
+    		element.removeChild(element.firstChild);
+    	}
+    }
 }
 
 function createInput(id, type){
@@ -20,7 +22,7 @@ function createInput(id, type){
 
 /**
  * Returns the specified cookie.
-*/
+ */
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -37,12 +39,19 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// from http://scratch99.com/web-development/javascript/convert-bytes-to-mb-kb/
-function bytesToSize(bytes) {
-    if(bytes == null){
+function toInt(i){
+    if(i == null){
         return 0;
     }
-    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    return parseInt(i);
+}
+
+// from http://scratch99.com/web-development/javascript/convert-bytes-to-mb-kb/
+function bytesToSize(bytes) {
+    if(bytes == null || bytes == 0){
+        return '0 B';
+    }
+    var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes == 0) return 'n/a';
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     if (i == 0) return bytes + ' ' + sizes[i];
