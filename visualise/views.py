@@ -4,10 +4,13 @@ from django.db.models import Max, Min, Sum, Count, Q, F
 from django.core import serializers
 from django.views.generic.edit import UpdateView
 from calendar import monthrange
-from visualise.models import Flow, Host
-import json, time, datetime
+#from visualise.models import IpfixFlow as Flow, Host
+from visualise.models import Flow as Flow, Host
+import json, time, datetime, socket
 
 from django.views.decorators.csrf import ensure_csrf_cookie
+
+epoch_date = datetime.datetime(1970, 1, 1)
 
 class SECONDS():
 	HOURLY 	= 3600000
@@ -40,7 +43,7 @@ def get_relevant_flows(request):
 	data = Flow.objects.all()
 
 	# Interval
-	if start_ts != -1 and end_ts != -1:
+	if start_ts != -1 and start_ts != None and end_ts != -1 and end_ts != None:
 		data = data.filter(time_start__gte=start_ts, time_end__lte=end_ts)
 
 	# Mac
@@ -168,13 +171,244 @@ def get_devices_data(request):
 
 		return HttpResponse(json.dumps(ret), content_type='application/json')
 
-def get_top_downloaders(request):
-	ret_devices = list(Flow.objects.filter(direction=DIRECTION.INCOMING).values_list('mac_dst').annotate(volume=Sum('bytes_in')).order_by('-volume'))[:5]
-	return HttpResponse(json.dumps(ret_devices), content_type='application/json')
+def get_downloaded_intervals_by_device(request):
+	"""
+	Returns the data for each given interval for a given device.
+	"""
+	if request.is_ajax():
+		ret = []
+		ret_downloaded = []
 
-def get_top_uploaders(request):
-	ret_devices = list(Flow.objects.filter(direction=DIRECTION.OUTGOING).values_list('mac_src').annotate(volume=Sum('bytes_in')).order_by('-volume'))[:5]
-	return HttpResponse(json.dumps(ret_devices), content_type='application/json')
+		data = Flow.objects
+
+		device = request.POST.get('device')
+		ts_start = request.POST.get('ts_filter')
+		interval = request.POST.get('interval')
+
+		if device == None or device == '':
+			return HttpResponse('A device identifier must be provided.', content_type='plain/text')
+
+		if ts_start == None:
+			ts_start = data.aggregate(Min('time_start'))['time_start__min']
+		if ts_start == None:
+			return HttpResponse('No data available for the specified device for that inverval.', content_type='plain/text')
+
+		start = datetime.datetime.fromtimestamp(ts_start)
+		year = start.year
+		month = start.month
+		day = start.day
+
+		if interval == None:
+			return HttpResponse('An interval must be provided.', content_type='plain/text')
+
+		data = data.filter(mac_dst=device, direction=DIRECTION.INCOMING)		
+
+		max = 0
+		t1 = ts_start
+		t2 = None
+
+		if interval == INTERVAL.MONTHLY:
+			current_day = 1
+			total_days = monthrange(year, month)[1]
+			t2 = total_days
+			while current_day < total_days:
+				initial_date = datetime.datetime(year, month, current_day)
+				final_date = datetime.datetime(year, month, current_day + 1)
+				ts_start = (initial_date - epoch_date).total_seconds()
+				ts_end = (final_date - epoch_date).total_seconds()
+
+				b = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]				
+				if b  == None:
+					b = 0
+				if b > max:
+					max = b
+				ret_downloaded.append([ts_start * 1000, b])
+
+				current_day += 1
+		elif interval == INTERVAL.DAILY:
+			current_hour = 1
+			total_hours = 23
+			while current_hour < total_hours:	# hours 00:00-01:00 to 22:00-23:00
+				initial_date = datetime.datetime(year, month, day, current_hour)
+				final_date = datetime.datetime(year, month, day, current_hour + 1)
+				ts_start = (initial_date - epoch_date).total_seconds()
+				ts_end = (final_date - epoch_date).total_seconds()
+
+				b = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+				if b  == None:
+					b = 0				
+				ret_downloaded.append([ts_start * 1000, b])
+
+				current_hour += 1
+			# hour 23:00 - 00:00 of next day
+			initial_date = datetime.datetime(year, month, day, current_hour)
+			final_date = datetime.datetime(year, month, day + 1, 0)
+			ts_start = (initial_date - epoch_date).total_seconds()
+			ts_end = (final_date - epoch_date).total_seconds()
+			b = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+			ret_downloaded.append([ts_start * 1000, b])
+		elif interval == INTERVAL.HOURLY:
+			current_minute = 0
+			total_minutes = 59
+			while current_minute < total_minutes:
+				initial_date = datetime.datetime(year, month, day, hour, current_minute)
+				final_date = datetime.datetime(year, month, day, hour, current_minute + 1)
+				ts_start = (initial_date - epoch_date).total_seconds()
+				ts_end = (final_date - epoch_date).total_seconds()
+
+				b = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+				if b  == None:
+					b = 0					
+				ret_downloaded.append([ts_start * 1000, b])
+
+				current_minute += 1
+		
+		ret = {
+			'downloaded': ret_downloaded,
+			'ts_start': t1,
+			'ts_end': t2,
+			'max': max,
+		}
+
+		return HttpResponse(json.dumps(ret), content_type='application/json')
+
+def get_uploaded_intervals_by_device(request):
+	"""
+	Returns the data for each given interval for a given device.
+	"""
+	if request.is_ajax():
+		ret = []
+		ret_uploaded = []
+
+		data = Flow.objects
+
+		device = request.POST.get('device')
+		ts_start = request.POST.get('ts_filter')
+		interval = request.POST.get('interval')
+
+		if device == None or device == '':
+			return HttpResponse('A device identifier must be provided.', content_type='plain/text')
+
+		if ts_start == None:
+			ts_start = data.aggregate(Min('time_start'))['time_start__min']
+		if ts_start == None:
+			return HttpResponse('No data available for the specified device for that inverval.', content_type='plain/text')
+
+		start = datetime.datetime.fromtimestamp(ts_start)
+		year = start.year
+		month = start.month
+		day = start.day
+
+		if interval == None:
+			return HttpResponse('An interval must be provided.', content_type='plain/text')
+
+		data = data.filter(mac_src=device, direction=DIRECTION.OUTGOING)		
+
+		t1 = ts_start
+		t2 = None
+
+		if interval == INTERVAL.MONTHLY:
+			current_day = 1
+			total_days = monthrange(year, month)[1]
+			while current_day < total_days:
+				initial_date = datetime.datetime(year, month, current_day)
+				final_date = datetime.datetime(year, month, current_day + 1)
+				ts_start = (initial_date - epoch_date).total_seconds()
+				ts_end = (final_date - epoch_date).total_seconds()
+
+				u = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]				
+				if u  == None:
+					u = 0
+				ret_uploaded.append([ts_start * 1000, u])
+
+				current_day += 1
+		elif interval == INTERVAL.DAILY:
+			current_hour = 1
+			total_hours = 23
+			while current_hour < total_hours:	# hours 00:00-01:00 to 22:00-23:00
+				initial_date = datetime.datetime(year, month, day, current_hour)
+				final_date = datetime.datetime(year, month, day, current_hour + 1)
+				ts_start = (initial_date - epoch_date).total_seconds()
+				ts_end = (final_date - epoch_date).total_seconds()
+
+				u = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+				if u  == None:
+					u = 0				
+				ret_uploaded.append([ts_start * 1000, u])
+
+				current_hour += 1
+			# hour 23:00 - 00:00 of next day
+			initial_date = datetime.datetime(year, month, day, current_hour)
+			final_date = datetime.datetime(year, month, day + 1, 0)
+			ts_start = (initial_date - epoch_date).total_seconds()
+			ts_end = (final_date - epoch_date).total_seconds()
+			u = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+			ret_uploaded.append([ts_start * 1000, u])
+		elif interval == INTERVAL.HOURLY:
+			current_minute = 0
+			total_minutes = 59
+			while current_minute < total_minutes:
+				initial_date = datetime.datetime(year, month, day, hour, current_minute)
+				final_date = datetime.datetime(year, month, day, hour, current_minute + 1)
+				ts_start = (initial_date - epoch_date).total_seconds()
+				ts_end = (final_date - epoch_date).total_seconds()
+
+				u = data.filter(time_start__gte=ts_start, time_end__lte=ts_end).aggregate(Sum('bytes_in'))["bytes_in__sum"]
+				if u  == None:
+					u = 0					
+				ret_uploaded.append([ts_start * 1000, u])
+
+				current_minute += 1
+		
+		ret = {
+			'uploaded': ret_uploaded,
+			't1': t1,
+		}
+
+		return HttpResponse(json.dumps(ret), content_type='application/json')
+
+def get_top_downloaders():
+	ret_devices = list(Flow.objects.filter(direction=DIRECTION.INCOMING).values_list('mac_dst', flat=True).annotate(volume=Sum('bytes_in')).order_by('-volume'))[:10]
+	return ret_devices
+
+def get_top_uploaders():
+	ret_devices = list(Flow.objects.filter(direction=DIRECTION.OUTGOING).values_list('mac_src', flat=True).annotate(volume=Sum('bytes_in')).order_by('-volume'))[:10]
+	return ret_devices
+
+def get_top_domains(request):
+
+	ret_domains = []
+
+	data = Flow.objects.all()
+
+	ts_start = request.POST.get('ts_filter')
+	interval = request.POST.get('interval')
+
+	if ts_start == None:
+		ts_start = data.aggregate(Min('time_start'))['time_start__min']
+	if ts_start == None:
+		return HttpResponse('No data available for the specified device for that inverval.', content_type='plain/text')
+
+	start = datetime.datetime.fromtimestamp(ts_start)
+	year = start.year
+	month = start.month
+	day = start.day
+
+	if interval == None:
+		return HttpResponse('An interval must be provided.', content_type='plain/text')
+
+	ips = list(Flow.objects.filter(direction=DIRECTION.INCOMING).values_list('ip_src', flat=True).annotate(ip_count=Count('ip_src')).order_by('-ip_count'))[:20]
+	
+	for ip in ips:
+		try:
+			t = socket.gethostbyaddr(ip)
+			if t != None:
+				ret_domains.append(t[0])
+		except:
+			pass
+
+
+	return HttpResponse(json.dumps(ret_domains), content_type='application/json')	
 
 def get_usage_timeline(request):
 	if request.is_ajax():

@@ -9,25 +9,9 @@ body{
 	width: 100%;
 	height: 100%;
 	background-color: white;
-	margin: 50px 10% 0px 10%;
 	margin: 0px;
 	font-family: "Trebuchet MS", Helvetica, sans-serif;
-}
-
-h1, h2, h3{
-	display: inline-block;
-	color: black;
-	margin: 0px;
-}
-
-h1{
-	font-size: 50px;
-	color: black;
-}	
-
-h2{
-	font-size: 45px;
-	color: black;	
+	background-color: #3C4B53;
 }
 
 .bold{
@@ -42,22 +26,6 @@ h2{
 	vertical-align: middle;
 }
 
-.padding_vertical{
-	display: inline-block;
-	width: 5px;
-	height: 100%;
-	background-color: orange;
-	float: left;
-}
-
-.padding_horizontal{
-	display: inline-block;
-	width: 100%;
-	height: 5px;
-	background-color: orange;
-	float: left;	
-}
-
 #container{
 	display: block;
 	width: 100%;	
@@ -70,6 +38,13 @@ h2{
 		width: 100%;
 		height: 1px;
 		background-color: #42535c;
+	}	
+
+	#description_container{
+		display: block;
+		width: 100%;
+		height: 100px;
+		background-color: white;
 	}
 
 	#top_1{
@@ -80,11 +55,17 @@ h2{
 		background-color: #2F3B31;
 		color: white;
 		position: fixed;
+		box-shadow: 0.5px 0px 15px black;
+		z-index: 1000;
 	}
+
+		#top_1 div.current{
+			background-color: #3C4B53;
+		}
 
 		#top_1 div{
 			display: inline-block;
-			width: 100px;
+			width: 120px;
 			height: 50px;
 			padding: 0px 10px;
 			line-height: 50px;
@@ -121,12 +102,14 @@ h2{
 	#left_1{
 		display: inline-block;
 		width: 10%;
+		min-width: 175px;
 		height: 100%;
-		padding-top: 50px;
+		/*padding-top: 50px;*/
 		background-color: #2F3B31;
 		color: white;
-		float: left;
-		position: fixed;		
+		position: fixed;
+		box-shadow: 0.5px 0px 15px black;
+		z-index: 1001;
 	}
 
 		#overview_table{
@@ -138,7 +121,7 @@ h2{
 				width: 100%;
 			}
 
-			#overview_table .row * {
+			#overview_table .row *{
 				float: left;
 			}
 
@@ -157,32 +140,60 @@ h2{
 				color: black;
 			}		
 
+
+
+
+			/* Locations */
+			#locations_table{
+				display: block;
+				width: 80%;
+				/*background-color: red;*/
+				color: black;
+			}
+
+			#locations_table > *:nth-child(1){
+				display: inline-block;
+				width: 400px;				
+				background-color: blue;
+			}
+
+			#locations_table span{
+				display: inline-block;
+				width: 100px;
+				float: left;					
+			}
+
+			#locations_table .header{
+				display: block;
+				width: 100%;
+				font-weight: bold;
+				background-color: orange;
+			}
+
+			#locations_table .row{
+				display: block;
+				width: 100%;
+				/*background-color: green;*/
+			}
+
+			#locations_table .row span.domain{
+				display: block;
+				width: 500px;
+				text-align: left;
+			}			
+
+		/* Menu */
+		#menu_protocols{
+			display: none;
+		}
+
+		/* Filters */
 		#filter_container{
 			display: block;
 			width: 100%;
-			margin-top: 100px;
+			/*margin-top: 100px;*/
 			/*background-color: red;*/
 		}
-
-			#filter_container > *{
-				height: 40px;
-				line-height: 40px;
-				font-size: 1em;
-				/*background-color: blue;*/
-			}
-
-			div.inline{
-				display: inline-block;
-				width: 100%;
-				height: 50px;			
-				position: absolute;
-			}
-
-			div.stack{
-				display: block;
-				width: 100%;
-				height: 50px;
-			}
 
 			div.hover:hover{
 				opacity: 0.5;
@@ -193,28 +204,23 @@ h2{
 			div.selected{
 				background-color: #3D4C40;
 				opacity: 0.5;
-			}	
-
-			.both_container{
-				display: inline-block;
-				width: 100%;
 			}
 
 			#filter_devices{
-				display: inline-block;
+				display: block;
 				width: 100%;
+				height: 40px;
+				line-height: 40px;
+				font-size: 1em;				
 				text-align: center;
-				float: left;
 			}
 
 				#devices_menu{
 					display: none;
 					width: 100%;
-					height: 200px;
+					height: 240px;
 					background-color: #2F3B31;
 					color: white;
-					float: left;
-					position: absolute;
 					overflow-y: scroll;
 				}
 
@@ -224,241 +230,341 @@ h2{
 					height: 30px;
 					line-height: 30px;
 					text-align: center;
-					font-size: 0.7em;
 				}
 
 				#devices_menu .item:hover{
-					cursor: pointer;
 					opacity: 0.5;
-				}
-
-			#filter_interval{
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				float: left;
-			}
-
-				#interval_menu{
-					display: none;
-					width: 100%;
-					background-color: #2F3B31;
-					color: white;
-					float: left;
-					position: absolute;
-				}
-
-				#interval_menu .item{
-					display: inline-block;
-					width: 33.33%;
-					height: 100%;
-					text-align: center;
-					float: left;
-					font-size: 0.7em;
-				}
-
-				#interval_menu .item:hover{
 					cursor: pointer;
-					opacity: 0.5;
+					background-color:rgba(0, 0, 0, 0.5);
 				}
-
-			#interval_monthly{
-				display: inline-block;
-				width: 100%;
-				height: 50px;
-				text-align: center;
-				float: left;		
-			}
-
-			#interval_daily{
-				display: block;
-				width: 100%;
-				height: 50px;
-				text-align: center;
-				float: left;			
-			}
-
-			#interval_hourly{
-				display: block;
-				width: 100%;
-				height: 50px;
-				text-align: center;
-				float: left;			
-			}					
-
-			#filter_months, #filter_days, #filter_hours{
-				display: none;
-				width: 100%;
-				font-size: 0.8em;
-				text-align: center;
-				float: left;	
-			}                                           
-
-			#months_menu, #days_menu, #hours_menu{
-				display: none;
-				width: 100%;
-				max-height: 300px;				
-				color: white;
-				background-color: #2F3B31;				
-				position: absolute;	
-				overflow-y: scroll;
-				float: left;
-			}          
-
-					#months_menu > div, #days_menu > div, #hours_menu > div{
-						display: block;
-						height: 30px;
-						line-height: 30px;
-						text-align: center;
-					}
 
 			#filter_direction{
-				display: inline-block;
+				display: block;
 				width: 100%;
+				height: 40px;
+				line-height: 40px;
+				font-size: 1em;				
 				text-align: center;
-				float: left;
 			}
 
 				#direction_menu{
 					display: none;
 					width: 100%;
+					height: 90px;
 					background-color: #2F3B31;
 					color: white;
-					float: left;
-					position: absolute;
 				}
 
 				#direction_menu .item{
-					display: inline-block;
-					width: 33.33%;
-					height: 100%;
+					display: block;
+					width: 100%;
+					height: 30px;
+					line-height: 30px;
 					text-align: center;
-					float: left;
-					font-size: 0.7em;
 				}
 
 				#direction_menu .item:hover{
-					cursor: pointer;
 					opacity: 0.5;
+					cursor: pointer;
+					background-color:rgba(0, 0, 0, 0.5);
 				}
 
-			#filter_more{
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				float: left;
-			}
-
-		#filter_more_container{
-			display: none;
-			background-color: orange;
-		}
-
-			#filter_source_port, #filter_destination_port{
-				display: block;
-				width: 80%;
-				height: 30px;
-				margin: 0% 10%;
-				text-align: center;					
-			}
-
-			#filter_protocols{
+			#filter_month{
 				display: block;
 				width: 100%;
 				height: 40px;
-				text-align: center;	
+				line-height: 40px;
+				font-size: 1em;				
+				text-align: center;				
 			}
 
-		#preferences_container{
-			display: block;
-			display: none;
-			width: 98%;
-			padding: 0% 1%;
-			background-color: #2F3B31;
-			color: white;
-			/*position: absolute;*/
-		}	
+				#months_menu{
+					display: none;
+					width: 100%;
+					height: 150px;
+					background-color: #2F3B31;
+					color: white;
+					overflow-y: scroll;
+				}
 
-		#preferences_container span.header{
-			font-weight: bold;
-		}
+				#months_menu .item{
+					display: block;
+					width: 100%;
+					height: 30px;
+					line-height: 30px;
+					text-align: left;
+				}
 
-		#preferences_container #network_container > label, #device_container > label{
-			margin-right: 30px;
-		}
+				#months_menu .item:hover{
+					opacity: 0.5;
+					cursor: pointer;
+					background-color:rgba(0, 0, 0, 0.5);
+				}
+
+			#filter_day{
+				display: none;
+				width: 100%;
+				height: 40px;
+				line-height: 40px;
+				font-size: 1em;				
+				text-align: center;
+			}
+
+				#days_menu{
+					display: none;
+					width: 100%;
+					height: 150px;
+					color: white;
+					background-color: #2F3B31;
+					overflow-y: scroll;
+				}
+
+				#days_menu .item{
+					display: block;
+					width: 100%;
+					height: 30px;
+					line-height: 30px;
+					text-align: left;
+				}
+
+				#days_menu .item:hover{
+					opacity: 0.5;
+					cursor: pointer;
+					background-color:rgba(0, 0, 0, 0.5);
+				}				
+
+			#filter_hour{
+				display: none;
+				width: 100%;
+				height: 40px;
+				line-height: 40px;
+				font-size: 1em;
+				text-align: center;
+			}
+
+				#hours_menu{
+					display: none;
+					width: 100%;
+					height: 150px;
+					color: white;
+					background-color: #2F3B31;
+					overflow-y: scroll;
+				}
+
+				#hours_menu .item{
+					display: block;
+					width: 100%;
+					height: 30px;
+					line-height: 30px;
+					text-align: left;
+				}
+
+				#hours_menu .item:hover{
+					opacity: 0.5;
+					cursor: pointer;
+					background-color: rgba(0, 0, 0, 0.5);
+				}	
+
+			#filter_more{
+				display: block;
+				width: 100%;
+				line-height: 40px;
+				font-size: 1em;				
+				text-align: center;
+			}
+
+				#filter_more_container{
+					display: none;
+					background-color: orange;
+				}
+
+					#filter_source_port, #filter_destination_port{
+						display: block;
+						width: 80%;
+						height: 30px;
+						margin: 0% 10%;
+						text-align: center;					
+					}
 
 	#left_2{
 		display: inline-block;
-		width: 90%;	
+		width: 90%;
 		min-height: 100%;
-		padding-top: 50px;
-		padding-left: 10%;
+		margin-top: 50px; /* Fixed */
+		margin-left: 10%; /* Fixed */
 		background-color: #3C4B53;
-		font-size: 1em;		
+		font-size: 1em;
 	}
 
-		#devices_table{
+
+		.padding{
 			display: block;
+			width: 88%;
+			padding: 1%;
+			margin: auto;
+			background-color: red;
+		}
+
+		#summary_table{
+			display: block;
+			width: 100%;
+			background-color: orange;
+		}
+
+		#summary_table .header{
+			display: block;
+			float: left;
+		}
+
+		#summary_table .header .item{
+			display: inline-block;
+			width: 200px;
+			padding: 5px;
+			float: left;
+			font-weight: bold;
+		}		
+
+		#summary_table .row{
+			display: block;
+			float: left;
+		}
+
+		#summary_table .row .item{
+			display: inline-block;
+			width: 200px;
+			padding: 5px;
+			float: left;
+		}
+
+
+
+
+		#stat_container{
+			display: block;
+			width: 90%;
+			min-height: 600px;
+			margin: 2% 5%;
+			background-color: white;
+		}
+
+		.overview_padding{
+			display: inline-block;
 			width: 50%;
-			min-width: 800px;
-			margin-top: 20px;
-			margin-left: 20px;
+			height: 300px;
+			line-height: 40px;
+			font-size: 1.3em;
+			text-align: center;
+		}
+
+			#overview_downloaded{
+				display: inline-block;
+				width: 100%;
+				height: 100%;
+			}
+
+			#overview_uploaded{
+				display: inline-block;
+				width: 100%;
+				height: 100%;
+			}
+
+		#stat_description{
+			display: block;
+			width: 100%;
+			height: 100px;
+			line-height: 100px;
+			font-size: 1.5em;
+			background-color: red;
+		}
+
+		.timeline_padding{
+			display: inline-block;
+			width: 68%;
+			padding: 1%;
+			/*background-color: black;*/
+			float: left;
+		}
+
+			#stat_timeline{
+				display: inline-block;
+				width: 100%;
+				height: 300px;
+				/*background-color: red;*/
+				float: left;
+			}
+
+		.pie_padding{
+			display: inline-block;
+			width: 28%;
+			padding: 1%;
+			float: left;
+		}
+
+			#stat_pie{
+				display: inline-block;
+				width: 100%;
+				height: 300px;
+				/*background-color: orange;*/
+				float: left;
+			}
+
+		.table_padding{
+			display: inline-block;
+			width: 98%;
+			padding: 1%;
+			float: left;
+		}
+
+		#stat_table{
+			display: block;
+			width: 100%;
 			background-color: white;
 			text-align: center;
 			/*overflow-y: scroll;*/
 		}
 
-		#devices_table span{
-			padding: 5px;
-		}	
-
-			#devices_table .header{
-				font-weight: bold;
-			}
-
-			#devices_table .row{
-				width: 100%;
-				margin: auto;
-				float: left;
+			#stat_table span{
+				padding: 5px 0px;
 				text-align: right;
-			}
+			}	
 
-			#devices_table .row:hover{
-				cursor: pointer;
-				opacity: 0.5;				
-			}
+				#stat_table .header{
+					font-weight: bold;
+				}
 
-			#devices_table .row:nth-child(2n){
-				background-color: #F5F4F4;
-			}			
+				#stat_table .row{
+					width: 100%;
+					float: left;
+				}
 
-			#devices_table span{
-				float: left;
-			}
+				#stat_table .row:hover{
+					cursor: pointer;
+					opacity: 0.5;				
+				}
 
-			#devices_table > div > span:nth-child(1){
-				width: 150px;
-				text-align: center;
-				/*background-color: red;*/
-			}
+				#stat_table .row:nth-child(2n){
+					background-color: #F5F4F4;
+				}			
 
-			#devices_table > div > span:nth-child(2), #devices_table > div > span:nth-child(3), #devices_table > div > span:nth-child(4){
-				width: 100px;
-				/*background-color: blue;*/
-			}
+				#stat_table span{
+					float: left;
+				}
 
-			#devices_table > div > span:nth-child(5){
-				width: 50px;
-				text-align: center;
-				/*background-color: yellow;*/
-			}
+				#stat_table > div > span:nth-child(1){
+					width: 15%;
+				}
 
-			#devices_table > div > span:nth-child(6), #devices_table > div > span:nth-child(7), #devices_table > div > span:nth-child(8){
-				width: 100px;
-				text-align: center;
-				/*background-color: green;*/
-			}
+				#stat_table > div > span:nth-child(2), #stat_table > div > span:nth-child(3), #stat_table > div > span:nth-child(4){
+					width: 10%;
+				}
 
+				#stat_table > div > span:nth-child(5){
+					width: 10%;
+				}
+
+				#stat_table > div > span:nth-child(6), #stat_table > div > span:nth-child(7){
+					width: 15%;
+				}
 
 		#top_downloaders{
 			display: inline-block;

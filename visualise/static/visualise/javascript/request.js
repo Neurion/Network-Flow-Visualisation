@@ -70,6 +70,7 @@ function requestDevicesData(callback){
 			console.log(json_data.uploaded);
 			console.log(json_data.volume);
 			*/
+
 			for(var i = 0; i < json_data.devices.length; i++){
 				var newDevice = new Device(json_data.devices[i], "", json_data.downloaded[i], json_data.uploaded[i], new Date(json_data.time_start[i] * 1000), new Date(json_data.time_end[i] * 1000));
 				devices.push(newDevice);
@@ -93,7 +94,7 @@ function requestTopDownloaders(callback){
 		success : function(json_data){
 			topDownloaders = json_data;
 			console.log(json_data);
-			callback(json_data);
+			callback();
 		},
 	});		
 }
@@ -110,7 +111,7 @@ function requestTopUploaders(callback){
 		},
 		success : function(json_data){
 
-			callback(json_data);
+			callback();
 		},
 	});		
 }

@@ -5,9 +5,10 @@ from visualise import views
 urlpatterns = patterns('',
 
 	url(r'get_aggregate_data/?$', views.get_aggregate_data),	
+	url(r'get_downloaded_intervals_by_device/?$', views.get_downloaded_intervals_by_device),
+	url(r'get_uploaded_intervals_by_device/?$', views.get_uploaded_intervals_by_device),
 	url(r'get_devices_data/?$', views.get_devices_data),
-	url(r'get_top_downloaders/?$', views.get_top_downloaders),
-	url(r'get_top_uploaders/?$', views.get_top_uploaders),
+	url(r'get_top_domains/?$', views.get_top_domains),
 	url(r'get_protocols/?$', views.get_protocols),
 	url(r'get_usage/?$', views.get_usage),
 	url(r'get_usage_timeline/?$', views.get_usage_timeline),

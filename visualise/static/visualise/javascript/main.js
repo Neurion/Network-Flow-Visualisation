@@ -2,11 +2,46 @@ $(document).ready(function(){
 
 	/* Populates the filter controls and sets the initial filter values. */
 	setup();
-	addPreferences();
 
 	getAggregateData(function(){
 
-		$('#netflow').append($('<div></div>').text(aggregateData.netflow));
+		filter.populateMonths();
+
+		$('#menu_overview').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.OVERVIEW.addClass('current');
+			statMenu = STAT_MENU.OVERVIEW;
+			populateSignificant();
+		});
+
+		$('#menu_downloaded').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.DOWNLOADED.addClass('current');
+			statMenu = STAT_MENU.DOWNLOADED;
+			populateSignificant();	
+		});
+
+		$('#menu_uploaded').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.UPLOADED.addClass('current');
+			statMenu = STAT_MENU.UPLOADED;
+			populateSignificant();
+		});
+
+		$('#menu_locations').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.LOCATIONS.addClass('current');
+			statMenu = STAT_MENU.LOCATIONS;
+			populateSignificant();
+		});
+
+		$('#menu_applications').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.APPLICATIONS.addClass('current');
+			statMenu = STAT_MENU.APPLICATIONS;
+			populateSignificant();
+		});		
+
 		$('#devices').append($('<div></div>').text(aggregateData.devices.length));
 		$('#downloaded').append($('<div></div>').text(bytesToSize(aggregateData.downloaded)));
 		$('#uploaded').append($('<div></div>').text(bytesToSize(aggregateData.uploaded)));
@@ -18,7 +53,6 @@ $(document).ready(function(){
 		filter.setDirectionIngressListener(function(){
 			//requestData(function(){
 				//updateMetaData();
-				//updateVisuals();
 			//});
 		});
 
@@ -26,7 +60,6 @@ $(document).ready(function(){
 		filter.setDirectionEgressListener(function(){
 			//requestData(function(){
 				//updateMetaData();
-				//updateVisuals();
 			//});
 		});
 
@@ -37,25 +70,20 @@ $(document).ready(function(){
 		/* Interval listener */
 		filter.setIntervalListener();
 
-		filter.updateControls();
+		filter.populateDevices();
 
-		//requestData(function(){
-			//updateMetaData();
-			//updateVisuals();
-		//});
+		filter.setInterval(INTERVAL.MONTHLY);
+
+		//console.log('Default filter values:');
+		//printFilterValues();
+
 	});
 
 	requestDevicesData(function(){
-		populateDevicesTable();
+		statMenu = STAT_MENU.OVERVIEW;
+		populateSignificant();
 	});
-
-	requestTopDownloaders(function(){
-		//populateTopDownloaders();
-	});
-
-	requestTopUploaders(function(){});
-
-});
+});		// end of page ready
 
 function setup(){	
 
@@ -63,6 +91,12 @@ function setup(){
 	setMenuPointers();
 	/* Preferences */
 	setPreferencesPointers();
+
+	STAT_MENU.OVERVIEW = $('#menu_overview');
+	STAT_MENU.DOWNLOADED = $('#menu_downloaded');
+	STAT_MENU.UPLOADED = $('#menu_uploaded');
+	STAT_MENU.LOCATIONS = $('#menu_locations');
+	STAT_MENU.APPLICATIONS = $('#menu_applications');
 
 	filter = new Filter();
 	filter.setControls();
@@ -77,7 +111,6 @@ function setup(){
 
 function onTimeout(){
 	//requestFilterValues(updateFilterControls, requestData);
-	//updateVisuals();
 }
 
 function setMenuPointers(){
@@ -91,6 +124,14 @@ function setMenuPointers(){
 	//menu.display.click(function(){
 	//	$('#preferences_container').slideToggle(300);
 	//});	
+}
+
+function removeCurrentMenu(){
+	STAT_MENU.OVERVIEW.removeClass('current');
+	STAT_MENU.DOWNLOADED.removeClass('current');
+	STAT_MENU.UPLOADED.removeClass('current');
+	STAT_MENU.LOCATIONS.removeClass('current');	
+	STAT_MENU.APPLICATIONS.removeClass('current');
 }
 
 function setPreferencesPointers(){
@@ -108,19 +149,7 @@ function setPreferencesPointers(){
 	controls.preferences.device.country = $('#check_device_country');
 }
 
-function updateVisuals(){
 
-	removeAllChildren(document.getElementById('left_container'));	// Remove all visuals.
-	removeAllChildren(document.getElementById('center_container'));	// Remove all visuals.
-	removeAllChildren(document.getElementById('right_container'));	// Remove all visuals.
-
-	for(var i = 0; i < visuals.length; i++){
-		visuals[i]();
-	}
-
-	// Flows table
-	//loadFlowsTable($('#header'));
-} 
 
 function getFilterParameters(){
 	
@@ -129,7 +158,7 @@ function getFilterParameters(){
 
 	// Have to check for null aggregate data for the first request.
 	if(aggregateData.dateStart == null){
-		console.log("FIRST REQUEST.");
+		//console.log("FIRST REQUEST.");
 	}
 	else if(filter.getInterval() == INTERVAL.MONTHLY){		
 		f_dateStart = new Date(aggregateData.dateStart.getFullYear(), filter.getMonth());

@@ -11,11 +11,6 @@ var DIRECTION = {
 	ALL: "all",
 };
 
-var VISUAL_MODE = {
-	GRAPHIC: "graphic",
-	TABLE: "table",
-};
-
 var DEFAULT = {
 	INTERVAL: INTERVAL.MONTHLY,
 	DIRECTION: DIRECTION.ALL,
@@ -30,6 +25,17 @@ var SECONDS = {
 
 var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/* Controls */
+
+var STAT_MENU = {
+	OVERVIEW: null,
+	DOWNLOADED: null,
+	UPLOADED: null,
+	LOCATIONS: null,
+	APPLICATIONS: null,
+};
+var statMenu;
 
 var controls = {
 	preferences: {
@@ -74,6 +80,26 @@ function Device(device, name, downloaded, uploaded, timeStart, timeEnd){
 	this.timeEnd = timeEnd;			// Latest data.
 };
 
+function compareDownloaded(a, b) {
+	if(a.downloaded > b.downloaded){
+		return -1;
+	}
+	if(a.downloaded < b.downloaded){
+		return 1;
+	}
+	return 0;
+}
+
+function compareUploaded(a, b) {
+	if(a.uploaded > b.uploaded){
+		return -1;
+	}
+	if(a.uploaded < b.uploaded){
+		return 1;
+	}
+	return 0;
+}
+
 function Filter(){
 
 	var _date;
@@ -89,7 +115,7 @@ function Filter(){
 		day: null,
 		hour: null,
 	};
-	var _values = {
+	var _selected = {
 		device: null,
 		direction_in: null,
 		direction_out: null,
@@ -116,86 +142,42 @@ function Filter(){
 		_controls.port_src = $('#filter_source_port');
 		_controls.port_dst = $('#filter_destination_port');
 		_controls.interval = $('#filter_interval');
-		_controls.interval.menu = $('#interval_menu');
-		_controls.interval.monthly = $('#interval_monthly');
-		_controls.interval.daily = $('#interval_daily');
-		_controls.interval.hourly = $('#interval_hourly');
-		_controls.months = $('#filter_months');
-		_controls.days = $('#filter_days');
-		_controls.hours = $('#filter_hours');
+		_controls.months = $('#filter_month');
+		_controls.days = $('#filter_day');
+		_controls.hours = $('#filter_hour');
 		_controls.months.menu = $('#months_menu');
 		_controls.days.menu = $('#days_menu');
 		_controls.hours.menu = $('#hours_menu');
 		_controls.more = $('#filter_more');
 
-		_controls.interval.monthly.click(function(){
-			filter.setInterval(_controls.interval.monthly);
-			//_hideAllMenus();
-			_populateIntervalMenus();
-			// Hide
-			_controls.days.animate({width:'hide'}, 300);
-			_controls.hours.animate({width:'hide'}, 300);
-			// Show
-			_controls.months.animate({width:'show'}, 300);
-		});	
-
-		_controls.interval.daily.click(function(){
-			filter.setInterval(_controls.interval.daily);
-			//_hideAllMenus();	
-			_populateIntervalMenus();
-			// Hide
-			_controls.hours.animate({width:'hide'}, 300);
-			// Show
-			_controls.months.animate({width:'show'}, 300);
-			_controls.days.animate({width:'show'}, 300);
-		});		
-
-		_controls.interval.hourly.click(function(){
-			filter.setInterval(_controls.interval.hourly);
-			//_hideAllMenus();
-			_populateIntervalMenus();
-			// Show
-			_controls.months.animate({width:'show'}, 300);
-			_controls.days.animate({width:'show'}, 300);
-			_controls.hours.animate({width:'show'}, 300);
-		});
-
+		/* Date */
 		_controls.months.click(function(){
-			_controls.months.menu.animate({width:'toggle'}, 300);
+			_controls.months.menu.animate({height:'toggle'}, 300);
 		});	
 
 		_controls.days.click(function(){
-			_controls.days.menu.animate({width:'toggle'}, 300);
+			_controls.days.menu.animate({height:'toggle'}, 300);
 		});	
 
 		_controls.hours.click(function(){
-			_controls.hours.menu.animate({width:'toggle'}, 300);
+			_controls.hours.menu.animate({height:'toggle'}, 300);
 		});	
 
 		/* Direction */
 		_controls.direction.click(function(){
-			_controls.direction.menu.animate({width:'toggle'}, 300);
+			_controls.direction.menu.animate({height:'toggle'}, 300);
 		});
 
 		/* More */
 		_controls.more.click(function(){
-			$('#filter_more_container').slideToggle(300);
+			$('#filter_more_container').animate({height:'toggle'}, 300);
 		});
-	}
-	
-	var _hideAllMenus = function(){
-		_controls.devices.menu.animate({width:'hide'}, 300);
-		_controls.direction.menu.animate({width:'hide'}, 300);
-		_controls.interval.menu.animate({width:'hide'}, 300);
-		_controls.months.menu.animate({width:'hide'}, 300);
-		_controls.days.menu.animate({width:'hide'}, 300);
-		_controls.hours.menu.animate({width:'hide'}, 300);
 	}
 
 	/* Getters. */
 	this.getDevice = function(){
-		if(_values.device != null){
-			return _values.device.text();
+		if(_selected.device != null){
+			return _selected.device.text();
 		}
 		else{
 			return -1;
@@ -203,8 +185,8 @@ function Filter(){
 	}
 
 	var _getDirection = function(){
-		if(_values.direction != null){
-			return _values.direction.text();
+		if(_selected.direction != null){
+			return _selected.direction.text();
 		}	
 	}
 
@@ -241,8 +223,8 @@ function Filter(){
 	}
 
 	var _getInterval = function(){
-		if(_controls.interval != null){
-			return _values.interval;
+		if(_selected.interval != null){
+			return _selected.interval;
 		}
 		else{
 			return -1;
@@ -262,57 +244,39 @@ function Filter(){
 	}
 
 	var _getMonth = function(){
-		if(_controls.interval.monthly != null){
-			return _controls.interval.monthly.val();
+		if(_controls.months != null){			
+			return _controls.months.menu.find('.selected').attr('value');
 		}
 		else{
 			return -1;
 		}		
 	}
-
 	this.getMonth = function(){
-		if(_controls.interval.monthly != null){
-			return _controls.interval.monthly.val();
-		}
-		else{
-			return -1;
-		}
+		return _getMonth();
 	}
 
 	var _getDay = function(){
-		if(_controls.interval.daily != null){
-			return _controls.interval.daily.val();
+		if(_controls.days != null){
+			return _controls.days.menu.find('.selected').attr('value');
 		}
 		else{
 			return -1;
 		}		
 	}
-
 	this.getDay = function(){
-		if(_controls.interval.daily != null){
-			return _controls.interval.daily.val();
-		}
-		else{
-			return -1;
-		}
+		return  _getDay();
 	}
 
 	var _getHour = function(){
-		if(_controls.interval.hourly != null){
-			return _controls.interval.hourly.val();
+		if(_controls.hours != null){
+			return _controls.hours.menu.find('.selected').text().toLowerCase();
 		}
 		else{
 			return -1;
-		}		
+		}
 	}
-
 	this.getHour = function(){
-		if(_controls.interval.hourly != null){
-			return _controls.interval.hourly.val();
-		}
-		else{
-			return -1;
-		}
+		return _getHour();
 	}
 
 	/**
@@ -325,74 +289,78 @@ function Filter(){
 	/* Setters */
 
 	var _setDevice = function(dev){
-		if(_values.device != null){
-			_values.device.removeClass('selected');
+		if(_selected.device != null){
+			_selected.device.removeClass('selected');
 		}
-		_values.device = dev;
-		_values.device.addClass('selected');
-		console.log('device is now: ' + _values.device.text());
+		_selected.device = dev;
+		_selected.device.addClass('selected');
+		console.log('device is now: ' + _selected.device.text());
 	}
 	this.setDevice = function(dev){
 		_setDevice(dev);
 	}
 
 	var _setInterval = function(intv){
-		if(_values.interval != null){
-			_values.interval.removeClass('selected');
-		}
-		_values.interval = intv;
-		_values.interval.addClass('selected');
-		console.log('interval is now: ' + _values.interval.text());
+		_selected.interval = intv;
 	}
 	this.setInterval = function(intv){
 		_setInterval(intv);
 	}
 	
-	var _setMonth  = function(mon){
-		if(_values.month != null){
-			_values.month.removeClass('selected');
+	var _setMonth = function(mon){
+		if(_selected.month != null){
+			_selected.month.removeClass('selected');
 		}
-		_values.month = mon;
-		_values.month.addClass('selected');
-		_hideAllMenus();
-		console.log('month is now: ' + _values.month.text());		
+		_selected.month = mon;
+		_selected.month.addClass('selected');
+
+		if(_selected.month.text().toLowerCase() == "all"){
+			console.log('interval = all');
+		}
+		else{
+			console.log('interval = monthly');
+			_controls.days.animate({height:'show'}, 300);
+		}
 	}
 	this.setMonth = function(mon){
 		_setMonth(mon);
 	}
 	
 	var _setDay = function(day){
-		if(_values.day != null){
-			_values.day.removeClass('selected');
+		if(_selected.day != null){
+			_selected.day.removeClass('selected');
 		}
-		_values.day = day;
-		_values.day.addClass('selected');
-		_hideAllMenus();
-		console.log('day is now: ' + _values.day.text());
+		_selected.day = day;
+		_selected.day.addClass('selected');
+
+		if(_selected.day.text().toLowerCase() == "all"){
+			console.log('interval = all');
+		}
+		else{
+			console.log('interval = daily');
+			_controls.hours.animate({height:'show'}, 300);
+		}		
 	}
 	this.setDay = function(day){
 		_setDay(day);
 	}
 
 	var _setHour = function(hour){
-		if(_values.hour != null){
-			_values.hour.removeClass('selected');
+		if(_selected.hour != null){
+			_selected.hour.removeClass('selected');
 		}
-		_values.hour = hour;
-		_values.hour.addClass('selected');
-		console.log('hour is now: ' + _values.hour.text());		
+		_selected.hour = hour;
+		_selected.hour.addClass('selected');
 	}
 	this.setHour = function(hour){
 		_setHour(hour);
 	}
 
 	/* Listeners */
- 	/* MAC */
+ 	/* Device */
 	this.setDeviceListener = function(){
 		_controls.devices.click(function(){
-			console.log("Device changed.");
-			_controls.interval.menu.animate({width:'hide'}, 300);
-			_controls.devices.menu.animate({width:'toggle'}, 300);
+			_controls.devices.menu.animate({height:'toggle'}, 300);
 		});
 	};
 
@@ -465,7 +433,7 @@ function Filter(){
 	/* Interval */
 	this.setIntervalListener = function(){
 		_controls.interval.click(function(){
-			_controls.interval.menu.animate({width:'toggle'}, 300);
+			_controls.interval.menu.animate({height:'toggle'}, 300);
 		});
 	};
 
@@ -493,36 +461,19 @@ function Filter(){
 		_populateMonths();
 	}
 
-	this.populateDays = function(){
-		_populateDays();
-	}
-
-	this.populateHours = function(){
-		_populateHours();
-	}
-
 	this.removeMonths = function(){
 		_controls.months.menu.children().remove();
-		//removeAllChildren(_controls.months.menu);	// doesn't work...???
 	}
 
 	this.removeDays = function(){
 		_controls.days.menu.children().remove();	
-		//removeAllChildren(_controls.days.menu);	// doesn't work...???
 	}
 
 	this.removeHours = function(){
 		_controls.hours.menu.children().remove();	
-		//removeAllChildren(_controls.hours.menu);	// doesn't work...???
 	}
 
-	this.updateControls = function(){
-		//console.log("updating the filter controls...");	
-		populateDevices();
-		//console.log("...updated filter controls.");
-	}
-
-	var populateDevices = function(){
+	this.populateDevices = function(){
 		var devices = aggregateData.devices;
 		if(devices == null){
 			console.log("Devices is empty, should not happen.");
@@ -545,7 +496,7 @@ function Filter(){
 		}
 
 		_controls.devices.menu.click(function(){
-			_controls.devices.menu.animate({width:'hide'},300);	
+			_controls.devices.menu.animate({height:'hide'},300);	
 		});
 	}
 
@@ -553,41 +504,53 @@ function Filter(){
 	var _populateMonths = function(){
 		/* Populate months. */
 		var currentDate = aggregateData.dateStart;
+		console.log();
 		while(currentDate.getTime() <= aggregateData.dateEnd.getTime()){
-			var monthString = MONTHS[currentDate.getMonth()];
-			currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);	// Increment by one month.
-			var newItem = $("<div></div>").addClass('hover').text(currentDate.getMonth()).text(monthString);
+			var monthString = MONTHS[currentDate.getMonth()];			
+			var newItem = $("<div></div>").addClass('item').attr('value', currentDate.getMonth()).text(monthString);
 			newItem.click(function(){
-				console.log('month item clicked.');
 				_setMonth($(this));
+				console.log('month is now ' + filter.getMonth());
+
+				/* Remove day menu items */
+				_controls.days.menu.find('.item').each(function(){
+					this.remove();
+				});
+
+				_populateDays();
 			});
-			_controls.months.menu.append(newItem); 			
+			currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);	// Increment by one month.
+			_controls.months.menu.append(newItem);
 		}
 	};
 
 	/* Days */
 	var _populateDays = function(){
 		/* Populate days. */
-		var currentDate = new Date(aggregateData.dateStart.getFullYear(), _getMonth());	// Start of the desired month.
 		var currentMonth = _getMonth();
+		var currentDate = new Date(aggregateData.dateStart.getFullYear(), currentMonth);	// Start of the desired month.
+		console.log(currentDate);
 		while(currentMonth == _getMonth() && currentDate.getTime() < aggregateData.dateEnd.getTime()){			
 			var day = currentDate.getDay();				// getDay() is 0-based
 			var dayOfTheMonth = currentDate.getDate();	// getDate() is 1-based
 			var dayString = DAYS[day];
-			var newItem =  $("<div></div>").addClass('hover').text(dayOfTheMonth).text(dayString + " " + parseInt(dayOfTheMonth));
+			var newItem =  $("<div></div>").addClass('item').attr('value', dayOfTheMonth).text(dayString + " " + parseInt(dayOfTheMonth));
 			newItem.click(function(){
-				console.log('day item clicked.');
-				_setDay($(this));				
+				_setDay($(this));
+				console.log('day is now ' + filter.getDay());
+
+				/* Remove day menu items */
+				_controls.hours.menu.find('.item').each(function(){
+					this.remove();
+				});
+
+				_populateHours();			
 			});
-			_controls.days.menu.append(newItem); 
+			_controls.days.menu.append(newItem);
 			currentDate = new Date(currentDate.getTime() + (SECONDS.DAY * 1000));	// Increment by one day.		
 			currentMonth = currentDate.getMonth();
 		}
 	}	
-	var _daysChanged = function(){
-		console.log('day item clicked.');
-	}
-
 
 	/* Hours */
 	var _populateHours = function(){
@@ -598,10 +561,10 @@ function Filter(){
 		while(currentDay == filter.getDay() && seconds < aggregateData.dateEnd.getTime() / 1000){
 			// While within the desired day AND before the absolute latest date.
 			var hour = date.getHours();
-			var newItem = $("<div></div>").addClass('hover').text(hour).text(hour + ":00");
+			var newItem = $("<div></div>").addClass('item').attr('value', hour).text(hour + ":00");
 			newItem.click(function(){
-				console.log('hour item clicked.');
-				_setHour($(this));				
+				_setHour($(this));
+				console.log('hour is now ' + _getHour());			
 			});			
 			_controls.hours.menu.append(newItem);
 			// Update hour for next iteration
@@ -610,20 +573,17 @@ function Filter(){
 			seconds = date.getTime() / 1000;
 		}
 	}
-	var _hoursChanged = function(){
-		console.log('hour item clicked.');
-	}
 
 	var _populateIntervalMenus = function(){
-		var oldMonth = _values.month;
-		var oldDay = _values.day;
-		var oldHour = _values.hour;
-		filter.removeMonths();
-		filter.removeDays();
-		filter.removeHours();	
-		filter.populateMonths();
-		filter.populateDays();
-		filter.populateHours();	
+		var oldMonth = _selected.month;
+		var oldDay = _selected.day;
+		var oldHour = _selected.hour;
+		//filter.removeMonths();
+		//filter.removeDays();
+		//filter.removeHours();	
+		//filter.populateMonths();
+		//filter.populateDays();
+		//filter.populateHours();	
 		if(oldMonth){
 			filter.setMonth(oldMonth);
 		}
