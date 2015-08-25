@@ -1,0 +1,39 @@
+#!/bin/bash
+readonly CONFIG_FILE=/opt/network_flow_visualization/nfv.conf
+valid=1
+ip='0.0.0.0'
+
+while read line; do
+	if [[ "$line" != \#* ]];
+	then
+		a=($line)
+		if [[ ${a[0]} == 'exporter_ip' ]]
+		then
+			if [[ "$line" == ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]
+			then
+				ip=${a[1]}
+			else
+				valid=1
+			fi
+		elif [[ ${a[0]} == 'exporter_port' ]]
+		then
+			port=${a[1]}
+		elif [[ ${a[0]} == 'device_mac' ]]
+		then
+			mac=${a[1]}
+		fi
+	fi
+done < $CONFIG_FILE
+
+echo 'Exporter MAC: '$mac
+echo 'Listening on ip: '$ip':'$port
+collector='nfcapd -p 2055 -l /opt/network_flow_visualization/flows_dump/ -T 1,3,10 -t 3600 -x "/opt/network_flow_visualization/nfdump.sh %d%f" -E'
+# -D'
+if [[ valid -eq 0 ]]
+then
+	echo 'Invalid configuration.'
+else
+collector='nfcapd -p 2055 -l /opt/network_flow_visualization/flows_dump/ -T 1,3,10 -t 3600 -x "/opt/network_flow_visualization/nfdump.sh %d%f" -E'collector='nfcapd -p 2055 -l /opt/network_flow_visualization/flows_dump/ -T 1,3,10 -t 3600 -x "/opt/network_flow_visualization/nfdump.sh %d%f" -E'	
+	echo $collector
+	#eval $collector
+fi

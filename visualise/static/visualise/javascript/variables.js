@@ -37,45 +37,35 @@ var STAT_MENU = {
 };
 var statMenu;
 
-var controls = {
-	preferences: {
-		network: {
-			devices_downloaded: null,
-			devices_uploaded: null,			
-			downloaded_timeline: null,
-			uploaded_timeline: null,
-			usage: null,
-			application: null,
-			domains: null,
-			country: null,			
-		},
-		device: {
-			devices_downloaded: null,
-			devices_uploaded: null,			
-			usage: null,
-			application: null,
-			domains: null,
-			country: null,
-		},
-	},
-};
-
 var aggregateData = {
 	devices: null,
 	dateStart: null,
 	dateEnd: null,
 	downloaded: 0,
-	uploaded: 0,	
-}
+	uploaded: 0,
+	flows: null,
+	applications: null,
+};
+
+var subsetData = {
+	devices: null,
+	dateStart: null,
+	dateEnd: null,
+	downloaded: 0,
+	uploaded: 0,
+	flows: null,
+	applications: null,	
+};
 
 var topDownloaders = [];
 var topUploaders = [];
 var devices = [];
-function Device(device, name, downloaded, uploaded, timeStart, timeEnd){
+function Device(device, name, downloaded, uploaded, flows, timeStart, timeEnd){
 	this.device = device;			// Device MAC or IP.
 	this.name = name;				// Device name.
 	this.downloaded = downloaded;	// Bytes downloaded.
 	this.uploaded = uploaded;		// Bytes uploaded.
+	this.flows = flows;
 	this.timeStart = timeStart;		// Earliest data.
 	this.timeEnd = timeEnd;			// Latest data.
 };
@@ -100,10 +90,14 @@ function compareUploaded(a, b) {
 	return 0;
 }
 
+function compareApplications(a, b){
+	return parseInt(b[1]) - parseInt(a[1]);
+}
+
 function Filter(){
 
 	var _date;
-	var _year = -1;
+	var _year = null;
 	var _controls = {
 		device: null,
 		direction_in: null,
@@ -121,11 +115,25 @@ function Filter(){
 		direction_out: null,
 		port_in: null,
 		port_out: null,
+		application: null,
 		month: null,
 		interval: null,
 		day: null,
 		hour: null,
 	};
+
+	/* Caller-defined function to execute after a filter's value gets changed. */
+	var _onControlChange = null;
+	var _controlChange = function(){
+		if(_onControlChange == null){
+			console.log('Function has not been set for onControlChange().');
+			return;
+		}
+		_onControlChange();
+	}	
+	this.setOnControlChange = function(func){
+		_onControlChange = func;
+	}
 
 	this.setControls = function(){
 		_setControls();
@@ -135,10 +143,9 @@ function Filter(){
 		_controls.devices = $('#filter_devices');
 		_controls.devices.menu = $('#devices_menu');
 		_controls.direction = $('#filter_direction');
-		_controls.direction.incoming = $('#direction_incoming');
-		_controls.direction.outgoing = $('#direction_outgoing');
-		_controls.direction.both = $('#direction_both');	
 		_controls.direction.menu = $('#direction_menu');
+		_controls.applications = $('#filter_applications');
+		_controls.applications.menu = $('#applications_menu');
 		_controls.port_src = $('#filter_source_port');
 		_controls.port_dst = $('#filter_destination_port');
 		_controls.interval = $('#filter_interval');
@@ -149,49 +156,124 @@ function Filter(){
 		_controls.days.menu = $('#days_menu');
 		_controls.hours.menu = $('#hours_menu');
 		_controls.more = $('#filter_more');
+		_controls.more.menu = $('#filter_more_menu');
 
-		/* Date */
+		/* Devices */
+		_controls.devices.click(function(){
+			_controls.devices.menu.animate({height:'toggle'}, 300);
+		});
+
+		/* Devices items */
+		_controls.devices.menu.delegate('div', 'click', function(){
+			_setDevice($(this).attr("value"));
+			_controls.devices.menu.animate({height:'toggle'}, 300);
+
+			_onControlChange();
+		});		
+
+		/* Months */
 		_controls.months.click(function(){
 			_controls.months.menu.animate({height:'toggle'}, 300);
 		});	
 
+		/* Months items */
+		_controls.months.menu.delegate('div', 'click', function(){
+			_setMonth($(this).attr("value"));
+			
+			//console.log('month is now ' + _getMonthString());
+
+			_controls.days.menu.find('.item').each(function(){
+				this.remove();
+			});
+			_populateDays();
+
+			_controls.days.animate({height:'show'}, 300);
+
+			_onControlChange();
+		});
+
+		/* Days */
 		_controls.days.click(function(){
 			_controls.days.menu.animate({height:'toggle'}, 300);
 		});	
 
+		/* Days items */
+		_controls.days.menu.delegate('div', 'click', function(){
+			_setDay($(this).attr("value"));
+
+			//console.log('day is now ' + filter.getDay());
+
+			_controls.days.menu.find('.item').each(function(){
+				//this.remove();
+			});
+			_populateHours();
+
+			_controls.hours.animate({height:'show'}, 300);
+
+			_onControlChange();
+		});
+
+		/* Hours */
 		_controls.hours.click(function(){
 			_controls.hours.menu.animate({height:'toggle'}, 300);
 		});	
+
+		/* Hours items */
+		_controls.hours.menu.delegate('div', 'click', function(){
+			_setHour($(this).attr("value"));
+
+			console.log('hour is now ' + filter.getHour());
+
+			_controls.hours.menu.find('.item').each(function(){
+				//this.remove();
+			});
+
+			_onControlChange();
+		});
 
 		/* Direction */
 		_controls.direction.click(function(){
 			_controls.direction.menu.animate({height:'toggle'}, 300);
 		});
 
+		/* Direction items */
+		_controls.direction.menu.delegate('div', 'click', function(){
+			_setDirection($(this).attr("value"));
+			_controls.direction.menu.animate({height:'toggle'}, 300);
+			_onControlChange();
+		});
+
+		/* Application */
+		_controls.applications.click(function(){
+			_controls.applications.menu.animate({height:'toggle'}, 300);
+		});
+
 		/* More */
 		_controls.more.click(function(){
-			$('#filter_more_container').animate({height:'toggle'}, 300);
+			_controls.more.menu.animate({height:'toggle'}, 300);
 		});
 	}
 
 	/* Getters. */
 	this.getDevice = function(){
-		if(_selected.device != null){
-			return _selected.device.text();
+		if(_controls.devices.menu != null){
+			return _controls.devices.menu.find(".selected").attr("value");
 		}
 		else{
-			return -1;
+			return null;
 		}
 	}
 
 	var _getDirection = function(){
-		if(_selected.direction != null){
-			return _selected.direction.text();
-		}	
+		if(_controls.direction.menu != null){
+			return _controls.direction.menu.find('.selected').attr('value');
+		}
+		else{
+			return null;
+		}
 	}
-
 	this.getDirection = function(){
-		_getDirection();
+		return _getDirection();
 	}
 
 	this.getPortSrc = function(){
@@ -200,11 +282,11 @@ function Filter(){
 				return _controls.port_src.text();
 			}
 			else{
-				return -1;
+				return null;
 			}
 		}
 		else{
-			return -1;
+			return null;
 		}
 	}
 
@@ -214,12 +296,24 @@ function Filter(){
 				return _controls.port_dst.text();
 			}
 			else{
-				return -1;
+				return null;
 			}
 		}
 		else{
-			return -1;
+			return null;
 		}
+	}
+
+	var _getApplication = function(){
+		if(_controls.applications.menu != null){
+			return _controls.applications.menu.find('.selected').attr('value');
+		}
+		else{
+			return null;
+		}
+	}
+	this.getApplication = function(){
+		return _getApplication();
 	}
 
 	var _getInterval = function(){
@@ -227,7 +321,7 @@ function Filter(){
 			return _selected.interval;
 		}
 		else{
-			return -1;
+			return null;
 		}
 	}
 
@@ -244,15 +338,22 @@ function Filter(){
 	}
 
 	var _getMonth = function(){
-		if(_controls.months != null){			
+		if(_controls.months.menu != null){			
 			return _controls.months.menu.find('.selected').attr('value');
 		}
 		else{
-			return -1;
+			return null;
 		}		
 	}
 	this.getMonth = function(){
 		return _getMonth();
+	}
+
+	var _getMonthString = function(){
+		return MONTHS[_getMonth()];
+	}
+	this.getMonthString = function(){
+		return _getMonthString();
 	}
 
 	var _getDay = function(){
@@ -260,7 +361,7 @@ function Filter(){
 			return _controls.days.menu.find('.selected').attr('value');
 		}
 		else{
-			return -1;
+			return null;
 		}		
 	}
 	this.getDay = function(){
@@ -269,10 +370,10 @@ function Filter(){
 
 	var _getHour = function(){
 		if(_controls.hours != null){
-			return _controls.hours.menu.find('.selected').text().toLowerCase();
+			return _controls.hours.menu.find('.selected').attr('value');
 		}
 		else{
-			return -1;
+			return null;
 		}
 	}
 	this.getHour = function(){
@@ -282,22 +383,39 @@ function Filter(){
 	/**
 	 * Returns the filter timestamp in seconds.
 	 */
-	this.getTimestamp = function(){
-		return new Date(_year, this.getMonth(), this.getDay(), this.getHour()).getTime() / 1000;		
+	this.getStartTimestamp = function(){
+		return new Date(_year, _getMonth(), this.getDay(), this.getHour()).getTime() / 1000;		
+	}
+
+	this.getEndTimestamp = function(){
+		if(_getInterval() == INTERVAL.MONTHLY){
+			return new Date(_year, _getMonth() + 1, this.getDay(), this.getHour()).getTime() / 1000;
+		}
+		else if(_getInterval() == INTERVAL.DAILY){
+			return new Date(_year, _getMonth(), this.getDay() + 1, this.getHour()).getTime() / 1000;
+		}
+		else if(_getInterval() == INTERVAL.HOURLY){
+			return new Date(_year, _getMonth(), this.getDay(), this.getHour() + 1).getTime() / 1000;
+		}
+		else{
+			console.log('Invalid interval, should not happen.');
+		}
 	}
 
 	/* Setters */
-
 	var _setDevice = function(dev){
-		if(_selected.device != null){
-			_selected.device.removeClass('selected');
+		if(_controls.devices.menu != null){
+			_controls.devices.menu.find(".selected").removeClass('selected');
 		}
-		_selected.device = dev;
-		_selected.device.addClass('selected');
-		console.log('device is now: ' + _selected.device.text());
+		_controls.devices.menu.find("[value='" + dev + "']").addClass('selected');
 	}
 	this.setDevice = function(dev){
 		_setDevice(dev);
+	}
+
+	var _setApplication = function(app){
+		_controls.applications.menu.find(".selected").removeClass('selected');
+		_controls.applications.menu.find("[value='" + app.toLowerCase() + "']").addClass('selected');
 	}
 
 	var _setInterval = function(intv){
@@ -307,117 +425,32 @@ function Filter(){
 		_setInterval(intv);
 	}
 	
-	var _setMonth = function(mon){
-		if(_selected.month != null){
-			_selected.month.removeClass('selected');
+	var _setMonth = function(month){
+		if(_controls.months.menu != null){
+			_controls.months.menu.find(".selected").removeClass('selected');
 		}
-		_selected.month = mon;
-		_selected.month.addClass('selected');
-
-		if(_selected.month.text().toLowerCase() == "all"){
-			console.log('interval = all');
-		}
-		else{
-			console.log('interval = monthly');
-			_controls.days.animate({height:'show'}, 300);
-		}
-	}
-	this.setMonth = function(mon){
-		_setMonth(mon);
+		_controls.months.menu.find("[value='" + month + "']").addClass('selected');
 	}
 	
 	var _setDay = function(day){
-		if(_selected.day != null){
-			_selected.day.removeClass('selected');
+		if(_controls.days.menu != null){
+			_controls.days.menu.find(".selected").removeClass('selected');
 		}
-		_selected.day = day;
-		_selected.day.addClass('selected');
-
-		if(_selected.day.text().toLowerCase() == "all"){
-			console.log('interval = all');
-		}
-		else{
-			console.log('interval = daily');
-			_controls.hours.animate({height:'show'}, 300);
-		}		
-	}
-	this.setDay = function(day){
-		_setDay(day);
+		_controls.days.menu.find("[value='" + day + "']").addClass('selected');	
 	}
 
 	var _setHour = function(hour){
-		if(_selected.hour != null){
-			_selected.hour.removeClass('selected');
+		if(_controls.hours.menu != null){
+			_controls.hours.menu.find(".selected").removeClass('selected');
 		}
-		_selected.hour = hour;
-		_selected.hour.addClass('selected');
-	}
-	this.setHour = function(hour){
-		_setHour(hour);
+		_controls.hours.menu.find("[value='" + hour + "']").addClass('selected');	
 	}
 
 	/* Listeners */
- 	/* Device */
-	this.setDeviceListener = function(){
-		_controls.devices.click(function(){
-			_controls.devices.menu.animate({height:'toggle'}, 300);
-		});
-	};
 
-	/* Ingress */
-	this.setDirectionIngressListener = function(callback){
-		_controls.direction.incoming.click(function(){
-
-			if(_controls.direction.incoming.hasClass('selected')){
-				_controls.direction.incoming.removeClass('selected');
-			}
-			else{
-				_controls.direction.incoming.addClass('selected');
-			}
-
-			console.log("Ingress selected.");
-
-			callback();
-
-			_hideAllMenus();
-		});
-	};
-
-	/* Egress */
-	this.setDirectionEgressListener = function(callback){
-		_controls.direction.outgoing.click(function(){
-
-			if(_controls.direction.outgoing.hasClass('selected')){		
-				_controls.direction.outgoing.removeClass('selected');
-			}
-			else{
-				_controls.direction.outgoing.addClass('selected');
-			}
-
-			console.log("Egress selected.");
-
-			callback();
-
-			_hideAllMenus();
-		});
-	};
-
-	this.setDirectionBothListener = function(callback){
-		_controls.direction.both.click(function(){
-
-			if(_controls.direction.both.hasClass('selected')){		
-				_controls.direction.both.removeClass('selected');
-			}
-			else{
-				_controls.direction.both.addClass('selected');
-			}
-
-			console.log("Both selected.");
-
-			callback();
-
-			_hideAllMenus();
-		});
+	var _setDirection = function(dir){
+		_controls.direction.menu.find(".selected").removeClass('selected');
+		_controls.direction.menu.find("[value='" + dir.toLowerCase() + "']").addClass('selected');
 	}
 
 	/* Source port */
@@ -473,55 +506,84 @@ function Filter(){
 		_controls.hours.menu.children().remove();	
 	}
 
+	/* Devices */
 	this.populateDevices = function(){
 		var devices = aggregateData.devices;
 		if(devices == null){
 			console.log("Devices is empty, should not happen.");
 			return;
 		}
-		removeAllChildren(_controls.devices);
-		var newItem = $("<div></div>").addClass('item').text("All");
-		newItem.click(function(){
-			_setDevice($(this));
-		});
-		_setDevice(newItem);
+		//removeAllChildren(_controls.devices);
+		var newItem = $("<div></div>").addClass('item').attr("value", "All").text("All");
 		_controls.devices.menu.append(newItem);	
+		_setDevice(newItem.attr("value"));
 		for(var i = 0; i < aggregateData.devices.length; i++){
 			var device = aggregateData.devices[i];
-			newItem = $("<div></div>").addClass('item').text(device);
-			newItem.click(function(){
-				_setDevice($(this));
-			});		
+			newItem = $("<div></div>").addClass('item').attr("value", device).text(device);	
 			_controls.devices.menu.append(newItem);
 		}
+	}
 
-		_controls.devices.menu.click(function(){
-			_controls.devices.menu.animate({height:'hide'},300);	
+	/* Direction */
+	this.populateDirection = function(){
+
+		if(_controls.direction.menu == null){
+			console.log("Direction menu doesn't exist, should not happen.");
+			return;
+		}
+		removeAllChildren(_controls.direction.menu);
+
+		var val = "Both";
+		var newItem = $("<div></div>").addClass('item').attr('value', val.toLowerCase()).text(val);
+		_controls.direction.menu.append(newItem);
+		_setDirection("both");
+
+		val = "Incoming";
+		newItem = $("<div></div>").addClass('item').attr('value', val.toLowerCase()).text(val);
+		_controls.direction.menu.append(newItem);
+
+		val = "Outgoing";
+		newItem = $("<div></div>").addClass('item').attr('value', val.toLowerCase()).text(val);
+		_controls.direction.menu.append(newItem);
+	}
+
+	/* Applications */
+	this.populateApplications = function(){
+		var applications = aggregateData.applications;
+		if(applications == null){
+			console.log("Applications is empty, should not happen.");
+			return;
+		}
+		removeAllChildren(_controls.applications);
+		var newItem = $("<div></div>").addClass('item').attr('value', "all").text("All");
+		_controls.applications.menu.append(newItem);
+		newItem.click(function(){
+			_setApplication($(this).attr("value"));
+			_controls.applications.menu.animate({height:'hide'},300);
 		});
+		_setApplication("all");
+		for(var i = 0; i < applications.length; i++){
+			var a = applications[i][0]
+			newItem = $("<div></div>").addClass('item').attr('value', a.toLowerCase()).text(applications[i][0]);
+			newItem.click(function(){
+				_setApplication($(this).attr("value"));
+				_controls.applications.menu.animate({height:'hide'},300);
+			});
+			_controls.applications.menu.append(newItem);
+		}
 	}
 
 	/* Months */
 	var _populateMonths = function(){
 		/* Populate months. */
 		var currentDate = aggregateData.dateStart;
-		console.log();
 		while(currentDate.getTime() <= aggregateData.dateEnd.getTime()){
 			var monthString = MONTHS[currentDate.getMonth()];			
 			var newItem = $("<div></div>").addClass('item').attr('value', currentDate.getMonth()).text(monthString);
-			newItem.click(function(){
-				_setMonth($(this));
-				console.log('month is now ' + filter.getMonth());
-
-				/* Remove day menu items */
-				_controls.days.menu.find('.item').each(function(){
-					this.remove();
-				});
-
-				_populateDays();
-			});
 			currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);	// Increment by one month.
 			_controls.months.menu.append(newItem);
 		}
+		_setMonth(_controls.months.menu.children(0).attr("value"));
 	};
 
 	/* Days */
@@ -529,23 +591,11 @@ function Filter(){
 		/* Populate days. */
 		var currentMonth = _getMonth();
 		var currentDate = new Date(aggregateData.dateStart.getFullYear(), currentMonth);	// Start of the desired month.
-		console.log(currentDate);
 		while(currentMonth == _getMonth() && currentDate.getTime() < aggregateData.dateEnd.getTime()){			
 			var day = currentDate.getDay();				// getDay() is 0-based
 			var dayOfTheMonth = currentDate.getDate();	// getDate() is 1-based
 			var dayString = DAYS[day];
 			var newItem =  $("<div></div>").addClass('item').attr('value', dayOfTheMonth).text(dayString + " " + parseInt(dayOfTheMonth));
-			newItem.click(function(){
-				_setDay($(this));
-				console.log('day is now ' + filter.getDay());
-
-				/* Remove day menu items */
-				_controls.hours.menu.find('.item').each(function(){
-					this.remove();
-				});
-
-				_populateHours();			
-			});
 			_controls.days.menu.append(newItem);
 			currentDate = new Date(currentDate.getTime() + (SECONDS.DAY * 1000));	// Increment by one day.		
 			currentMonth = currentDate.getMonth();
@@ -561,11 +611,7 @@ function Filter(){
 		while(currentDay == filter.getDay() && seconds < aggregateData.dateEnd.getTime() / 1000){
 			// While within the desired day AND before the absolute latest date.
 			var hour = date.getHours();
-			var newItem = $("<div></div>").addClass('item').attr('value', hour).text(hour + ":00");
-			newItem.click(function(){
-				_setHour($(this));
-				console.log('hour is now ' + _getHour());			
-			});			
+			var newItem = $("<div></div>").addClass('item').attr('value', hour).text(hour + ":00");		
 			_controls.hours.menu.append(newItem);
 			// Update hour for next iteration
 			date = new Date(date.getTime() + (SECONDS.HOUR * 1000));	// Increment by one hour.	
@@ -578,12 +624,6 @@ function Filter(){
 		var oldMonth = _selected.month;
 		var oldDay = _selected.day;
 		var oldHour = _selected.hour;
-		//filter.removeMonths();
-		//filter.removeDays();
-		//filter.removeHours();	
-		//filter.populateMonths();
-		//filter.populateDays();
-		//filter.populateHours();	
 		if(oldMonth){
 			filter.setMonth(oldMonth);
 		}

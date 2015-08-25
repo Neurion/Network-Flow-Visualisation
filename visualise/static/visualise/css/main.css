@@ -47,23 +47,26 @@ body{
 		background-color: white;
 	}
 
-	#top_1{
+	#menu{
 		display: block;
-		width: 90%;
+		width: 85%;
 		height: 50px;
-		padding-left: 10%;
+		padding-left: 15%;
 		background-color: #2F3B31;
 		color: white;
 		position: fixed;
 		box-shadow: 0.5px 0px 15px black;
 		z-index: 1000;
+		font-size: 0.8em;
 	}
 
-		#top_1 div.current{
-			background-color: #3C4B53;
+		#menu div.current{
+			opacity: 0.5;
+			cursor: pointer;
+			background-color:rgba(0, 0, 0, 0.5);
 		}
 
-		#top_1 div{
+		#menu div{
 			display: inline-block;
 			width: 120px;
 			height: 50px;
@@ -73,10 +76,10 @@ body{
 			float: left;
 		}
 
-		#top_1 div:hover{
+		#menu div:hover{
 			opacity: 0.5;
 			cursor: pointer;
-			/*background-color:rgba(231, 135, 39, 0.5);*/
+			background-color:rgba(0, 0, 0, 0.5);
 		}
 
 		.interest{
@@ -99,10 +102,10 @@ body{
 			float: right;
 		}
 
-	#left_1{
+	#filter_container{
 		display: inline-block;
-		width: 10%;
-		min-width: 175px;
+		width: 15%;
+		/*min-width: 175px;*/
 		height: 100%;
 		/*padding-top: 50px;*/
 		background-color: #2F3B31;
@@ -188,7 +191,7 @@ body{
 		}
 
 		/* Filters */
-		#filter_container{
+		#filter{
 			display: block;
 			width: 100%;
 			/*margin-top: 100px;*/
@@ -196,9 +199,10 @@ body{
 		}
 
 			div.hover:hover{
-				opacity: 0.5;
+				/*opacity: 0.5;*/
 				cursor: pointer;
 				background-color:rgba(0, 0, 0, 0.5);
+				/*box-shadow: 0.5px 0px 15px black;*/
 			}
 
 			div.selected{
@@ -211,7 +215,7 @@ body{
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
-				font-size: 1em;				
+				font-size: 0.8em;				
 				text-align: center;
 			}
 
@@ -219,9 +223,11 @@ body{
 					display: none;
 					width: 100%;
 					height: 240px;
-					background-color: #2F3B31;
-					color: white;
+					color: black;
 					overflow-y: scroll;
+					background-color: white;
+					font-size: 0.8em;
+					z-index: 1001;
 				}
 
 				#devices_menu .item{
@@ -243,16 +249,17 @@ body{
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
-				font-size: 1em;				
-				text-align: center;
+				font-size: 0.8em;
+				text-align: center;				
 			}
 
 				#direction_menu{
 					display: none;
 					width: 100%;
 					height: 90px;
-					background-color: #2F3B31;
-					color: white;
+					background-color: white;
+					color: black;
+					font-size: 0.8em;
 				}
 
 				#direction_menu .item{
@@ -269,12 +276,44 @@ body{
 					background-color:rgba(0, 0, 0, 0.5);
 				}
 
+			#filter_applications{
+				display: block;
+				width: 100%;
+				height: 40px;
+				line-height: 40px;
+				font-size: 0.8em;				
+				text-align: center;				
+			}
+
+				#applications_menu{
+					display: none;
+					width: 100%;
+					height: 90px;
+					background-color: white;
+					color: black;
+					overflow-y: scroll;
+				}
+
+				#applications_menu .item{
+					display: block;
+					width: 100%;
+					height: 30px;
+					line-height: 30px;
+					text-align: center;
+				}
+
+				#applications_menu .item:hover{
+					opacity: 0.5;
+					cursor: pointer;
+					background-color:rgba(0, 0, 0, 0.5);
+				}
+
 			#filter_month{
 				display: block;
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
-				font-size: 1em;				
+				font-size: 0.8em;				
 				text-align: center;				
 			}
 
@@ -282,17 +321,17 @@ body{
 					display: none;
 					width: 100%;
 					height: 150px;
-					background-color: #2F3B31;
-					color: white;
-					overflow-y: scroll;
+					background-color: white;
+					color: black;
+					overflow-y: hidden;
 				}
 
 				#months_menu .item{
-					display: block;
-					width: 100%;
+					display: inline-block;
+					width: 33.33%;
 					height: 30px;
 					line-height: 30px;
-					text-align: left;
+					text-align: center;
 				}
 
 				#months_menu .item:hover{
@@ -306,29 +345,30 @@ body{
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
-				font-size: 1em;				
+				font-size: 0.8em;				
 				text-align: center;
 			}
 
 				#days_menu{
 					display: none;
 					width: 100%;
-					height: 150px;
-					color: white;
-					background-color: #2F3B31;
-					overflow-y: scroll;
+					height: 210px;
+					color: black;
+					background-color: white;
+					overflow: hidden;
 				}
 
 				#days_menu .item{
-					display: block;
-					width: 100%;
+					display: inline-block;
+					width: 20%;
 					height: 30px;
 					line-height: 30px;
-					text-align: left;
+					font-size: 0.7em;
+					text-align: center;
 				}
 
 				#days_menu .item:hover{
-					opacity: 0.5;
+					/*opacity: 0.5;*/
 					cursor: pointer;
 					background-color:rgba(0, 0, 0, 0.5);
 				}				
@@ -338,7 +378,7 @@ body{
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
-				font-size: 1em;
+				font-size: 0.8em;
 				text-align: center;
 			}
 
@@ -346,36 +386,40 @@ body{
 					display: none;
 					width: 100%;
 					height: 150px;
-					color: white;
-					background-color: #2F3B31;
-					overflow-y: scroll;
+					color: black;
+					background-color: white;
+					overflow: hidden;
+					font-size: 0.7em;
 				}
 
 				#hours_menu .item{
-					display: block;
-					width: 100%;
+					display: inline-block;
+					width: 20%;
 					height: 30px;
 					line-height: 30px;
-					text-align: left;
+					text-align: center;
 				}
 
 				#hours_menu .item:hover{
-					opacity: 0.5;
+					/*opacity: 0.5;*/
 					cursor: pointer;
 					background-color: rgba(0, 0, 0, 0.5);
 				}	
 
 			#filter_more{
-				display: block;
+				display: none;
 				width: 100%;
+				height: 40px;
 				line-height: 40px;
-				font-size: 1em;				
+				font-size: 0.8em;				
 				text-align: center;
 			}
 
-				#filter_more_container{
+				#filter_more_menu{
 					display: none;
-					background-color: orange;
+					width: 100%;
+					padding: 20px 0px;
+					background-color: white;
 				}
 
 					#filter_source_port, #filter_destination_port{
@@ -386,66 +430,123 @@ body{
 						text-align: center;					
 					}
 
-	#left_2{
+	#main_container{
 		display: inline-block;
-		width: 90%;
+		width: 85%;
 		min-height: 100%;
 		margin-top: 50px; /* Fixed */
-		margin-left: 10%; /* Fixed */
+		margin-left: 15%; /* Fixed */
 		background-color: #3C4B53;
-		font-size: 1em;
+		font-size: 0.7em;
 	}
-
-
-		.padding{
+		.full_width_padding{
 			display: block;
-			width: 88%;
+			width: 78%;
 			padding: 1%;
 			margin: auto;
-			background-color: red;
+			/*background-color: red;*/
 		}
 
-		#summary_table{
-			display: block;
-			width: 100%;
-			background-color: orange;
-		}
-
-		#summary_table .header{
-			display: block;
-			float: left;
-		}
-
-		#summary_table .header .item{
-			display: inline-block;
-			width: 200px;
-			padding: 5px;
-			float: left;
-			font-weight: bold;
-		}		
-
-		#summary_table .row{
-			display: block;
-			float: left;
-		}
-
-		#summary_table .row .item{
-			display: inline-block;
-			width: 200px;
-			padding: 5px;
-			float: left;
-		}
-
-
-
-
-		#stat_container{
+		#main{
 			display: block;
 			width: 90%;
 			min-height: 600px;
 			margin: 2% 5%;
 			background-color: white;
 		}
+
+		#main_header{
+			display: block;
+			width: 100%;
+			height: 100px;
+			background-color: yellow;
+		}
+
+		.third_padding{
+			display: inline-block;
+			width: 25%;
+			height: 50%;
+			padding: 4%;
+			/*background-color: black;*/
+		}
+
+		#summary_table{
+			display: block;
+			width: 100%;
+			/*background-color: orange;*/
+			font-size: 1.5em;
+		}
+
+		/* Devices item */
+		#summary_table > div > span:nth-child(1){
+			display: inline-block;
+			width: 13%;
+			padding: 1%;
+		}
+
+		/* Time items */
+		#summary_table > div > span:nth-child(2), #summary_table > div > span:nth-child(3){
+			display: inline-block;
+			width: 18%;
+			padding: 1%;
+		}
+
+		/* Usage items */
+		#summary_table > div > span:nth-child(4), #summary_table > div > span:nth-child(5), #summary_table > div > span:nth-child(6){
+			display: inline-block;
+			width: 13%;
+			padding: 1%;
+		}		
+
+		#summary_table .header, #summary_table .row{
+			display: block;
+			width: 100%;
+			float: left;
+		}
+
+		#summary_table .header{
+			font-weight: bold;
+		}
+
+		#summary_table .row{		
+		}
+
+		#summary_table .item{
+			text-align: right;
+			float: left;			
+		}	
+
+		#traffic_pie_title{
+			display: inline-block;
+			width: 100%;
+			text-align: center;
+			font-size: 2em;
+			/*background-color: green;*/
+		}
+
+		#overview_traffic_pie{
+			display: block;
+			width: 100%;
+			height: 100%;
+			margin-top: 5px;
+			/*background-color: yellow;			*/
+		}
+
+		#application_pie_title{
+			display: inline-block;
+			width: 100%;
+			text-align: center;
+			font-size: 2em;
+			/*background-color: green;*/
+		}
+
+		#overview_applications_pie{
+			display: block;
+			width: 100%;
+			height: 100%;
+			margin-top: 5px;
+			/*background-color: yellow;*/
+		}		
 
 		.overview_padding{
 			display: inline-block;
@@ -474,7 +575,7 @@ body{
 			height: 100px;
 			line-height: 100px;
 			font-size: 1.5em;
-			background-color: red;
+			/*background-color: red;*/
 		}
 
 		.timeline_padding{
@@ -572,95 +673,4 @@ body{
 			height: 300px;
 			background-color: orange;
 			float: left;
-		}
-
-
-
-
-
-		#left_2 div.visual_container{			
-			width: 300px;
-			height: 500px;
-			/*background-color: #2F3B31;*/			
-			background-color: #3C4B53;			
-		}
-
-		.visual_container .visual_title{
-			display: inline-block;
-			width: 100%;
-			height: 1.5em;
-			font-size: 1.5em;
-			line-height: 1.5em;
-			/*background-color: yellow;*/
-			text-align: center;
-			color: black;
-		}
-
-		.visual_container .visual{
-			display: inline-block;
-			width: 100%;
-			height: 85%;
-			float: left;
-			/*background-color: orange;*/
-			color: black;
-		}
-
-		#left_2 div#left_container{
-			display: inline-block;
-			/*min-width: 400px;*/
-			width: 100px;
-			height: 100%;			
-			float: left;
-			/*background-color: yellow;
-			background-color: white;*/
-			background-color: red;	
-		}
-
-		#left_2 div#center_container{
-			display: inline-block;
-			/*min-width: 600px;*/
-			width: 600px;
-			height: 100%;
-			float: left;
-			/*background-color: orange;
-			background-color: white;*/
-			background-color: red;	
-		}
-
-			#left_2 div#center_container div.visual_container{
-				display: block;				
-				width: 30%;
-				min-height: 200px;
-				height: 200px;
-				color: white;
-			}
-
-			#left_2 div#center_container div.visual_container.timeline{
-				width: 100%;
-				height: 400px;
-			}		
-
-			#left_2 div.visual_container.pie{
-				width: 100%;
-				height: 250px;
-			}
-
-		#left_2 div#right_container{
-			display: inline-block;
-			/*min-width: 400px;*/
-			width: 100px;
-			height: 100%;
-			float: right;
-			/*background-color: red;
-			background-color: white;*/
-			background-color: red;	
-		}
-
-		#left_2 div#padding{
-			display: inline-block;
-			width: 3%;
-			height: 100%;
-			float: left;
-			background-color: orange;
-			/*background-color: white;*/
 		}

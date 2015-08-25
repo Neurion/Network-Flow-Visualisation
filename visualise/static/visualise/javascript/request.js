@@ -11,22 +11,25 @@ function getAggregateData(callback){
 		},
 		success : function(json_data){
 			console.log("got aggregate data.");
-			aggregateData.netflow = json_data.netflow;
+
 			aggregateData.devices = json_data.devices;
 			aggregateData.dateStart = new Date(json_data.ts_earliest * 1000);
 			aggregateData.dateEnd = new Date(json_data.ts_latest * 1000);
 			aggregateData.downloaded = json_data.bytes_downloaded;
 			aggregateData.uploaded = json_data.bytes_uploaded;
+			aggregateData.flows = json_data.flows;
+			aggregateData.applications = json_data.applications;
+
 			callback();
 		},
 	});		
 }
 
-function requestData(callback){
+function requestDeviceData(callback){
 	console.log("request data...");
 	$.ajax({
 		type	: "POST",
-		url 	: "get_data",
+		url 	: "get_device_data",
 		data 	: getFilterParameters(),
 		dataType : "json",
 		async : true,
@@ -35,6 +38,14 @@ function requestData(callback){
 		},
 		success : function(json_data){
 			console.log("got data.");
+
+			subsetData.devices = json_data.devices;
+			subsetData.dateStart = new Date(json_data.ts_earliest * 1000);
+			subsetData.dateEnd = new Date(json_data.ts_latest * 1000);
+			subsetData.downloaded = json_data.bytes_downloaded;
+			subsetData.uploaded = json_data.bytes_uploaded;
+			subsetData.flows = json_data.flows;
+			subsetData.applications = json_data.applications;
 
 			callback(json_data);
 			/*
@@ -49,11 +60,11 @@ function requestData(callback){
 	});	
 }
 
-function requestDevicesData(callback){
-	console.log("getting devices data...");
+function requestAggregateDevicesData(callback){
+	console.log("getting aggregate devices data...");
 	$.ajax({
 		type	: "POST",
-		url 	: "get_devices_data",
+		url 	: "get_aggregate_devices_data",
 		data 	: getFilterParameters(),
 		dataType : "json",
 		async : true,
@@ -61,57 +72,21 @@ function requestDevicesData(callback){
 			alert('AJAX error:' + data);
 		},
 		success : function(json_data){
-			console.log("got devices data.");
+			console.log("got aggregate devices data.");
 			/*
 			console.log(json_data.devices);
 			console.log(json_data.time_start);
 			console.log(json_data.time_end);
 			console.log(json_data.downloaded);
 			console.log(json_data.uploaded);
-			console.log(json_data.volume);
 			*/
-
+			devices = [];
 			for(var i = 0; i < json_data.devices.length; i++){
-				var newDevice = new Device(json_data.devices[i], "", json_data.downloaded[i], json_data.uploaded[i], new Date(json_data.time_start[i] * 1000), new Date(json_data.time_end[i] * 1000));
+				var newDevice = new Device(json_data.devices[i], "", json_data.downloaded[i], json_data.uploaded[i], json_data.flows[i], new Date(json_data.time_start[i] * 1000), new Date(json_data.time_end[i] * 1000));
 				devices.push(newDevice);
 			}
 
 			callback(json_data);
 		},
 	});	
-}
-
-function requestTopDownloaders(callback){
-	$.ajax({
-		type	: "POST",
-		url 	: "get_top_downloaders",
-		data 	: getFilterParameters(),
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-		success : function(json_data){
-			topDownloaders = json_data;
-			console.log(json_data);
-			callback();
-		},
-	});		
-}
-
-function requestTopUploaders(callback){
-	$.ajax({
-		type	: "POST",
-		url 	: "get_top_uploaders",
-		data 	: getFilterParameters(),
-		dataType : "json",
-		async : true,
-		error : function(data){
-			alert('AJAX error:' + data);
-		},
-		success : function(json_data){
-
-			callback();
-		},
-	});		
 }

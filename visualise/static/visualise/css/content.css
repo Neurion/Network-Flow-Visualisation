@@ -1,0 +1,238 @@
+	#main_container{
+		display: inline-block;
+		width: 85%;
+		min-height: 100%;
+		margin-top: 50px; /* Fixed */
+		margin-left: 15%; /* Fixed */
+		background-color: #3C4B53;
+		font-size: 0.7em;
+	}
+		.full_width_padding{
+			display: block;
+			width: 68%;
+			padding: 1%;
+			margin: auto;
+			/*background-color: red;*/
+		}
+
+		#main{
+			display: block;
+			width: 90%;
+			min-height: 600px;
+			margin: 2% 5%;
+			background-color: white;
+		}
+
+		#main_header{
+			display: block;
+			width: 100%;
+			height: 100px;
+			background-color: yellow;
+		}
+
+		.third_padding{
+			display: inline-block;
+			width: 25%;
+			height: 50%;
+			padding: 4%;
+			/*background-color: black;*/
+		}
+
+		#summary_table{
+			display: block;
+			width: 100%;
+			/*background-color: orange;*/
+			font-size: 1.7em;
+		}
+
+		#summary_table .header, #summary_table .row{
+			display: block;
+			width: 100%;
+			float: left;	
+		}
+
+		#summary_table .header{
+			background-color: white;
+		}
+
+		#summary_table .header .item{
+			display: inline-block;
+			width: 23%;
+			padding: 1%;
+			text-align: right;
+			float: left;
+			font-weight: bold;
+			background-color: white;
+		}		
+
+		#summary_table .row{
+			background-color: white;			
+		}
+
+		#summary_table .row .item{
+			display: inline-block;
+			width: 23%;
+			padding: 1%;
+			text-align: right;			
+			float: left;
+			background-color: white;
+		}
+
+		#traffic_pie_title{
+			display: inline-block;
+			width: 100%;
+			text-align: center;
+			font-size: 2em;
+			/*background-color: green;			*/
+		}
+
+		#overview_traffic_pie{
+			display: block;
+			width: 100%;
+			height: 100%;
+			margin-top: 5px;
+			/*background-color: yellow;			*/
+		}
+
+		#application_pie_title{
+			display: inline-block;
+			width: 100%;
+			text-align: center;
+			font-size: 2em;
+			/*background-color: green;*/
+		}
+
+		#overview_applications_pie{
+			display: block;
+			width: 100%;
+			height: 100%;
+			margin-top: 5px;
+			/*background-color: yellow;*/
+		}		
+
+		.overview_padding{
+			display: inline-block;
+			width: 50%;
+			height: 300px;
+			line-height: 40px;
+			font-size: 1.3em;
+			text-align: center;
+		}
+
+			#overview_downloaded{
+				display: inline-block;
+				width: 100%;
+				height: 100%;
+			}
+
+			#overview_uploaded{
+				display: inline-block;
+				width: 100%;
+				height: 100%;
+			}
+
+		#stat_description{
+			display: block;
+			width: 100%;
+			height: 100px;
+			line-height: 100px;
+			font-size: 1.5em;
+			/*background-color: red;*/
+		}
+
+		.timeline_padding{
+			display: inline-block;
+			width: 68%;
+			padding: 1%;
+			/*background-color: black;*/
+			float: left;
+		}
+
+			#stat_timeline{
+				display: inline-block;
+				width: 100%;
+				height: 300px;
+				/*background-color: red;*/
+				float: left;
+			}
+
+		.pie_padding{
+			display: inline-block;
+			width: 28%;
+			padding: 1%;
+			float: left;
+		}
+
+			#stat_pie{
+				display: inline-block;
+				width: 100%;
+				height: 300px;
+				/*background-color: orange;*/
+				float: left;
+			}
+
+		.table_padding{
+			display: inline-block;
+			width: 98%;
+			padding: 1%;
+			float: left;
+		}
+
+		#stat_table{
+			display: block;
+			width: 100%;
+			background-color: white;
+			text-align: center;
+			/*overflow-y: scroll;*/
+		}
+
+			#stat_table span{
+				padding: 5px 0px;
+				text-align: right;
+			}	
+
+				#stat_table .header{
+					font-weight: bold;
+				}
+
+				#stat_table .row{
+					width: 100%;
+					float: left;
+				}
+
+				#stat_table .row:hover{
+					cursor: pointer;
+					opacity: 0.5;				
+				}
+
+				#stat_table .row:nth-child(2n){
+					background-color: #F5F4F4;
+				}			
+
+				#stat_table span{
+					float: left;
+				}
+
+				#stat_table > div > span:nth-child(1){
+					width: 15%;
+				}
+
+				#stat_table > div > span:nth-child(2), #stat_table > div > span:nth-child(3), #stat_table > div > span:nth-child(4){
+					width: 10%;
+				}
+
+				#stat_table > div > span:nth-child(5){
+					width: 10%;
+				}
+
+				#stat_table > div > span:nth-child(6), #stat_table > div > span:nth-child(7){
+					width: 15%;
+				}
+
+		#top_downloaders{
+			display: inline-block;
+			width: 300px;
+			height: 300px;
+			background-color: orange;
+			float: left;
+		}

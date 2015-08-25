@@ -1,11 +1,54 @@
-$(document).ready(function(){
+	$(document).ready(function(){
 
 	/* Populates the filter controls and sets the initial filter values. */
 	setup();
 
 	getAggregateData(function(){
 
+		filter.populateDirection();
 		filter.populateMonths();
+		filter.populateApplications();
+		filter.setOnControlChange(function(){
+			// Display information for all devices.
+			if(filter.getDevice() == "All"){
+				requestAggregateDevicesData(function(){
+					if(statMenu == STAT_MENU.OVERVIEW){
+						populateOverview();
+					}
+					else if(statMenu == STAT_MENU.DOWNLOADED){
+						populateTopDownloaders();
+					}
+					else if(statMenu == STAT_MENU.UPLOADED){
+						populateTopUploaders();
+					}
+					else if(statMenu == STAT_MENU.APPLICATIONS){
+						populateTopApplications();
+					}								
+					else{
+						console.log('Invalid statMenu, should not happen.');
+						return;
+					}
+				});
+			}
+			// Else display information for a single device.
+			else{
+				requestDeviceData(function(){
+					if(statMenu == STAT_MENU.OVERVIEW){
+						populateDeviceOverview();
+					}
+					else if(statMenu == STAT_MENU.DOWNLOADED){
+						//populateDeviceDownloaded();
+					}
+					else if(statMenu == STAT_MENU.UPLOADED){
+						//populateDeviceUploaded();
+					}			
+					else{
+						console.log('Invalid statMenu, should not happen.');
+						return;
+					}
+				});
+			}
+		});
 
 		$('#menu_overview').click(function(){
 			removeCurrentMenu();
@@ -46,27 +89,6 @@ $(document).ready(function(){
 		$('#downloaded').append($('<div></div>').text(bytesToSize(aggregateData.downloaded)));
 		$('#uploaded').append($('<div></div>').text(bytesToSize(aggregateData.uploaded)));
 
-		/* Device listener */
-		filter.setDeviceListener();
-
-		/* Direction-Incoming listener */
-		filter.setDirectionIngressListener(function(){
-			//requestData(function(){
-				//updateMetaData();
-			//});
-		});
-
-		/* Direction-Outgoing listener */
-		filter.setDirectionEgressListener(function(){
-			//requestData(function(){
-				//updateMetaData();
-			//});
-		});
-
-		filter.setDirectionBothListener(function(){
-
-		});
-
 		/* Interval listener */
 		filter.setIntervalListener();
 
@@ -79,7 +101,7 @@ $(document).ready(function(){
 
 	});
 
-	requestDevicesData(function(){
+	requestAggregateDevicesData(function(){
 		statMenu = STAT_MENU.OVERVIEW;
 		populateSignificant();
 	});
@@ -89,8 +111,6 @@ function setup(){
 
 	/* Menu */
 	setMenuPointers();
-	/* Preferences */
-	setPreferencesPointers();
 
 	STAT_MENU.OVERVIEW = $('#menu_overview');
 	STAT_MENU.DOWNLOADED = $('#menu_downloaded');
@@ -134,23 +154,6 @@ function removeCurrentMenu(){
 	STAT_MENU.APPLICATIONS.removeClass('current');
 }
 
-function setPreferencesPointers(){
-	controls.preferences.network.devices_downloaded = $('#check_network_devices_downloaded');
-	controls.preferences.network.devices_uploaded = $('#check_network_devices_uploaded');
-	controls.preferences.network.downloaded_timeline = $('#check_network_downloaded_timeline');
-	controls.preferences.network.uploaded_timeline = $('#check_network_uploaded_timeline');
-	controls.preferences.network.usage = $('#check_network_usage');
-	controls.preferences.network.domains = $('#check_network_domains');
-	controls.preferences.network.country = $('#check_network_country');
-	controls.preferences.device.devices_downloaded = $('#check_device_downloaded_timeline');
-	controls.preferences.device.devices_uploaded = $('#check_device_uploaded_timeline');
-	controls.preferences.device.usage = $('#check_device_usage');
-	controls.preferences.device.domains = $('#check_device_domains');
-	controls.preferences.device.country = $('#check_device_country');
-}
-
-
-
 function getFilterParameters(){
 	
 	var f_dateStart = f_dateEnd = null;
@@ -190,19 +193,34 @@ function getFilterParameters(){
 	else{
 		console.log("shouldn't happen.");
 	}
-
+	/*
+	console.log("##### filter values #####");
+	console.log("	device: " + filter.getDevice());
+	console.log("	direction: " + filter.getDirection());
+	console.log("	interval: " + filter.getInterval());
+	console.log("	year: " + filter.getYear());
+	console.log("	month: " + filter.getMonth());
+	console.log("	day: " + filter.getDay());
+	console.log("	hour: " + filter.getHour());
+	console.log("	ts_start: " + filter.getStartTimestamp());
+	console.log("	ts_end: " + filter.getEndTimestamp());
+	console.log("	port_source: " + filter.getPortSrc());
+	console.log("	port_destination: " + filter.getPortDst());
+	console.log("########################");
+	*/
 	return {
 		csrfmiddlewaretoken: getCookie('csrftoken'),
 		device: filter.getDevice(),
 		direction: filter.getDirection(),
-		port_source: filter.getPortSrc(),
-		port_destination: filter.getPortDst(),
 		interval: filter.getInterval(),
 		year: filter.getYear(),
 		month: filter.getMonth(),
 		day: filter.getDay(),
 		hour: filter.getHour(),
-		ts_filter: filter.getTimestamp(),
+		application: filter.getApplication(),
+		ts_filter: filter.getStartTimestamp(),
+		port_source: filter.getPortSrc(),
+		port_destination: filter.getPortDst(),		
 	}
 }
 
@@ -215,6 +233,7 @@ function printFilterValues(){
 	console.log("	month: " + filter.getMonth());
 	console.log("	day: " + filter.getDay());
 	console.log("	hour: " + filter.getHour());
+	console.log("	application: " + filter.getApplication());
 	console.log("	time_start: " + parseInt(aggregateData.dateStart.getTime() / 1000));
 	console.log("	time_end: " + parseInt(aggregateData.dateEnd / 1000));	
 	console.log("	port_source: " + filter.getPortSrc());

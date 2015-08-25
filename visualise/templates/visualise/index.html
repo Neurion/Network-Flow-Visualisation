@@ -21,7 +21,7 @@ For specific device information to be displayed, the filter must be applied whic
 -->
 
 <div id="container">    
-    <div id="top_1">
+    <div id="menu">
         <span id="title">Network Flow Visualisation</span>
         <div id="menu_overview" class="current">Overview</div> 
         <div id="menu_downloaded">Downloaded</div>
@@ -32,19 +32,16 @@ For specific device information to be displayed, the filter must be applied whic
         <div id="menu_protocols">Transport Protocols</div>-->
     </div>
 
-    <div id="left_1">
-
-        <div id="filter_container">
-
+    <div id="filter_container">
+        <div id="filter">
             <div id="filter_devices" class="hover">Device</div>
             <div id="devices_menu"></div>
 
             <div id="filter_direction" class="hover">Direction</div>
-            <div id="direction_menu">
-                <div id="direction_incoming" class="item">Incoming</div>
-                <div id="direction_outgoing" class="item">Outgoing</div>
-                <div id="direction_both" class="item">Both</div>
-            </div>
+            <div id="direction_menu"></div>
+
+            <div id="filter_applications" class="hover">Application</div>
+            <div id="applications_menu"></div>
 
             <div id="filter_month" class="hover">Month</div>
             <div id="months_menu"></div>
@@ -56,35 +53,15 @@ For specific device information to be displayed, the filter must be applied whic
             <div id="hours_menu"></div>
 
             <div id="filter_more" class="hover">More</div> 
-            <div id="filter_more_container">
+            <div id="filter_more_menu">
                 <input id="filter_source_port" type="text" placeholder="Source Port"></input>
                 <input id="filter_destination_port" type="text" placeholder="Destination Port"></input>
             </div>
-
-            <!--<div class="">Domain</div>-->
-            <!--<div id="menu_filter" class="item">Filter</div>
-            <div id="menu_preferences" class="item">Preferences</div>-->
-        </div> 
-        <!--
-        <div id="overview_table">    
-            <div id="devices" class="row">
-                <div>Devices</div>
-            </div>
-            <div id="downloaded" class="row">
-                <div>Downloaded</div>
-            </div>
-            <div id="uploaded" class="row">
-                <div>Uploaded</div>
-            </div>
         </div>
-        -->
     </div>
-
-
     
-    <div id="left_2">
-        
-        <div id="stat_container">
+    <div id="main_container">
+        <div id="main">
             <!--
             <div class="timeline_padding">
                 <div id="stat_timeline"></div>
@@ -96,7 +73,7 @@ For specific device information to be displayed, the filter must be applied whic
         </div>
         -->
         <!--<div id="top_downloaders"></div>-->
-
+        </div>
     </div>
     
 </div><!-- Close container -->
