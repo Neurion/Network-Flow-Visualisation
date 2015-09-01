@@ -34,6 +34,10 @@ var STAT_MENU = {
 	UPLOADED: null,
 	LOCATIONS: null,
 	APPLICATIONS: null,
+	PROTOCOLS: null,
+	PORTS: null,
+	FLOWS: null,
+	PACKETS: null,
 };
 var statMenu;
 
@@ -54,12 +58,13 @@ var subsetData = {
 	downloaded: 0,
 	uploaded: 0,
 	flows: null,
-	applications: null,	
+	applications: null,
 };
+var showSubset = false;
 
 var topDownloaders = [];
 var topUploaders = [];
-var devices = [];
+
 function Device(device, name, downloaded, uploaded, flows, timeStart, timeEnd){
 	this.device = device;			// Device MAC or IP.
 	this.name = name;				// Device name.
@@ -69,6 +74,23 @@ function Device(device, name, downloaded, uploaded, flows, timeStart, timeEnd){
 	this.timeStart = timeStart;		// Earliest data.
 	this.timeEnd = timeEnd;			// Latest data.
 };
+
+function getSelectedDevice(){
+	var device = filter.getDevice();
+	var devices;
+
+	if(filter.isActive()){
+		devices = subsetData.devices;
+	}
+	else{
+		devices = aggregateData.devices;
+	}
+	for(var i = 0; i < devices.length; i++){	
+		if(device == devices[i].device){			
+			return devices[i];
+		}
+	}
+}
 
 function compareDownloaded(a, b) {
 	if(a.downloaded > b.downloaded){
@@ -98,6 +120,7 @@ function Filter(){
 
 	var _date;
 	var _year = null;
+	var _deviceName = null;
 	var _controls = {
 		device: null,
 		direction_in: null,
@@ -106,18 +129,6 @@ function Filter(){
 		port_dst: null,	
 		interval: null,
 		month: null,
-		day: null,
-		hour: null,
-	};
-	var _selected = {
-		device: null,
-		direction_in: null,
-		direction_out: null,
-		port_in: null,
-		port_out: null,
-		application: null,
-		month: null,
-		interval: null,
 		day: null,
 		hour: null,
 	};
@@ -148,7 +159,6 @@ function Filter(){
 		_controls.applications.menu = $('#applications_menu');
 		_controls.port_src = $('#filter_source_port');
 		_controls.port_dst = $('#filter_destination_port');
-		_controls.interval = $('#filter_interval');
 		_controls.months = $('#filter_month');
 		_controls.days = $('#filter_day');
 		_controls.hours = $('#filter_hour');
@@ -166,10 +176,10 @@ function Filter(){
 		/* Devices items */
 		_controls.devices.menu.delegate('div', 'click', function(){
 			_setDevice($(this).attr("value"));
-			_controls.devices.menu.animate({height:'toggle'}, 300);
-
+			//_controls.devices.menu.animate({height:'toggle'}, 300);
+			_setDeviceName($(this).text());
 			_onControlChange();
-		});		
+		});
 
 		/* Months */
 		_controls.months.click(function(){
@@ -179,16 +189,8 @@ function Filter(){
 		/* Months items */
 		_controls.months.menu.delegate('div', 'click', function(){
 			_setMonth($(this).attr("value"));
-			
-			//console.log('month is now ' + _getMonthString());
-
-			_controls.days.menu.find('.item').each(function(){
-				this.remove();
-			});
 			_populateDays();
-
 			_controls.days.animate({height:'show'}, 300);
-
 			_onControlChange();
 		});
 
@@ -200,16 +202,8 @@ function Filter(){
 		/* Days items */
 		_controls.days.menu.delegate('div', 'click', function(){
 			_setDay($(this).attr("value"));
-
-			//console.log('day is now ' + filter.getDay());
-
-			_controls.days.menu.find('.item').each(function(){
-				//this.remove();
-			});
 			_populateHours();
-
 			_controls.hours.animate({height:'show'}, 300);
-
 			_onControlChange();
 		});
 
@@ -221,13 +215,7 @@ function Filter(){
 		/* Hours items */
 		_controls.hours.menu.delegate('div', 'click', function(){
 			_setHour($(this).attr("value"));
-
 			console.log('hour is now ' + filter.getHour());
-
-			_controls.hours.menu.find('.item').each(function(){
-				//this.remove();
-			});
-
 			_onControlChange();
 		});
 
@@ -239,7 +227,6 @@ function Filter(){
 		/* Direction items */
 		_controls.direction.menu.delegate('div', 'click', function(){
 			_setDirection($(this).attr("value"));
-			_controls.direction.menu.animate({height:'toggle'}, 300);
 			_onControlChange();
 		});
 
@@ -248,10 +235,25 @@ function Filter(){
 			_controls.applications.menu.animate({height:'toggle'}, 300);
 		});
 
+		/* Application items */
+		_controls.applications.menu.delegate('div', 'click', function(){
+			_setApplication($(this).attr("value"));
+			_onControlChange();
+		});		
+
 		/* More */
 		_controls.more.click(function(){
 			_controls.more.menu.animate({height:'toggle'}, 300);
 		});
+	}
+
+	this.isActive = function(){
+		if(this.getDevice() == "All" && this.getDirection() == "both" && this.getApplication() == "all" && this.getInterval() == INTERVAL.MONTHLY){
+			return false;
+		}
+		else{
+			return true;
+		}
 	}
 
 	/* Getters. */
@@ -262,6 +264,13 @@ function Filter(){
 		else{
 			return null;
 		}
+	}
+
+	this.getDeviceName = function(){
+		if(_deviceName == this.getDevice()){
+			return '';
+		}
+		return _deviceName;
 	}
 
 	var _getDirection = function(){
@@ -317,11 +326,14 @@ function Filter(){
 	}
 
 	var _getInterval = function(){
-		if(_selected.interval != null){
-			return _selected.interval;
+		if(_controls.hours.menu.find(".selected").attr("value") != null){
+			return INTERVAL.HOURLY;
 		}
-		else{
-			return null;
+		else if(_controls.days.menu.find(".selected").attr("value") != null){
+			return INTERVAL.DAILY;
+		}
+		else if(_controls.months.menu.find(".selected").attr("value") != null){
+			return INTERVAL.MONTHLY;
 		}
 	}
 
@@ -338,7 +350,7 @@ function Filter(){
 	}
 
 	var _getMonth = function(){
-		if(_controls.months.menu != null){			
+		if(_controls.months.menu.find(".selected").attr('value') != null){			
 			return _controls.months.menu.find('.selected').attr('value');
 		}
 		else{
@@ -357,7 +369,7 @@ function Filter(){
 	}
 
 	var _getDay = function(){
-		if(_controls.days != null){
+		if(_controls.days.menu.find(".selected").attr('value') != null){
 			return _controls.days.menu.find('.selected').attr('value');
 		}
 		else{
@@ -369,7 +381,7 @@ function Filter(){
 	}
 
 	var _getHour = function(){
-		if(_controls.hours != null){
+		if(_controls.hours.menu.find(".selected").attr('value') != null){
 			return _controls.hours.menu.find('.selected').attr('value');
 		}
 		else{
@@ -383,46 +395,86 @@ function Filter(){
 	/**
 	 * Returns the filter timestamp in seconds.
 	 */
-	this.getStartTimestamp = function(){
-		return new Date(_year, _getMonth(), this.getDay(), this.getHour()).getTime() / 1000;		
-	}
-
-	this.getEndTimestamp = function(){
+	var _getStartTimestampSeconds = function(){
+		var date;
 		if(_getInterval() == INTERVAL.MONTHLY){
-			return new Date(_year, _getMonth() + 1, this.getDay(), this.getHour()).getTime() / 1000;
-		}
-		else if(_getInterval() == INTERVAL.DAILY){
-			return new Date(_year, _getMonth(), this.getDay() + 1, this.getHour()).getTime() / 1000;
+			date = new Date(_getYear(), _getMonth());
+		}	
+		else if(_getInterval() == INTERVAL.DAILY){	
+			date = new Date(_getYear(), _getMonth(), _getDay());
 		}
 		else if(_getInterval() == INTERVAL.HOURLY){
-			return new Date(_year, _getMonth(), this.getDay(), this.getHour() + 1).getTime() / 1000;
+			console.log("year: " + _getYear());
+			console.log("month: " + _getMonth());
+			console.log("day:" + _getDay());	
+			console.log("hour:" + _getHour());				
+			date = new Date(_getYear(), _getMonth(), _getDay(), _getHour());
 		}
 		else{
-			console.log('Invalid interval, should not happen.');
+			console.log('Invalid interval, must be first request.');
+			return;
 		}
+		//console.log(date.getFullYear());
+		//console.log(date.getDate());
+		//console.log(date.getHours());
+		//console.log("start timestamp:" + date.toDateString());
+		//console.log("start timestamp:" + date + " = " + date.getTime() / 1000);
+
+		return date.getTime() / 1000;		
+	}
+	this.getStartTimestampSeconds = function(){
+		return _getStartTimestampSeconds();
+	}
+
+	var _getEndTimestampSeconds = function(){
+		var date;
+		if(_getInterval() == INTERVAL.MONTHLY){
+			date = new Date(_getYear(), _getMonth() + 1, _getDay(), _getHour());
+		}
+		else if(_getInterval() == INTERVAL.DAILY){
+			date = new Date(_getYear(), _getMonth(), _getDay() + 1, _getHour());
+		}
+		else if(_getInterval() == INTERVAL.HOURLY){
+			date = new Date(_getYear(), _getMonth(), _getDay(), _getHour() + 1);
+		}
+		else{
+			console.log('Invalid interval, must be first request.');
+			return;
+		}
+		
+		//console.log("end timestamp:" + date.toDateString());
+		console.log("end timestamp:" + date);
+
+		return date.getTime() / 1000;
+	}
+	this.getEndTimestampSeconds = function(){
+		return _getEndTimestampSeconds();
 	}
 
 	/* Setters */
 	var _setDevice = function(dev){
-		if(_controls.devices.menu != null){
+		if(_controls.devices.menu.find(".selected").attr("value") != null){
 			_controls.devices.menu.find(".selected").removeClass('selected');
 		}
 		_controls.devices.menu.find("[value='" + dev + "']").addClass('selected');
+		if(dev != "All"){
+			showSubset = false;
+		}
+		else{
+			showSubset = true;
+		}
 	}
 	this.setDevice = function(dev){
 		_setDevice(dev);
 	}
 
+	var _setDeviceName = function(name){
+		_deviceName = name;
+	}
+
 	var _setApplication = function(app){
 		_controls.applications.menu.find(".selected").removeClass('selected');
 		_controls.applications.menu.find("[value='" + app.toLowerCase() + "']").addClass('selected');
-	}
-
-	var _setInterval = function(intv){
-		_selected.interval = intv;
-	}
-	this.setInterval = function(intv){
-		_setInterval(intv);
 	}
 	
 	var _setMonth = function(month){
@@ -430,13 +482,21 @@ function Filter(){
 			_controls.months.menu.find(".selected").removeClass('selected');
 		}
 		_controls.months.menu.find("[value='" + month + "']").addClass('selected');
+
+		// Remove selected day
+		_controls.days.menu.find(".selected").removeClass("selected");
+		// Remove selected hour
+		_controls.hours.menu.find(".selected").removeClass("selected");			
 	}
 	
 	var _setDay = function(day){
 		if(_controls.days.menu != null){
 			_controls.days.menu.find(".selected").removeClass('selected');
 		}
-		_controls.days.menu.find("[value='" + day + "']").addClass('selected');	
+		_controls.days.menu.find("[value='" + day + "']").addClass('selected');
+
+		// Remove selected hour
+		_controls.hours.menu.find(".selected").removeClass("selected");
 	}
 
 	var _setHour = function(hour){
@@ -463,13 +523,6 @@ function Filter(){
 		_controls.port_dst.change(callback);
 	};
 
-	/* Interval */
-	this.setIntervalListener = function(){
-		_controls.interval.click(function(){
-			_controls.interval.menu.animate({height:'toggle'}, 300);
-		});
-	};
-
 	/* Month */
 	this.setMonthListener = function(callback){
 		_controls.interval.monthly.change(callback);
@@ -490,8 +543,20 @@ function Filter(){
 		_controls.application.change(callback);
 	};
 
+	this.populateYears = function(){
+		_year = aggregateData.dateStart.getFullYear();
+	}
+
 	this.populateMonths = function(){
 		_populateMonths();
+	}
+
+	this.populateDays = function(){
+		_populateDays();
+	}
+
+	this.populateHours = function(){
+		_populateHours();
 	}
 
 	this.removeMonths = function(){
@@ -513,13 +578,21 @@ function Filter(){
 			console.log("Devices is empty, should not happen.");
 			return;
 		}
-		//removeAllChildren(_controls.devices);
+		_controls.devices.menu.find('.item').each(function(){
+			this.remove();
+		});
 		var newItem = $("<div></div>").addClass('item').attr("value", "All").text("All");
 		_controls.devices.menu.append(newItem);	
 		_setDevice(newItem.attr("value"));
-		for(var i = 0; i < aggregateData.devices.length; i++){
-			var device = aggregateData.devices[i];
-			newItem = $("<div></div>").addClass('item').attr("value", device).text(device);	
+		_setDeviceName(newItem.text());
+		for(var i = 0; i < devices.length; i++){
+			newItem = $("<div></div>").addClass('item').attr("value", devices[i].device)
+			if(devices[i].name != null){
+				newItem.text(devices[i].name);
+			}
+			else{
+				newItem.text(devices[i].device);
+			}				
 			_controls.devices.menu.append(newItem);
 		}
 	}
@@ -558,16 +631,16 @@ function Filter(){
 		var newItem = $("<div></div>").addClass('item').attr('value', "all").text("All");
 		_controls.applications.menu.append(newItem);
 		newItem.click(function(){
-			_setApplication($(this).attr("value"));
-			_controls.applications.menu.animate({height:'hide'},300);
+			//_setApplication($(this).attr("value"));
+			//_controls.applications.menu.animate({height:'hide'},300);
 		});
 		_setApplication("all");
 		for(var i = 0; i < applications.length; i++){
 			var a = applications[i][0]
 			newItem = $("<div></div>").addClass('item').attr('value', a.toLowerCase()).text(applications[i][0]);
 			newItem.click(function(){
-				_setApplication($(this).attr("value"));
-				_controls.applications.menu.animate({height:'hide'},300);
+				//_setApplication($(this).attr("value"));
+				//_controls.applications.menu.animate({height:'hide'},300);
 			});
 			_controls.applications.menu.append(newItem);
 		}
@@ -583,12 +656,15 @@ function Filter(){
 			currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);	// Increment by one month.
 			_controls.months.menu.append(newItem);
 		}
-		_setMonth(_controls.months.menu.children(0).attr("value"));
+		_setMonth(_controls.months.menu.children(0).attr("value"));		
 	};
 
 	/* Days */
 	var _populateDays = function(){
 		/* Populate days. */
+		_controls.days.menu.find('.item').each(function(){
+			this.remove();
+		});		
 		var currentMonth = _getMonth();
 		var currentDate = new Date(aggregateData.dateStart.getFullYear(), currentMonth);	// Start of the desired month.
 		while(currentMonth == _getMonth() && currentDate.getTime() < aggregateData.dateEnd.getTime()){			
@@ -605,6 +681,9 @@ function Filter(){
 	/* Hours */
 	var _populateHours = function(){
 		/* Populate hours. */
+		_controls.hours.menu.find('.item').each(function(){
+			this.remove();
+		});			
 		var date = new Date(aggregateData.dateStart.getFullYear(), _getMonth(), _getDay());
 		var seconds = date.getTime() / 1000;
 		var currentDay = filter.getDay();

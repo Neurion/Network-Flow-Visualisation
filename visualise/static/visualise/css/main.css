@@ -51,7 +51,7 @@ body{
 		display: block;
 		width: 85%;
 		height: 50px;
-		padding-left: 15%;
+		padding-left: 19%;
 		background-color: #2F3B31;
 		color: white;
 		position: fixed;
@@ -68,7 +68,7 @@ body{
 
 		#menu div{
 			display: inline-block;
-			width: 120px;
+			width: 100px;
 			height: 50px;
 			padding: 0px 10px;
 			line-height: 50px;
@@ -76,8 +76,7 @@ body{
 			float: left;
 		}
 
-		#menu div:hover{
-			opacity: 0.5;
+		#menu > div.hover:hover{
 			cursor: pointer;
 			background-color:rgba(0, 0, 0, 0.5);
 		}
@@ -102,10 +101,27 @@ body{
 			float: right;
 		}
 
+		div#menu_more{
+			width: 20px;
+		}
+
+		/* Menu */
+		div#menu_hidden{
+			display: none;
+			width: 50%;
+			padding: 0px;
+			float: left;
+		}
+
+		div#menu_protocols, div#menu_ports, div#menu_flows, div#menu_packets{
+			display: inline-block;
+			float: left;
+		}		
+
 	#filter_container{
 		display: inline-block;
 		width: 15%;
-		/*min-width: 175px;*/
+		min-width: 150px;
 		height: 100%;
 		/*padding-top: 50px;*/
 		background-color: #2F3B31;
@@ -114,81 +130,6 @@ body{
 		box-shadow: 0.5px 0px 15px black;
 		z-index: 1001;
 	}
-
-		#overview_table{
-			display: block;
-		}
-
-			#overview_table .row{
-				display: block;
-				width: 100%;
-			}
-
-			#overview_table .row *{
-				float: left;
-			}
-
-			#overview_table .row :first-child{
-				display: inline-block;
-				width: 55%;
-				padding-right: 5%;
-				text-align: right;
-				color: white;
-			}
-
-			#overview_table .row :nth-child(2){
-				display: inline-block;
-				width: 40%;
-				text-align: left;
-				color: black;
-			}		
-
-
-
-
-			/* Locations */
-			#locations_table{
-				display: block;
-				width: 80%;
-				/*background-color: red;*/
-				color: black;
-			}
-
-			#locations_table > *:nth-child(1){
-				display: inline-block;
-				width: 400px;				
-				background-color: blue;
-			}
-
-			#locations_table span{
-				display: inline-block;
-				width: 100px;
-				float: left;					
-			}
-
-			#locations_table .header{
-				display: block;
-				width: 100%;
-				font-weight: bold;
-				background-color: orange;
-			}
-
-			#locations_table .row{
-				display: block;
-				width: 100%;
-				/*background-color: green;*/
-			}
-
-			#locations_table .row span.domain{
-				display: block;
-				width: 500px;
-				text-align: left;
-			}			
-
-		/* Menu */
-		#menu_protocols{
-			display: none;
-		}
 
 		/* Filters */
 		#filter{
@@ -222,7 +163,7 @@ body{
 				#devices_menu{
 					display: none;
 					width: 100%;
-					height: 240px;
+					max-height: 180px;
 					color: black;
 					overflow-y: scroll;
 					background-color: white;
@@ -242,6 +183,10 @@ body{
 					opacity: 0.5;
 					cursor: pointer;
 					background-color:rgba(0, 0, 0, 0.5);
+				}
+
+				#devices_menu .item.bad{
+					background-color: #FF5C5C;
 				}
 
 			#filter_direction{
@@ -288,7 +233,8 @@ body{
 				#applications_menu{
 					display: none;
 					width: 100%;
-					height: 90px;
+					height: 150px;
+					font-size: 0.8em;
 					background-color: white;
 					color: black;
 					overflow-y: scroll;
@@ -320,7 +266,7 @@ body{
 				#months_menu{
 					display: none;
 					width: 100%;
-					height: 150px;
+					/*height: 150px;*/
 					background-color: white;
 					color: black;
 					overflow-y: hidden;
@@ -341,7 +287,7 @@ body{
 				}
 
 			#filter_day{
-				display: none;
+				display: block;
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
@@ -352,7 +298,7 @@ body{
 				#days_menu{
 					display: none;
 					width: 100%;
-					height: 210px;
+					/*height: 210px;*/
 					color: black;
 					background-color: white;
 					overflow: hidden;
@@ -374,7 +320,7 @@ body{
 				}				
 
 			#filter_hour{
-				display: none;
+				display: block;
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
@@ -385,7 +331,7 @@ body{
 				#hours_menu{
 					display: none;
 					width: 100%;
-					height: 150px;
+					/*height: 150px;*/
 					color: black;
 					background-color: white;
 					overflow: hidden;
@@ -407,7 +353,7 @@ body{
 				}	
 
 			#filter_more{
-				display: none;
+				display: block;
 				width: 100%;
 				height: 40px;
 				line-height: 40px;
@@ -441,7 +387,7 @@ body{
 	}
 		.full_width_padding{
 			display: block;
-			width: 78%;
+			width: 98%;
 			padding: 1%;
 			margin: auto;
 			/*background-color: red;*/
@@ -450,6 +396,7 @@ body{
 		#main{
 			display: block;
 			width: 90%;
+			min-width: 1250px;
 			min-height: 600px;
 			margin: 2% 5%;
 			background-color: white;
@@ -462,6 +409,13 @@ body{
 			background-color: yellow;
 		}
 
+		.half_padding{
+			display: inline-block;
+			width: 42%;
+			height: 50%;
+			padding: 4%;		
+		}
+
 		.third_padding{
 			display: inline-block;
 			width: 25%;
@@ -470,58 +424,115 @@ body{
 			/*background-color: black;*/
 		}
 
-		#summary_table{
+		.quarter_padding{
+			display: inline-block;
+			width: 21%;
+			height: 50%;
+			padding: 2%;
+			/*background-color: black;*/
+		}		
+
+
+		/******************************* Overview ***********************************/
+		#overview_table{
 			display: block;
-			width: 100%;
-			/*background-color: orange;*/
+			/*width: 100%;*/
+			background-color: white;
+			border: 1px solid #DDE5ED;
 			font-size: 1.5em;
 		}
 
-		/* Devices item */
-		#summary_table > div > span:nth-child(1){
-			display: inline-block;
-			width: 13%;
-			padding: 1%;
-		}
-
-		/* Time items */
-		#summary_table > div > span:nth-child(2), #summary_table > div > span:nth-child(3){
-			display: inline-block;
-			width: 18%;
-			padding: 1%;
-		}
-
-		/* Usage items */
-		#summary_table > div > span:nth-child(4), #summary_table > div > span:nth-child(5), #summary_table > div > span:nth-child(6){
-			display: inline-block;
-			width: 13%;
-			padding: 1%;
-		}		
-
-		#summary_table .header, #summary_table .row{
+		#overview_table .header, #overview_table .row{
 			display: block;
 			width: 100%;
 			float: left;
 		}
 
-		#summary_table .header{
-			font-weight: bold;
-		}
-
-		#summary_table .row{		
-		}
-
-		#summary_table .item{
+		#overview_table .item{
+			width: 16.5%;
+			height: 30px;
+			margin: 1px;
+			line-height: 30px;
 			text-align: right;
-			float: left;			
-		}	
+			float: left;						
+		}
 
-		#traffic_pie_title{
+		#overview_table .header .item{
+			font-weight: bold;			
+		}
+
+		#overview_table .row .item{
+			background-color: #F5F4F4;
+		}
+
+		/* Devices item */
+		#overview_table div.header > div.device{
+			display: inline-block;
+			/*width: 15%;*/
+			background-color: none;	
+		}
+		#overview_table > div > div.device{
+			display: inline-block;
+			/*width: 15%;
+			padding: 1% 0%;*/
+		}
+
+		/* Devices name */
+		#overview_table div.header > div.device_name{
+			display: inline-block;
+			/*width: 15%;*/
+		}
+		#overview_table > div > div.device_name{
+			display: inline-block;
+			/*width: 15%;
+			padding: 1% 0%;*/
+		}
+
+		/* Device name text box */
+		#overview_table #text_name{
+			display: none;
+			text-align: right;
+		}		
+
+		/* Time items */
+		#overview_table > div.header > div.date_start, #overview_table > div.header > div.date_end{
+			display: inline-block;
+			/*width: 15%;*/
+		}
+		#overview_table > div > div.date_start, #overview_table > div > div.date_end{
+			display: inline-block;
+			/*width: 15%;
+			padding: 1% 0%;*/
+		}
+
+		/* Downloaded, Uploaded */
+		#overview_table > div.header > div.downloaded, #overview_table > div.header > div.uploaded{
+			display: inline-block;
+			/*width: 13%;*/
+		}
+		#overview_table > div > div.downloaded, #overview_table > div > div.uploaded{
+			display: inline-block;
+			/*width: 13%;
+			padding: 1% 0%;*/
+		}		
+
+		/* Usage */
+		#overview_table > div > div.total_traffic{
+		display: inline-block;
+			/*width: 14%;*/
+		}
+		#overview_table > div > div.total_traffic{
+			display: inline-block;
+			/*width: 14%;
+			padding: 1% 0%;*/
+		}
+		/*************************************************************************************/
+
+		#overview_traffic_pie_title{
 			display: inline-block;
 			width: 100%;
 			text-align: center;
 			font-size: 2em;
-			/*background-color: green;*/
 		}
 
 		#overview_traffic_pie{
@@ -529,6 +540,7 @@ body{
 			width: 100%;
 			height: 100%;
 			margin-top: 5px;
+			border: 1px solid #DDE5ED;
 			/*background-color: yellow;			*/
 		}
 
@@ -545,6 +557,7 @@ body{
 			width: 100%;
 			height: 100%;
 			margin-top: 5px;
+			border: 1px solid #DDE5ED;
 			/*background-color: yellow;*/
 		}		
 
@@ -619,7 +632,7 @@ body{
 		#stat_table{
 			display: block;
 			width: 100%;
-			background-color: white;
+			/*background-color: red;*/
 			text-align: center;
 			/*overflow-y: scroll;*/
 		}
@@ -640,7 +653,7 @@ body{
 
 				#stat_table .row:hover{
 					cursor: pointer;
-					opacity: 0.5;				
+					opacity: 0.5;	
 				}
 
 				#stat_table .row:nth-child(2n){
@@ -649,6 +662,8 @@ body{
 
 				#stat_table span{
 					float: left;
+					height: 20px;
+					line-height: 20px;
 				}
 
 				#stat_table > div > span:nth-child(1){
@@ -674,3 +689,101 @@ body{
 			background-color: orange;
 			float: left;
 		}
+
+
+		#button_name:hover{
+			text-decoration: underline;
+			cursor: pointer;
+		}
+
+			/******************** Locations *************************/
+
+			.locations_pie_padding{
+				display: inline-block;
+				width: 48%;
+				padding: 1%;
+				margin: 0% 25%;
+				/*background-color: black;*/
+			}
+
+			#locations_pie{
+				display: inline-block;
+				width: 70%;
+				height: 300px;
+				/*background-color: orange;*/
+				float: left;
+			}			
+
+			#locations_pie_legend{
+				display: inline-block;
+				width: 30%;
+				height: 300px;
+				float: left;
+				/*background-color: red;*/
+			}
+
+			#locations_table{
+				display: block;
+				width: 60%;
+				padding-left: 20px;
+				margin: 0% 20%;
+				/*background-color: red;*/
+				color: black;
+				font-size: 1.3em;
+				float: left;
+			}
+
+			#locations_table > div{
+				display: block;
+				width: 100%;
+				float: left;
+			}
+
+			#locations_table .header{
+				display: block;
+				width: 100%;
+				font-weight: bold;
+				/*background-color: orange;*/
+			}
+
+			#locations_table .row{
+				display: block;
+				width: 100%;
+				padding: 5px 0px;
+				float: left;
+				/*background-color: green;*/
+			}
+
+			#locations_table .row:nth-child(2n){
+				background-color: #F5F4F4;
+			}
+
+			#locations_table .header .item{
+				font-weight: bold;
+				padding: 0px;
+			}
+
+			#locations_table .item{
+				display: inline-block;
+				height: 20px;
+				line-height: 20px;
+				text-align: right;
+				float: left;	
+			}
+
+			/* Location */
+			#locations_table .item.location{
+				width: 40%;
+			}
+
+			/* Downloaded */
+			#locations_table .item.downloaded, #locations_table .item.uploaded{
+				width: 20%;
+			}			
+
+			/* Traffic */
+			#locations_table .item.traffic{
+				width: 20%;
+			}
+
+			/*******************************************************/

@@ -36,28 +36,62 @@ function updateMetaData(){
 	//console.log("...updated meta data.");
 }
 
-function populateSignificant(device){	
-	if(statMenu == STAT_MENU.OVERVIEW){
-		populateOverview();
+function refreshVisuals(device){
+	// Display information for all devices.
+	if(filter.isActive() && filter.getDevice() != "all"){
+
+		requestSubsetData(function(){
+			if(statMenu == STAT_MENU.OVERVIEW){
+				populateDeviceOverview(subsetData);
+			}
+			else if(statMenu == STAT_MENU.DOWNLOADED){
+				populateTopDownloaders(subsetData, device);
+			}
+			else if(statMenu == STAT_MENU.UPLOADED){
+				populateTopUploaders(subsetData, device);
+			}
+			else if(statMenu == STAT_MENU.LOCATIONS){
+				populateTopLocations(subsetData);
+			}
+			else if(statMenu == STAT_MENU.APPLICATIONS){
+				populateTopApplications(subsetData);
+			}								
+			else{
+				console.log('Invalid statMenu, should not happen.');
+				return;
+			}
+		});
 	}
-	else if(statMenu == STAT_MENU.DOWNLOADED){
-		populateTopDownloaders(device);
-	}
-	else if(statMenu == STAT_MENU.UPLOADED){
-		populateTopUploaders(device);
-	}
-	else if(statMenu == STAT_MENU.LOCATIONS){
-		populateTopLocations();
-	}
-	else if(statMenu == STAT_MENU.APPLICATIONS){
-		populateTopApplications();
-	}	
+	// Else display information for a single device.
 	else{
-		console.log('unknown statMenu...');
+		getAggregateData(function(){
+			if(statMenu == STAT_MENU.OVERVIEW){
+				populateOverview(aggregateData);
+			}
+			else if(statMenu == STAT_MENU.DOWNLOADED){
+				populateTopDownloaders(aggregateData, device);
+			}
+			else if(statMenu == STAT_MENU.UPLOADED){
+				populateTopUploaders(aggregateData, device);
+			}
+			else if(statMenu == STAT_MENU.LOCATIONS){
+				populateTopLocations(aggregateData);
+			}
+			else if(statMenu == STAT_MENU.APPLICATIONS){
+				populateTopApplications(aggregateData);
+			}								
+			else{
+				console.log('Invalid statMenu, should not happen.');
+				return;
+			}			
+		});
 	}
 }
 
-function populateOverview(){
+/****************************************************************************************/
+/******************************************* Overview ********************************/
+/****************************************************************************************/
+function populateOverview(data){
 	var container = $('#main');
 
 	$('#main > *').each(function () {
@@ -65,58 +99,56 @@ function populateOverview(){
 	});
 
 	/* Table */
-	var padding = $('<div></div>').addClass('full_width_padding');
+	var full_width_padding = $('<div></div>').addClass('full_width_padding');
 
-	var summary_table = $('<div></div>').attr('id', 'summary_table');
+	var overview_table = $('<div></div>').attr('id', 'overview_table');
 
 	var header = $('<div></div>').addClass('header');
-	header.append($('<span></span>').addClass('item').text('Devices'));
-	header.append($('<span></span>').addClass('item').text('Time start'));
-	header.append($('<span></span>').addClass('item').text('Time end'));
-	header.append($('<span></span>').addClass('item').text('Total Traffic'));
-	header.append($('<span></span>').addClass('item').text('Downloaded'));
-	header.append($('<span></span>').addClass('item').text('Uploaded'));
-	/*header.append($('<span></span>').addClass('item').text('Locations'));*/
-	summary_table.append(header);
+	header.append($('<div></div>').addClass('item device').text('Devices'));
+	header.append($('<div></div>').addClass('item date_start').text('Time start'));
+	header.append($('<div></div>').addClass('item date_end').text('Time end'));	
+	header.append($('<div></div>').addClass('item downloaded').text('Downloaded'));
+	header.append($('<div></div>').addClass('item uploaded').text('Uploaded'));
+	header.append($('<div></div>').addClass('item total_traffic').text('Total Traffic'));
+	overview_table.append(header);
 
 	var row = $('<div></div>').addClass('row');
-	row.append($('<span></span>').addClass('item').text(aggregateData.devices.length));
-	row.append($('<span></span>').addClass('item').text(aggregateData.dateStart.toDateString()));
-	row.append($('<span></span>').addClass('item').text(aggregateData.dateEnd.toDateString()));
-	row.append($('<span></span>').addClass('item').text(bytesToSize(aggregateData.downloaded + aggregateData.uploaded)));
-	row.append($('<span></span>').addClass('item').text(bytesToSize(aggregateData.downloaded)));
-	row.append($('<span></span>').addClass('item').text(bytesToSize(aggregateData.uploaded)));
-	/*row.append($('<span></span>').addClass('item').text('test'));	*/
-	summary_table.append(row);
+	row.append($('<div></div>').addClass('item device').text(data.devices.length));
+	row.append($('<div></div>').addClass('item date_start').text(data.dateStart.toDateString()));
+	row.append($('<div></div>').addClass('item date_end').text(data.dateEnd.toDateString()));
+	row.append($('<div></div>').addClass('item downloaded').text(bytesToSize(data.downloaded)));
+	row.append($('<div></div>').addClass('item uploaded').text(bytesToSize(data.uploaded)));
+	row.append($('<div></div>').addClass('item total_traffic').text(bytesToSize(data.downloaded + data.uploaded)));
+	overview_table.append(row);
 
-	summary_table.append($('<div></div>').addClass('clear'));
+	overview_table.append($('<div></div>').addClass('clear'));
 
-	padding.append(summary_table);
-	container.append(padding);
+	full_width_padding.append(overview_table);
+	container.append(full_width_padding);
 
 	/* Traffic */
-	var third_padding = $('<div></div>').addClass('third_padding');
-	var traffic_pie_title = $('<div></div>').attr('id', 'traffic_pie_title').text('Network Traffic');
-	var traffic_pie = $('<div></div>').attr('id', 'overview_traffic_pie');
-	third_padding.append(traffic_pie_title);	
-	third_padding.append(traffic_pie);
-	container.append(third_padding);
+	var half_padding = $('<div></div>').addClass('half_padding');
+	var overview_traffic_pie_title = $('<div></div>').attr('id', 'overview_traffic_pie_title').text('Traffic');
+	var overview_traffic_pie = $('<div></div>').attr('id', 'overview_traffic_pie');
+	half_padding.append(overview_traffic_pie_title);	
+	half_padding.append(overview_traffic_pie);
+	container.append(half_padding);
 
 	/* Applications */
-	third_padding = $('<div></div>').addClass('third_padding');
-	var application_pie_title = $('<div></div>').attr('id', 'application_pie_title').text('Network Applications');
+	half_padding = $('<div></div>').addClass('half_padding');
+	var application_pie_title = $('<div></div>').attr('id', 'application_pie_title').text('Applications');
 	var overview_applications_pie = $('<div></div>').attr('id', 'overview_applications_pie');
-	third_padding.append(application_pie_title);	
-	third_padding.append(overview_applications_pie);
-	container.append(third_padding);
+	half_padding.append(application_pie_title);	
+	half_padding.append(overview_applications_pie);
+	container.append(half_padding);
 
 	/* Traffic */
-	populateOverviewTraffic(aggregateData.downloaded, aggregateData.uploaded);
+	populateOverviewTraffic(data.downloaded, data.uploaded);
 	/* Applications */
 	populateOverviewApplications();
 }
 
-function populateDeviceOverview(){
+function populateDeviceOverview(data){
 	var container = $('#main');
 
 	$('#main > *').each(function () {
@@ -126,44 +158,76 @@ function populateDeviceOverview(){
 	/* Table */
 	var padding = $('<div></div>').addClass('full_width_padding');
 
-	var summary_table = $('<div></div>').attr('id', 'summary_table');
+	var overview_table = $('<div></div>').attr('id', 'overview_table');
 
 	var header = $('<div></div>').addClass('header');
-	header.append($('<span></span>').addClass('item').text('Device'));
-	header.append($('<span></span>').addClass('item').text('Total Traffic'));
-	header.append($('<span></span>').addClass('item').text('Downloaded'));
-	header.append($('<span></span>').addClass('item').text('Uploaded'));
-	/*header.append($('<span></span>').addClass('item').text('Locations'));*/
-	summary_table.append(header);
+	header.append($('<div></div>').addClass('item device').text('Device'));
+	header.append($('<div></div>').addClass('item device_name').text('Name').attr("id", "button_name"));
+	header.append($('<div></div>').addClass('item date_start').text('Time start'));
+	header.append($('<div></div>').addClass('item date_end').text('Time end'));	
+	header.append($('<div></div>').addClass('item downloaded').text('Downloaded'));
+	header.append($('<div></div>').addClass('item uploaded').text('Uploaded'));
+	header.append($('<div></div>').addClass('item total_traffic').text('Total Traffic'));
+	overview_table.append(header);
 
 	var row = $('<div></div>').addClass('row');
-	row.append($('<span></span>').addClass('item').text(filter.getDevice()));
-	row.append($('<span></span>').addClass('item').text(bytesToSize(subsetData.downloaded + subsetData.uploaded)));
-	row.append($('<span></span>').addClass('item').text(bytesToSize(subsetData.downloaded)));
-	row.append($('<span></span>').addClass('item').text(bytesToSize(subsetData.uploaded)));
-	/*row.append($('<span></span>').addClass('item').text('test'));	*/
-	summary_table.append(row);
+	row.append($('<div></div>').addClass('item device').text(filter.getDevice()).attr("id", "item_device"));
+	row.append($('<input></input>').attr("id", "text_name").attr("type", "text").attr("value", filter.getDeviceName()));
+	row.append($('<div></div>').addClass('item device_name').text(filter.getDeviceName()).attr("id", "item_name"));
+	row.append($('<div></div>').addClass('item date_start').text(getSelectedDevice().timeStart.toDateString()));
+	row.append($('<div></div>').addClass('item date_end').text(getSelectedDevice().timeEnd.toDateString()));
+	row.append($('<div></div>').addClass('item downloaded').text(bytesToSize(data.downloaded)));
+	row.append($('<div></div>').addClass('item uploaded').text(bytesToSize(data.uploaded)));
+	row.append($('<div></div>').addClass('item total_traffic').text(bytesToSize(data.downloaded + data.uploaded)));
+	overview_table.append(row);
 
-	summary_table.append($('<div></div>').addClass('clear'));
+	overview_table.append($('<div></div>').addClass('clear'));
 
-	padding.append(summary_table);
+	padding.append(overview_table);
 	container.append(padding);
 
+	$('#overview_table .item').css("width", "14.12%");
+
+	$("#button_name").click(function(){
+		$("#item_name").fadeOut(300, function(){
+			$("#text_name").css("width", "10%").css("height", "30px").css("margin", "5px 0px").css("margin-left", "60px").css("padding", "5px 0%").css("float", "left");
+			$('#overview_table #text_name').css({
+				"margin": "0px",
+				"width": "14.12%",
+			});
+			$("#text_name").fadeIn(300);
+			$("#text_name").focus();
+			$("#text_name").focusout(function(){
+				console.log($("#text_name").val());
+				submitName($("#text_name").val(), function(name){
+					$("#text_name").fadeOut(300, function(){
+						$('#item_name').fadeIn(300).text(name);
+						getAggregateData(function(){
+							var selectedDevice = filter.getDevice();
+							filter.populateDevices();
+							filter.setDevice(selectedDevice);
+						});
+					});			
+				});				
+			});			
+		});
+	});
+
 	/* Traffic */
-	var third_padding = $('<div></div>').addClass('third_padding');
-	var traffic_pie_title = $('<div></div>').attr('id', 'traffic_pie_title').text('Network Traffic');
-	var traffic_pie = $('<div></div>').attr('id', 'overview_traffic_pie');
-	third_padding.append(traffic_pie_title);	
-	third_padding.append(traffic_pie);
-	container.append(third_padding);
+	var half_padding = $('<div></div>').addClass('half_padding');
+	var overview_traffic_pie_title = $('<div></div>').attr('id', 'overview_traffic_pie_title').text('Traffic');
+	var overview_traffic_pie = $('<div></div>').attr('id', 'overview_traffic_pie');
+	half_padding.append(overview_traffic_pie_title);
+	half_padding.append(overview_traffic_pie);
+	container.append(half_padding);
 
 	/* Applications */
-	third_padding = $('<div></div>').addClass('third_padding');
-	var application_pie_title = $('<div></div>').attr('id', 'application_pie_title').text('Network Applications');
+	half_padding = $('<div></div>').addClass('half_padding');
+	var application_pie_title = $('<div></div>').attr('id', 'application_pie_title').text('Applications');
 	var overview_applications_pie = $('<div></div>').attr('id', 'overview_applications_pie');
-	third_padding.append(application_pie_title);	
-	third_padding.append(overview_applications_pie);
-	container.append(third_padding);
+	half_padding.append(application_pie_title);	
+	half_padding.append(overview_applications_pie);
+	container.append(half_padding);
 
 	/* Traffic */
 	populateOverviewTraffic(subsetData.downloaded, subsetData.uploaded);
@@ -176,13 +240,15 @@ function populateOverviewTraffic(downloaded, uploaded){
 
 	var container = $('#overview_traffic_pie');
 
-	var dataset = [downloaded, uploaded];
+	var dataset = [
+		{ label: 'Downloaded', data: downloaded },
+		{ label: 'Uploaded', data: uploaded },
+	];
 
 	var options = {
 	    series: {
 	        pie: {
 	            show: true,	
-	            radius: 1,
 	            label: {
 	            	show: true,
 	                radius: 1/2,
@@ -192,29 +258,28 @@ function populateOverviewTraffic(downloaded, uploaded){
 		        }
 	        }
 	    },
-	    grid: {
-	        hoverable: true,
-	        clickable: true,
-	    },	    
-	    legend: {
-			show: true,
-			//container: $("#stat_timeline"),
-	    }
+	    legend: {show: true}
 	};
 	var plot = $.plot(container, dataset, options);	
 }
 
 function populateOverviewApplications(){
 
+	if(aggregateData.applications == null){
+		return;
+	}
+
 	var container = $('#overview_applications_pie');
 
-	var dataset = aggregateData.applications;
+	var dataset = [];
+	for(var i = 0; i < aggregateData.applications.length; i++){
+		dataset.push({ label: aggregateData.applications[i][0], data: aggregateData.applications[i][1] });
+	}
 
 	var options = {
 	    series: {
 	        pie: {
 	            show: true,	
-	            radius: 1,
 	            label: {
 	            	show: true,
 	                radius: 1/2,
@@ -224,41 +289,41 @@ function populateOverviewApplications(){
 		        }
 	        }
 	    },
-	    grid: {
-	        hoverable: true,
-	        clickable: true,
-	    },	    
 	    legend: {
-			show: true,
-			container: $("#stat_timeline"),
+	    	show: true,
+	    	noColumns: 1,
 	    }
 	};
 	var plot = $.plot(container, dataset, options);	
 }
+/****************************************************************************************/
+/****************************************************************************************/
 
-function populateOverviewDownloaded(){
 
-}
 
-function populateOverviewUploaded(){
 
-}
 
-function populateTopDownloaders(device){
+
+
+
+/****************************************************************************************/
+/******************************************* Downloaders ********************************/
+/****************************************************************************************/
+function populateTopDownloaders(data, device){
 
 	var container = $('#main');
 	$('#main > *').each(function(){
 		this.remove();
 	});
 
-	var sorted = devices.sort(compareDownloaded);
-
-	if(devices[0].downloaded == null){
+	if(data.downloaded == null){
 		console.log("Highest downloader has 0 bytes downloaded");
 		return;
 	}
 
-	if(device == null || device == ''){
+	var sorted = data.devices.sort(compareDownloaded);
+	console.log(sorted);
+	if(device == "" || device  ==  null){
 		device = sorted[0].device;
 	}
 
@@ -271,240 +336,47 @@ function populateTopDownloaders(device){
 	var div_clear = $('<div></div>').addClass('clear');
 	$('#main').append(div_clear);
 
-	/* Table */
-	populateStatTable(sorted, device);
-
 	/* Timeline */
-	populateStatTimeline(device, 'downloaded');
+	populateTopDownloadersTimeline(sorted, device);
 
 	/* Pie */
-	var e, other = 0;
-	var d1 = [], d2 = [];
-	for(var i = 0; i < sorted.length; i++){
-		d1.push(sorted[i].device);
-		d2.push(sorted[i].downloaded);
-		e = i;
-	}	
-	for(; e < sorted.length; e++){
-		other += sorted[e].downloaded;
-	}
-	d1.push("other");
-	d2.push(other);	
-	populateStatPie(d1, d2);
-}
-
-function populateTopUploaders(device){
-	var container = $('#main');
-	$('#main > *').each(function(){
-		this.remove();
-	});
-	var stat_timeline = $('<div></div>').attr('id', 'stat_timeline');
-	container.append($('<div></div>').attr('class', 'timeline_padding').append(stat_timeline));
-	var stat_pie = $('<div></div>').attr('id', 'stat_pie');
-	container.append($('<div></div>').attr('class', 'pie_padding').append(stat_pie));
-	var stat_table = $('<div></div>').attr('id', 'stat_table');
-	container.append($('<div></div>').attr('class', 'table_padding').append(stat_table));
-	var div_clear = $('<div></div>').addClass('clear');
-	$('#main').append(div_clear);
-
-	var sorted = devices.sort(compareUploaded);
-
-	if(devices[0].uploaded == null){
-		console.log("Highest uploader has 0 bytes uploaded");
-		return;
-	}
-
-	if(device == null || device == ''){
-		device = sorted[0].device;
-	}
+	populateTopDownloadersPie(sorted);
 
 	/* Table */
-	populateStatTable(sorted, device);
-
-	/* Timeline */
-	populateStatTimeline(device, 'uploaded');
-
-	/* Pie */
-	var e, other = 0;
-	var d1 = [], d2 = [];
-	for(var i = 0; i < sorted.length; i++){
-		d1.push(sorted[i].device);
-		d2.push(sorted[i].uploaded);
-		e = i;
-	}	
-	for(; e < sorted.length; e++){
-		other += sorted[e].uploaded;
-	}
-	d1.push("other");
-	d2.push(other);		
-	populateStatPie(d1, d2);
+	populateUsageTable(sorted, device);	
 }
 
-function populateTopLocations(){
-	var container = $('#main');
-	$('#main > *').each(function(){
-		this.remove();
-	});
-	var stat_timeline = $('<div></div>').attr('id', 'stat_timeline');
-	container.append($('<div></div>').attr('class', 'timeline_padding').append(stat_timeline));
-	var stat_pie = $('<div></div>').attr('id', 'stat_pie');
-	container.append($('<div></div>').attr('class', 'pie_padding').append(stat_pie));
-	var stat_table = $('<div></div>').attr('id', 'stat_table');
-	container.append($('<div></div>').attr('class', 'table_padding').append(stat_table));
+function populateTopDownloadersTimeline(sorted, device){
 
-    $.ajax({
-		type	: "POST",
-		url 	: "get_top_domains",
-		data 	: {
-			csrfmiddlewaretoken: getCookie('csrftoken'),
-			interval: filter.getInterval(),
-		},
-		dataType: "json",
-		async 	: true,
-		error 	: function(data){
-			console.log("AJAX error with get_top_domains.");
-		},
-    	success : function(json_data){
-    		console.log(json_data);
-
-    		var domains = json_data;
-
-    		$('#stat_table').remove();
-
-			/* Table */
-			var table = $('<div></div>').attr('id', 'locations_table');
-
-			/* Table header. */
-			var newRow = $('<div></div>').addClass('header');
-			newRow.append($('<span></span>').text('Domain'));
-			newRow.append($('<span></span>').text('Country'));
-			//newRow.append($('<span></span>').text('Volume').css('text-align', 'right'));
-			newRow.append($('<span></span>').text('Downloaded').css('text-align', 'right'));
-			newRow.append($('<span></span>').text('Uploaded').css('text-align', 'right'));
-			table.append(newRow);
-
-			/* Data */
-			for(var i = 0; i < domains.length; i++){
-				newRow = $('<div></div>').addClass('row');
-				newRow.append($('<span></span>').addClass('domain').text(domains[i]));
-				newRow.append($('<span></span>').text('test'));
-				newRow.append($('<span></span>').text('test'));
-				newRow.append($('<span></span>').text('test'));
-				newRow.click(function(){			
-					//var device = $(this).find('.device').text();	
-					populateSignificant();
-				});
-
-				table.append(newRow);
-			}
-
-			table.append($('<div></div>').addClass('clear'));
-			//var padding = $('<div></div>').addClass('padding');
-			//padding.append(table);			
-			$('#main').append(table);
-    	},
-    });
-}
-
-function populateTopApplications(selectedApplication){
-	var container = $('#main');
-	$('#main > *').each(function(){
-		this.remove();
-	});
-
-	var stat_timeline = $('<div></div>').attr('id', 'stat_timeline');
-	container.append($('<div></div>').attr('class', 'timeline_padding').append(stat_timeline));
-	var stat_pie = $('<div></div>').attr('id', 'stat_pie');
-	container.append($('<div></div>').attr('class', 'pie_padding').append(stat_pie));
-	var stat_table = $('<div></div>').attr('id', 'stat_table');
-	container.append($('<div></div>').attr('class', 'table_padding').append(stat_table));
-	var sorted = aggregateData.applications.sort(compareApplications);
-
-	if(sorted[0] == null){
-		console.log("Applications are null.");
-		return;
-	}
-
-	if(sorted == null || selectedApplication == ''){
-		selectedApplication = sorted[0];
-	}
-
-	/* Table */
-	populateApplicationTable(sorted, selectedApplication);
-
-	/* Timeline */
-	populateApplicationTimeline(selectedApplication);
-
-	/* Pie */
-	var e, other = 0;
-	var d1 = [], d2 = [];
-	for(var i = 0; i < sorted.length; i++){
-		d1.push(sorted[i][0]);
-		d2.push(sorted[i][1]);
-		e = i;
-	}	
-	populateStatPie(d1, d2);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function populateStatTimeline(device, compare){
-	var target = filter.getDevice();
-	if(device != null && device != ""){
-		target = device;
-	}
-
-	var url, label;
-	if(compare == 'downloaded'){
-		url = 'get_downloaded_intervals_by_device';
-		label = 'Downloaded';
-	}
-	else if(compare == 'uploaded'){
-		url = 'get_uploaded_intervals_by_device';
-		label = 'Uploaded';
+	if(device == null || device == ""){
+		device = sorted[0].devices;
 	}
 
     $.ajax({
 		type	: "POST",
-		url 	: url,
+		url 	: 'get_downloaded_intervals_by_device',
 		data 	: {
 			csrfmiddlewaretoken: getCookie('csrftoken'),
-			device: target,
+			device: device,
 			direction: filter.getDirection(),
-			//ts_start: filter.
+			ts_start: filter.getStartTimestampSeconds(),
 			interval: filter.getInterval(),
 		},
 		dataType : "json",
 		async : true,
 		error : function(data){
-			console.log("AJAX error with " + url);
+			console.log("AJAX error with " + 'get_downloaded_intervals_by_device');
 		},
     	success : function(json_data){
 
     		var data, time_start = json_data.ts_start, max = json_data.max;
-    		if(compare == 'downloaded'){
-    			data = json_data.downloaded;
-    		}
-    		else if(compare == 'uploaded'){
-    			data = json_data.uploaded;
-    		}
-
+    		
+    		data = json_data.downloaded;
 			var month = filter.getMonthString();
 
 			var timeLabel, timeFormat, tickSize, timeLabel, tickFormatter;
 			if(filter.getInterval() == INTERVAL.MONTHLY){
-				timeLabel = "Days";
+				timeLabel = "Days of " + MONTHS[filter.getMonth()];
 				timeFormat = "%d";
 				tickSize = [1, "day"]; // tick every day
 				tickFormatter = function (val, axis) {
@@ -524,7 +396,7 @@ function populateStatTimeline(device, compare){
 			}
 
 			var data = [
-			    { label: label, data: data, points: { fillColor: "blue" }, color: 'blue' },
+			    { label: 'Downloaded', data: data, points: { fillColor: "blue" }, color: 'blue' },
 			];
 
 			var options = {
@@ -552,7 +424,7 @@ function populateStatTimeline(device, compare){
 				},
 			    yaxis: {		
 				    position: "left",
-		            axisLabel: label,
+		            axisLabel: 'Downloaded',
 		            axisLabelUseCanvas: false,
 		            tickFormatter: function(val, axis) {           
 				        return bytesToSize(val);
@@ -570,7 +442,432 @@ function populateStatTimeline(device, compare){
 	});
 }
 
-function populateApplicationTimeline(){
+function populateTopDownloadersPie(sorted){
+	var dataset = [];
+	var e, other = 0;
+	for(var i = 0; i < 10 && i < sorted.length; i++){
+		if(sorted[i].name != null){
+			dataset.push({ label: sorted[i].name, data: sorted[i].downloaded, });
+		}
+		else{
+			dataset.push({ label: sorted[i].device, data: sorted[i].downloaded, });
+		}		
+		e = i;
+	}
+	dataset.push(["other", other]);
+
+	var options = {
+	    series: {
+	        pie: {
+	            show: true,	
+	            radius: 1,
+	            label: {
+	            	show: true,
+	                radius: 1/2,
+	                formatter: function(label, point){
+	                	return(point.percent.toFixed(2) + '%');
+	                },
+		        }
+	        }
+	    },   
+	    legend: {
+			show: true,
+	    }
+	};
+	var plot = $.plot($('#stat_pie'), dataset, options);
+
+	$('#stat_pie').bind("plotclick", function(event, pos, obj) {
+		//console.log(obj);
+		//window.location.replace(data[obj.seriesIndex].url);
+	});		
+}
+
+/***************************************************************************************/
+/***************************************************************************************/
+
+
+
+
+
+
+
+/********************************* Uploaders *******************************************/
+/***************************************************************************************/
+function populateTopUploaders(data, device){
+
+	var container = $('#main');
+	$('#main > *').each(function(){
+		this.remove();
+	});
+
+	if(data.uploaded == null){
+		console.log("Highest uploader has 0 bytes uploaded");
+		return;
+	}
+	//console.log(data);
+	var sorted = data.devices.sort(compareUploaded);
+	//console.log(sorted);
+	if(device == null || device == ''){
+		device = sorted[0].device;
+	}
+
+	/* Timeline */
+	var stat_timeline = $('<div></div>').attr('id', 'stat_timeline');
+	container.append($('<div></div>').attr('class', 'timeline_padding').append(stat_timeline));
+	/* Pie */
+	var stat_pie = $('<div></div>').attr('id', 'stat_pie');
+	container.append($('<div></div>').attr('class', 'pie_padding').append(stat_pie));
+	/* Table */
+	var stat_table = $('<div></div>').attr('id', 'stat_table');
+	container.append($('<div></div>').attr('class', 'table_padding').append(stat_table));
+	var div_clear = $('<div></div>').addClass('clear');
+	$('#main').append(div_clear);
+
+	/* Timeline */
+	populateTopUploadersTimeline(sorted, device);
+
+	/* Pie */
+	populateTopUploadersPie(sorted);
+
+	/* Table */
+	populateUsageTable(sorted, device);		
+}
+
+function populateTopUploadersTimeline(sorted, device){
+
+	if(device == null || device == ""){
+		device = sorted[0].devices;
+	}
+
+    $.ajax({
+		type	: "POST",
+		url 	: 'get_uploaded_intervals_by_device',
+		data 	: {
+			csrfmiddlewaretoken: getCookie('csrftoken'),
+			device: device,
+			direction: filter.getDirection(),
+			ts_start: filter.getStartTimestampSeconds(),
+			interval: filter.getInterval(),
+		},
+		dataType : "json",
+		async : true,
+		error : function(data){
+			console.log("AJAX error with " + 'get_uploaded_intervals_by_device');
+		},
+    	success : function(json_data){
+
+    		var data, time_start = json_data.ts_start, max = json_data.max;
+    		
+    		data = json_data.uploaded;
+			var month = filter.getMonthString();
+
+			var timeLabel, timeFormat, tickSize, timeLabel, tickFormatter;
+			if(filter.getInterval() == INTERVAL.MONTHLY){
+				timeLabel = "Days of " + MONTHS[filter.getMonth()];
+				timeFormat = "%d";
+				tickSize = [1, "day"]; // tick every day
+				tickFormatter = function (val, axis) {
+					var date = new Date(val);
+			        return DAYS[date.getDay()] + " " + date.getDate();
+			    };
+			}
+			else if(filter.getInterval() == INTERVAL.DAILY){
+				timeLabel = "Hours";
+				timeFormat = "%h";
+				tickSize = [1, "hour"]; // tick every hour
+			}
+			else if(filter.getInterval() == INTERVAL.HOURLY){
+				timeLabel = "Minutes";
+				timeFormat = "%m";
+				tickSize = [1, "minute"]; // tick every minute
+			}
+
+			var data = [
+			    { label: 'Uploaded', data: data, points: { fillColor: "blue" }, color: 'blue' },
+			];
+
+			var options = {
+				series: {		
+				    shadowSize: 5,	
+				    lines:{
+				    	fill: true,	// area chart
+				    },
+				   	points: {
+				    	show: false,
+				    },   	    		          
+				},
+			    xaxis: {    
+		            axisLabel: timeLabel,
+		            axisLabelUseCanvas: false,	    
+		            mode: "time",
+		            timeformat: timeFormat,
+				    tickFormatter: tickFormatter,
+				    //tickFormatter: function(val, axis){
+				    	//console.log(new Date(val));
+				    	//return new Date(val * 1000).getDate();
+				    //}
+					//min: (new Date(time_start)).getTime(),
+					//max: 50000000,				    
+				},
+			    yaxis: {		
+				    position: "left",
+		            axisLabel: 'Uploaded',
+		            axisLabelUseCanvas: false,
+		            tickFormatter: function(val, axis) {           
+				        return bytesToSize(val);
+				    },
+					min: 0,
+					//max: max,
+				},		
+			    grid: {
+			        backgroundColor: "#fff",
+			    },      
+			};
+
+			var plot = $.plot($('#stat_timeline'), data, options);	
+	    }
+	});
+}
+
+function populateTopUploadersPie(sorted){
+	var dataset = [];
+	var e, other = 0;
+	for(var i = 0; i < 10 && i < sorted.length; i++){
+		if(sorted[i].name != null){
+			dataset.push({ label: sorted[i].name, data: sorted[i].uploaded, });
+		}
+		else{
+			dataset.push({ label: sorted[i].device, data: sorted[i].uploaded, });
+		}		
+		e = i;
+	}
+	dataset.push(["other", other]);
+
+	var options = {
+	    series: {
+	        pie: {
+	            show: true,	
+	            radius: 1,
+	            label: {
+	            	show: true,
+	                radius: 1/2,
+	                formatter: function(label, point){
+	                	return(point.percent.toFixed(2) + '%');
+	                },
+		        }
+	        }
+	    },   
+	    legend: {
+			show: true,
+	    }
+	};
+	var plot = $.plot($('#stat_pie'), dataset, options);
+}
+
+/***************************************************************************************/
+/***************************************************************************************/
+
+
+
+function populateUsageTable(sorted, device){
+	var table = $('#stat_table');
+
+	/* Table header. */
+	var newRow = $('<div></div>').addClass('header');
+	newRow.append($('<span></span>').text('Device'));
+	newRow.append($('<span></span>').text('Total Traffic'));
+	newRow.append($('<span></span>').text('Downloaded'));
+	newRow.append($('<span></span>').text('Uploaded'));
+	newRow.append($('<span></span>').text('Flows'));
+	newRow.append($('<span></span>').text('Start Date'));
+	newRow.append($('<span></span>').text('End Date'));
+	table.append(newRow);
+
+	for(var i = 0; i < 10 && i < sorted.length; i++){
+		newRow = $('<div></div>').addClass('row');
+		if(sorted[i].device == device){
+			newRow.css('opacity', '0.5');
+		}
+
+		if(sorted[i].name != null){
+			newRow.append($('<span></span>').attr('class', 'device').attr("value", sorted[i].device).text(sorted[i].name));
+		}
+		else{
+			newRow.append($('<span></span>').attr('class', 'device').attr("value", sorted[i].device).text(sorted[i].device));
+		}
+		var volumeBytes = toInt(sorted[i].downloaded) + toInt(sorted[i].uploaded);
+		newRow.append($('<span></span>').text(bytesToSize(volumeBytes)));
+		var downloadedBytes = toInt(sorted[i].downloaded);
+		newRow.append($('<span></span>').text(bytesToSize(downloadedBytes)));
+		var uploadedBytes = toInt(sorted[i].uploaded);
+		newRow.append($('<span></span>').text(bytesToSize(uploadedBytes)));
+		newRow.append($('<span></span>').text(sorted[i].flows));
+		var dateStart = sorted[i].timeStart.toDateString();
+		newRow.append($('<span></span>').text(dateStart));
+		var dateEnd = sorted[i].timeEnd.toDateString();
+		newRow.append($('<span></span>').text(dateEnd));
+		/* Item click */
+		newRow.click(function(){			
+			var device = $(this).find('.device').attr("value");
+			refreshVisuals(device);
+		});
+		table.append(newRow);
+	}
+
+	table.append($('<div></div>').addClass('clear'));
+}
+
+
+
+
+/****************************************************************************************/
+/******************************************* Locations ********************************/
+/****************************************************************************************/
+function populateTopLocations(){
+	var container = $('#main');
+	$('#main > *').each(function(){
+		this.remove();
+	});
+
+	/* Pie */
+	var locations_pie = $('<div></div>').attr('id', 'locations_pie');
+
+	var locations_pie_padding = $('<div></div>').attr('class', 'locations_pie_padding');
+	locations_pie_padding.append(locations_pie);
+
+	var locations_pie_legend = $('<div></div>').attr('id', 'locations_pie_legend');
+	locations_pie_padding.append(locations_pie_legend);
+
+	locations_pie_padding.append($('<div></div>').attr('class', 'clear'));
+
+	container.append(locations_pie_padding);
+
+	/* Table */
+	var locations_table = $('<div></div>').attr('id', 'locations_table');
+	container.append($('<div></div>').attr('class', 'table_padding').append(locations_table));
+	var div_clear = $('<div></div>').addClass('clear');
+	$('#main').append(div_clear);
+
+    $.ajax({
+		type	: "POST",
+		url 	: "get_top_locations",
+		data 	: {
+			csrfmiddlewaretoken: getCookie('csrftoken'),
+			interval: filter.getInterval(),
+		},
+		dataType: "json",
+		async 	: true,
+		error 	: function(data){
+			console.log("AJAX error with get_top_domains.");
+		},
+    	success : function(json_data){
+
+    		var domains = json_data.domains;
+
+			/* Table */
+			var table = $('#locations_table');
+
+			/* Table header. */
+			var newRow = $('<div></div>').addClass('header');
+			newRow.append($('<div></div>').addClass('item location').text('Location'));
+			newRow.append($('<div></div>').addClass('item downloaded').text('Downloaded').css('text-align', 'right'));
+			newRow.append($('<div></div>').addClass('item uploaded').text('Uploaded').css('text-align', 'right'));
+			newRow.append($('<div></div>').addClass('item traffic').text('Total traffic').css('text-align', 'right'));
+			table.append(newRow);
+
+			/* Data */
+			for(var i = 0; i < domains.length; i++){
+				newRow = $('<div></div>').addClass('row');
+				newRow.append($('<div></div>').addClass('item location').text(domains[i][0]));
+				newRow.append($('<div></div>').addClass('item downloaded').text(bytesToSize(domains[i][1])));
+				newRow.append($('<div></div>').addClass('item uploaded').text(bytesToSize(domains[i][2])));
+				newRow.append($('<div></div>').addClass('item uploaded').text(bytesToSize(parseInt(domains[i][1]) + parseInt(domains[i][2]))));
+				newRow.click(function(){			
+					//var device = $(this).find('.device').text();	
+					//refreshVisuals();
+				});
+
+				table.append(newRow);
+			}
+
+			//var padding = $('<div></div>').css({"float": "left", "display": "inline-block", "width": "100%",});
+			//padding.append(table);
+			//$('#main').append(table);
+
+			/* Pie */
+			populateTopLocationsPie(domains);
+    	},
+    });
+}
+
+function populateTopLocationsPie(sorted){
+
+	var dataset = [];
+	var e, other = 0;
+	for(var i = 0; i < 10 && i < sorted.length; i++){
+		dataset.push({ label: sorted[i][0], data: parseInt(sorted[i][1]) + parseInt(sorted[i][2])});	
+		e = i;
+	}
+	var options = {
+	    series: {
+	        pie: {
+	            show: true,	
+	            radius: 1,
+	            label: {
+	            	show: true,
+	                radius: 1/2,
+	                formatter: function(label, point){
+	                	return(point.percent.toFixed(2) + '%');
+	                },
+		        }
+	        }
+	    },   
+	    legend: {
+			show: true,
+			container: $('#locations_pie_legend'),
+	    }
+	};
+	var plot = $.plot($('#locations_pie'), dataset, options);
+}
+
+/***************************************************************************************/
+/***************************************************************************************/
+
+
+
+
+/********************************* Applications *******************************************/
+/***************************************************************************************/
+function populateTopApplications(data){
+	var container = $('#main');
+	$('#main > *').each(function(){
+		this.remove();
+	});
+
+	var stat_timeline = $('<div></div>').attr('id', 'stat_timeline');
+	container.append($('<div></div>').attr('class', 'timeline_padding').append(stat_timeline));
+	var stat_pie = $('<div></div>').attr('id', 'stat_pie');
+	container.append($('<div></div>').attr('class', 'pie_padding').append(stat_pie));
+	var stat_table = $('<div></div>').attr('id', 'stat_table');
+	container.append($('<div></div>').attr('class', 'table_padding').append(stat_table));
+	var sorted = data.applications.sort(compareApplications);
+
+	if(sorted[0] == null){
+		console.log("Applications are null.");
+		return;
+	}
+
+	/* Table */
+	populateTopApplicationsTable(sorted);
+
+	/* Timeline */
+	populateTopApplicationsTimeline();
+
+	/* Pie */
+	populateTopApplicationsPie(sorted);
+}
+
+function populateTopApplicationsTimeline(){
 
 	var target = filter.getApplication();
 
@@ -669,14 +966,14 @@ function populateApplicationTimeline(){
 	});
 }
 
-function populateStatPie(data1, data2){
-
+function populateTopApplicationsPie(sorted){
 	var dataset = [];
 	var e, other = 0;
-	for(var i = 0; i < data1.length; i++){
-		dataset.push([data1[i], data2[i]]);
+	for(var i = 0; i < 10 && i < sorted.length; i++){
+		dataset.push({ label: sorted[i][0], data: parseInt(sorted[i][1]) + parseInt(sorted[i][1]), });
 		e = i;
 	}
+	dataset.push(["other", other]);
 
 	var options = {
 	    series: {
@@ -691,82 +988,29 @@ function populateStatPie(data1, data2){
 	                },
 		        }
 	        }
-	    },
-	    grid: {
-	        hoverable: true,
-	        clickable: true,
-	    },	    
+	    },   
 	    legend: {
 			show: true,
-			container: $("#stat_timeline"),
 	    }
 	};
-	var plot = $.plot($('#stat_pie'), dataset, options);
-
-	$('#stat_pie').bind("plotclick", function(event, pos, obj) {
-		//console.log(obj);
-		//window.location.replace(data[obj.seriesIndex].url);
-	});		
+	var plot = $.plot($('#stat_pie'), dataset, options);	
 }
 
-function populateStatTable(sortedDevices, device){
-	var table = $('#stat_table');
-
-	/* Table header. */
-	var newRow = $('<div></div>').addClass('header');
-	newRow.append($('<span></span>').text('Device'));
-	newRow.append($('<span></span>').text('Volume').css('text-align', 'right'));
-	newRow.append($('<span></span>').text('Downloaded').css('text-align', 'right'));
-	newRow.append($('<span></span>').text('Uploaded').css('text-align', 'right'));
-	newRow.append($('<span></span>').text('Flows'));
-	newRow.append($('<span></span>').text('Start Date'));
-	newRow.append($('<span></span>').text('End Date'));
-	table.append(newRow);
-
-	for(var i = 0; i < 10 && i < sortedDevices.length; i++){
-		newRow = $('<div></div>').addClass('row');
-		if(sortedDevices[i].device == device){
-			newRow.css('opacity', '0.5');
-		}
-		newRow.append($('<span></span>').attr('class', 'device').text(sortedDevices[i].device));
-		var volumeBytes = toInt(sortedDevices[i].downloaded) + toInt(sortedDevices[i].uploaded);
-		newRow.append($('<span></span>').text(bytesToSize(volumeBytes)));
-		var downloadedBytes = toInt(sortedDevices[i].downloaded);
-		newRow.append($('<span></span>').text(bytesToSize(downloadedBytes)));
-		var uploadedBytes = toInt(sortedDevices[i].uploaded);
-		newRow.append($('<span></span>').text(bytesToSize(uploadedBytes)));
-		newRow.append($('<span></span>').text(sortedDevices[i].flows));
-		var dateStart = DAYS[sortedDevices[i].timeStart.getDay()] + ' ' + sortedDevices[i].timeStart.getDate() + ' ' + MONTHS[(sortedDevices[i].timeStart.getMonth() + 1)] + ' ' + sortedDevices[i].timeStart.getFullYear();
-		newRow.append($('<span></span>').text(dateStart));
-		var dateEnd = DAYS[sortedDevices[i].timeEnd.getDay()] + ' ' + sortedDevices[i].timeStart.getDate() + ' ' + MONTHS[(sortedDevices[i].timeEnd.getMonth() + 1)] + ' ' + sortedDevices[i].timeEnd.getFullYear();
-		newRow.append($('<span></span>').text(dateEnd));
-		/* Item click */
-		newRow.click(function(){			
-			var device = $(this).find('.device').text();	
-			populateSignificant(device);
-		});
-		table.append(newRow);
-	}
-
-	table.append($('<div></div>').addClass('clear'));
-}
-
-function populateApplicationTable(sortedApplications, selectedApplication){
+function populateTopApplicationsTable(sortedApplications){
 	var table = $('#stat_table');
 
 	/* Table header. */
 	var newRow = $('<div></div>').addClass('header');
 	newRow.append($('<span></span>').text('Application'));
-	newRow.append($('<span></span>').text('Volume').css('text-align', 'right'));
-	newRow.append($('<span></span>').text('Downloaded').css('text-align', 'right'));
-	newRow.append($('<span></span>').text('Uploaded').css('text-align', 'right'));
+	newRow.append($('<span></span>').text('Volume'));
+	newRow.append($('<span></span>').text('Downloaded'));
+	newRow.append($('<span></span>').text('Uploaded'));
+	newRow.append($('<span></span>').text('Time start'));
+	newRow.append($('<span></span>').text('Time end'));
 	table.append(newRow);
 
 	for(var i = 0; i < 10 && i < sortedApplications.length; i++){
 		newRow = $('<div></div>').addClass('row');
-		if(sortedApplications[i] == selectedApplication){
-			newRow.css('opacity', '0.5');
-		}
 		newRow.append($('<span></span>').attr('class', 'application').text(sortedApplications[i][0]));
 		var volumeBytes = toInt(sortedApplications[i][1]) + toInt(sortedApplications[i][2]);
 		newRow.append($('<span></span>').text(bytesToSize(volumeBytes)));
@@ -774,13 +1018,19 @@ function populateApplicationTable(sortedApplications, selectedApplication){
 		newRow.append($('<span></span>').text(bytesToSize(downloadedBytes)));
 		var uploadedBytes = toInt(sortedApplications[i][2]);
 		newRow.append($('<span></span>').text(bytesToSize(uploadedBytes)));
+		var timeStart = new Date(sortedApplications[i][3] * 1000).toDateString();
+		newRow.append($('<span></span>').text(timeStart));
+		var timeEnd = new Date(sortedApplications[i][4] * 1000).toDateString();
+		newRow.append($('<span></span>').text(timeEnd));			
 		/* Item click */
 		newRow.click(function(){			
 			var device = $(this).find('.device').text();	
-			populateSignificant(device);
+			refreshVisuals(device);
 		});
 		table.append(newRow);
 	}
 
 	table.append($('<div></div>').addClass('clear'));	
 }
+/***************************************************************************************/
+/***************************************************************************************/

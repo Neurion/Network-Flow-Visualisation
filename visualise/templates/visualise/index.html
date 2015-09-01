@@ -10,26 +10,27 @@
 <script type="text/javascript" src="{% static 'visualise/javascript/misc.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/populate.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/request.js' %}" ></script>
-<script type="text/javascript" src="{% static 'visualise/javascript/visuals.js' %}" ></script>
-<script type="text/javascript" src="{% static 'visualise/javascript/tables.js' %}" ></script>
-<script type="text/javascript" src="{% static 'visualise/javascript/host.js' %}" ></script>
 <script type="text/javascript" src="{% static 'visualise/javascript/main.js' %}" ></script>
 
 <!-- 
-The default page displays generic network information.
-For specific device information to be displayed, the filter must be applied which sends an AJAX request to the server to retreive statistics about the selected MAC address.
+For specific device information to be displayed, the filter must be applied which sends an AJAX request to the server to retreive statistics about the selected device, application etc.
 -->
 
 <div id="container">    
     <div id="menu">
-        <span id="title">Network Flow Visualisation</span>
-        <div id="menu_overview" class="current">Overview</div> 
-        <div id="menu_downloaded">Downloaded</div>
-        <div id="menu_uploaded">Uploaded</div>
-        <div id="menu_locations">Locations</div>
-        <div id="menu_applications">Applications</div>
-        <!--<div id="menu_more">More</div>
-        <div id="menu_protocols">Transport Protocols</div>-->
+        <!--<span id="title">Network Flow Visualisation</span>-->
+        <div id="menu_overview" class="hover current">Overview</div> 
+        <div id="menu_downloaded" class="hover">Downloaded</div>
+        <div id="menu_uploaded" class="hover">Uploaded</div>
+        <div id="menu_locations" class="hover">Locations</div>
+        <div id="menu_applications" class="hover">Applications</div>
+        <div id="menu_more" class="hover">&gt</div>
+        <div id="menu_hidden">
+            <div id="menu_protocols" class="hover">Protocols</div>
+            <div id="menu_ports" class="hover">Ports</div>
+            <div id="menu_flows" class="hover">Flows</div>
+            <div id="menu_packets" class="hover">Packets</div>
+        </div>
     </div>
 
     <div id="filter_container">
@@ -61,19 +62,7 @@ For specific device information to be displayed, the filter must be applied whic
     </div>
     
     <div id="main_container">
-        <div id="main">
-            <!--
-            <div class="timeline_padding">
-                <div id="stat_timeline"></div>
-            </div>
-            <div class="pie_padding">
-                <div id="stat_pie"></div>
-            </div>
-            <div id="stat_table"></div>
-        </div>
-        -->
-        <!--<div id="top_downloaders"></div>-->
-        </div>
+        <div id="main"></div>
     </div>
     
-</div><!-- Close container -->
+</div>

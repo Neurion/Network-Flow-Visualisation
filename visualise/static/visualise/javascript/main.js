@@ -4,146 +4,120 @@
 	setup();
 
 	getAggregateData(function(){
-
+ 
+		filter.populateDevices();
 		filter.populateDirection();
+		filter.populateYears();
 		filter.populateMonths();
+		filter.populateDays();
+		filter.populateHours();
 		filter.populateApplications();
 		filter.setOnControlChange(function(){
-			// Display information for all devices.
-			if(filter.getDevice() == "All"){
-				requestAggregateDevicesData(function(){
-					if(statMenu == STAT_MENU.OVERVIEW){
-						populateOverview();
-					}
-					else if(statMenu == STAT_MENU.DOWNLOADED){
-						populateTopDownloaders();
-					}
-					else if(statMenu == STAT_MENU.UPLOADED){
-						populateTopUploaders();
-					}
-					else if(statMenu == STAT_MENU.APPLICATIONS){
-						populateTopApplications();
-					}								
-					else{
-						console.log('Invalid statMenu, should not happen.');
-						return;
-					}
-				});
-			}
-			// Else display information for a single device.
-			else{
-				requestDeviceData(function(){
-					if(statMenu == STAT_MENU.OVERVIEW){
-						populateDeviceOverview();
-					}
-					else if(statMenu == STAT_MENU.DOWNLOADED){
-						//populateDeviceDownloaded();
-					}
-					else if(statMenu == STAT_MENU.UPLOADED){
-						//populateDeviceUploaded();
-					}			
-					else{
-						console.log('Invalid statMenu, should not happen.');
-						return;
-					}
-				});
-			}
+			refreshVisuals();
 		});
 
 		$('#menu_overview').click(function(){
 			removeCurrentMenu();
 			STAT_MENU.OVERVIEW.addClass('current');
 			statMenu = STAT_MENU.OVERVIEW;
-			populateSignificant();
+			refreshVisuals();
 		});
 
 		$('#menu_downloaded').click(function(){
 			removeCurrentMenu();
 			STAT_MENU.DOWNLOADED.addClass('current');
 			statMenu = STAT_MENU.DOWNLOADED;
-			populateSignificant();	
+			refreshVisuals();
 		});
 
 		$('#menu_uploaded').click(function(){
 			removeCurrentMenu();
 			STAT_MENU.UPLOADED.addClass('current');
 			statMenu = STAT_MENU.UPLOADED;
-			populateSignificant();
+			refreshVisuals();
 		});
 
 		$('#menu_locations').click(function(){
 			removeCurrentMenu();
 			STAT_MENU.LOCATIONS.addClass('current');
 			statMenu = STAT_MENU.LOCATIONS;
-			populateSignificant();
+			refreshVisuals();
 		});
 
 		$('#menu_applications').click(function(){
 			removeCurrentMenu();
 			STAT_MENU.APPLICATIONS.addClass('current');
 			statMenu = STAT_MENU.APPLICATIONS;
-			populateSignificant();
-		});		
+			refreshVisuals();
+		});
+
+		$('#menu_more').click(function(){
+			if($('#menu_hidden').css("display") == "none"){
+				$('#menu_more').text("<");
+			}
+			else{
+				$('#menu_more').text(">");
+				removeCurrentMenu();
+				STAT_MENU.OVERVIEW.addClass('current');
+				statMenu = STAT_MENU.OVERVIEW;
+				refreshVisuals();		
+			}
+			$('#menu_hidden').animate({width:'toggle'}, 300, function(){
+
+			});			
+		});
+
+		$('#menu_protocols').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.PROTOCOLS.addClass('current');
+			statMenu = STAT_MENU.PROTOCOLS;
+			//refreshVisuals();
+		});
+
+		$('#menu_ports').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.PORTS.addClass('current');
+			statMenu = STAT_MENU.PORTS;
+			//refreshVisuals();
+		});	
+
+		$('#menu_flows').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.FLOWS.addClass('current');
+			statMenu = STAT_MENU.FLOWS;
+			//refreshVisuals();
+		});	
+
+		$('#menu_packets').click(function(){
+			removeCurrentMenu();
+			STAT_MENU.PACKETS.addClass('current');
+			statMenu = STAT_MENU.PACKETS;
+			//refreshVisuals();
+		});							
 
 		$('#devices').append($('<div></div>').text(aggregateData.devices.length));
 		$('#downloaded').append($('<div></div>').text(bytesToSize(aggregateData.downloaded)));
 		$('#uploaded').append($('<div></div>').text(bytesToSize(aggregateData.uploaded)));
 
-		/* Interval listener */
-		filter.setIntervalListener();
-
-		filter.populateDevices();
-
-		filter.setInterval(INTERVAL.MONTHLY);
-
-		//console.log('Default filter values:');
-		//printFilterValues();
-
-	});
-
-	requestAggregateDevicesData(function(){
 		statMenu = STAT_MENU.OVERVIEW;
-		populateSignificant();
+		refreshVisuals();
 	});
-});		// end of page ready
+});
 
-function setup(){	
-
-	/* Menu */
-	setMenuPointers();
+function setup(){
 
 	STAT_MENU.OVERVIEW = $('#menu_overview');
 	STAT_MENU.DOWNLOADED = $('#menu_downloaded');
 	STAT_MENU.UPLOADED = $('#menu_uploaded');
 	STAT_MENU.LOCATIONS = $('#menu_locations');
 	STAT_MENU.APPLICATIONS = $('#menu_applications');
+	STAT_MENU.PROTOCOLS = $('#menu_protocols');
+	STAT_MENU.PORTS = $('#menu_ports');
+	STAT_MENU.FLOWS = $('#menu_flows');
+	STAT_MENU.PACKETS = $('#menu_packets');
 
 	filter = new Filter();
 	filter.setControls();
-
-	//visuals.push(loadDeviceUsers);
-	//visuals.push(loadUsageTimeline);
-	//visuals.push(loadProtocol);
-	//visuals.push(loadUsage);
-
-	window.setInterval(onTimeout, 30000);
-}
-
-function onTimeout(){
-	//requestFilterValues(updateFilterControls, requestData);
-}
-
-function setMenuPointers(){
-	//menu.filter = $('#menu_filter');
-	//menu.display = $('#menu_preferences');
-
-	//menu.filter.click(function(){
-	//	$('#filter_container').slideToggle(300);
-	//});
-
-	//menu.display.click(function(){
-	//	$('#preferences_container').slideToggle(300);
-	//});	
 }
 
 function removeCurrentMenu(){
@@ -152,6 +126,10 @@ function removeCurrentMenu(){
 	STAT_MENU.UPLOADED.removeClass('current');
 	STAT_MENU.LOCATIONS.removeClass('current');	
 	STAT_MENU.APPLICATIONS.removeClass('current');
+	STAT_MENU.PROTOCOLS.removeClass('current');
+	STAT_MENU.PORTS.removeClass('current');
+	STAT_MENU.FLOWS.removeClass('current');
+	STAT_MENU.PACKETS.removeClass('current');
 }
 
 function getFilterParameters(){
@@ -202,8 +180,8 @@ function getFilterParameters(){
 	console.log("	month: " + filter.getMonth());
 	console.log("	day: " + filter.getDay());
 	console.log("	hour: " + filter.getHour());
-	console.log("	ts_start: " + filter.getStartTimestamp());
-	console.log("	ts_end: " + filter.getEndTimestamp());
+	console.log("	ts_start: " + filter.getStartTimestampSeconds());
+	console.log("	ts_end: " + filter.getEndTimestampSeconds());
 	console.log("	port_source: " + filter.getPortSrc());
 	console.log("	port_destination: " + filter.getPortDst());
 	console.log("########################");
@@ -218,7 +196,8 @@ function getFilterParameters(){
 		day: filter.getDay(),
 		hour: filter.getHour(),
 		application: filter.getApplication(),
-		ts_filter: filter.getStartTimestamp(),
+		ts_start: filter.getStartTimestampSeconds(),
+		//ts_end: filter.getEndTimestampSeconds(),
 		port_source: filter.getPortSrc(),
 		port_destination: filter.getPortDst(),		
 	}
@@ -234,8 +213,8 @@ function printFilterValues(){
 	console.log("	day: " + filter.getDay());
 	console.log("	hour: " + filter.getHour());
 	console.log("	application: " + filter.getApplication());
-	console.log("	time_start: " + parseInt(aggregateData.dateStart.getTime() / 1000));
-	console.log("	time_end: " + parseInt(aggregateData.dateEnd / 1000));	
+	console.log("	time_start: " + filter.getStartTimestampSeconds());
+	console.log("	time_end: " + filter.getEndTimestampSeconds());	
 	console.log("	port_source: " + filter.getPortSrc());
 	console.log("	port_destination: " + filter.getPortDst());
 	console.log("");

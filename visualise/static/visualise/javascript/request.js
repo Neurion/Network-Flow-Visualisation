@@ -1,5 +1,5 @@
 function getAggregateData(callback){
-	console.log("request aggregate data...");
+	//console.log("request aggregate data...");
 	$.ajax({
 		type	: "POST",
 		url 	: "get_aggregate_data",
@@ -10,26 +10,29 @@ function getAggregateData(callback){
 			alert('AJAX error:' + data);
 		},
 		success : function(json_data){
-			console.log("got aggregate data.");
+			//console.log("got aggregate data.");
 
-			aggregateData.devices = json_data.devices;
+			aggregateData.devices = [];
+			for(var i = 0; i < json_data.devices.length; i++){
+				aggregateData.devices.push(new Device(json_data.devices[i][0], json_data.devices[i][1], json_data.devices[i][4], json_data.devices[i][5], json_data.devices[i][6], new Date(json_data.devices[i][2] * 1000), new Date(json_data.devices[i][3] * 1000)));
+			}
 			aggregateData.dateStart = new Date(json_data.ts_earliest * 1000);
 			aggregateData.dateEnd = new Date(json_data.ts_latest * 1000);
 			aggregateData.downloaded = json_data.bytes_downloaded;
 			aggregateData.uploaded = json_data.bytes_uploaded;
 			aggregateData.flows = json_data.flows;
 			aggregateData.applications = json_data.applications;
-
+			
 			callback();
 		},
 	});		
 }
 
-function requestDeviceData(callback){
-	console.log("request data...");
+function requestSubsetData(callback){
+	//console.log("request subset data...");
 	$.ajax({
 		type	: "POST",
-		url 	: "get_device_data",
+		url 	: "get_subset_data",
 		data 	: getFilterParameters(),
 		dataType : "json",
 		async : true,
@@ -37,11 +40,15 @@ function requestDeviceData(callback){
 			alert('AJAX error:' + data);
 		},
 		success : function(json_data){
-			console.log("got data.");
+			//console.log("got subset data.");
 
-			subsetData.devices = json_data.devices;
+			subsetData.devices = [];			
+			for(var i = 0; i < json_data.devices.length; i++){
+				var newDevice = new Device(json_data.devices[i][0], json_data.devices[i][1], json_data.devices[i][4], json_data.devices[i][5], json_data.devices[i][6], new Date(json_data.devices[i][2] * 1000), new Date(json_data.devices[i][3] * 1000));
+				subsetData.devices.push(newDevice);
+			}
 			subsetData.dateStart = new Date(json_data.ts_earliest * 1000);
-			subsetData.dateEnd = new Date(json_data.ts_latest * 1000);
+			subsetData.dateEnd = new Date(json_data.ts_latest * 1000);			
 			subsetData.downloaded = json_data.bytes_downloaded;
 			subsetData.uploaded = json_data.bytes_uploaded;
 			subsetData.flows = json_data.flows;
@@ -60,33 +67,28 @@ function requestDeviceData(callback){
 	});	
 }
 
-function requestAggregateDevicesData(callback){
-	console.log("getting aggregate devices data...");
+function submitName(name, callback){
+	console.log("submitting name...");
 	$.ajax({
 		type	: "POST",
-		url 	: "get_aggregate_devices_data",
-		data 	: getFilterParameters(),
+		url 	: "save_name",
+		data 	: {
+			csrfmiddlewaretoken: getCookie('csrftoken'),
+			device: filter.getDevice(),
+			name: name,
+		},
 		dataType : "json",
 		async : true,
 		error : function(data){
 			alert('AJAX error:' + data);
 		},
 		success : function(json_data){
-			console.log("got aggregate devices data.");
-			/*
-			console.log(json_data.devices);
-			console.log(json_data.time_start);
-			console.log(json_data.time_end);
-			console.log(json_data.downloaded);
-			console.log(json_data.uploaded);
-			*/
-			devices = [];
-			for(var i = 0; i < json_data.devices.length; i++){
-				var newDevice = new Device(json_data.devices[i], "", json_data.downloaded[i], json_data.uploaded[i], json_data.flows[i], new Date(json_data.time_start[i] * 1000), new Date(json_data.time_end[i] * 1000));
-				devices.push(newDevice);
+			if(json_data.status != 0){
+				alert("Error: " + json_data.content);
+				return;
 			}
-
-			callback(json_data);
+			console.log("submitted name: " + json_data.content);
+			callback(json_data.content);
 		},
 	});	
 }
